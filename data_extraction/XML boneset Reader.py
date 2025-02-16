@@ -5,7 +5,8 @@ import json
 def extract_bones_from_xml(xml_path):
     """
     Parses the XML file and extracts bonesets and their associated bones.
-    Returns a dictionary with boneset names as keys and lists of bones as values.
+    Bonesets are determined by hyperlink text with size 1200.
+    Bones with size 900 are assigned to the most recent bolded boneset.
     """
     try:
         print(f"Parsing XML: {xml_path}")
@@ -23,34 +24,43 @@ def extract_bones_from_xml(xml_path):
     }
 
     bonesets = {}  # Dictionary to store bonesets
+    current_boneset = None
+    total_boneset = None
+    bolded_set = None
+    boldedList= []
 
-    INVALID_BONESETS = {"Home", "The", "Title", "Slide", "Overview", "Labels", "Right Pelvis" }  
+    # Extract bonesets based on hyperlinks and size attributes
+    for sp_element in root.findall(".//p:sp", ns):
+        for r_element in sp_element.findall(".//p:txBody//a:r", ns):
+            rPr_element = r_element.find("a:rPr", ns)
+            text_element = r_element.find("a:t", ns)
 
+            if rPr_element is not None and text_element is not None:
+                text = text_element.text.strip()
+                size = rPr_element.get("sz")
+                is_bold = rPr_element.get("b") == "1"
+                has_hyperlink = rPr_element.find("a:hlinkClick", ns) is not None
 
-    # Extract bonesets dynamically
-    for boneset_element in root.findall(".//p:sp", ns):
-        boneset_name_element = boneset_element.find(".//p:txBody//a:t", ns)
-        
-        if boneset_name_element is not None:
-
-            boneset_name = boneset_name_element.text.strip()
-
-            boneset_name_words = boneset_name.split()
-            if not len(boneset_name_words) < 4:
-                continue
-            if not boneset_name or boneset_name in INVALID_BONESETS:
-                continue
-            if not all(word.isalpha() for word in boneset_name.split()):  
-                continue
-
-            if boneset_name not in bonesets:
-                bonesets[boneset_name] = set()
-
-            # Extract bones within this boneset
-            for bone_element in boneset_element.findall(".//p:txBody//a:r/a:t", ns):
-                bone_name = bone_element.text.strip() if bone_element.text else None
-                if bone_name and is_valid_bone_name(bone_name, boneset_name):
-                    bonesets[boneset_name].add(bone_name.capitalize())
+                if has_hyperlink:
+                    if size == "1200":
+                        if is_bold:
+                            bolded_set = text
+                        if total_boneset is None:
+                            total_boneset = text
+                            bonesets[total_boneset] = set()
+                            continue
+                        # These are their own bonesets
+                        current_boneset = text
+                        bonesets[current_boneset] = set()
+                        bonesets[total_boneset].add(text.capitalize())
+                    elif size == "900":
+                        if not bolded_set:
+                            boldedList.append(text.capitalize())
+                        else:
+                            bonesets[bolded_set].add(text.capitalize())
+    for i in range(len(boldedList)):
+        bonesets[bolded_set].add(boldedList[i])
+                        
 
     return bonesets
 
@@ -74,43 +84,12 @@ def generate_json_output(bonesets, output_json_path):
     except IOError as e:
         print(f"Error writing to {output_json_path}: {e}")
 
-def is_valid_bone_name(name, boneset_name):
-    """
-    Determines if a given name is a valid bone name, excluding those that contain the boneset name.
-    """
-    if not name:  # Ignore empty strings
-        return False
-
-    if len(name) > 50:  # Ignore overly long strings
-        return False
-
-    if "(" in name or ")" in name:  # Ignore text with parentheses
-        return False
-
-    if any(char.isdigit() for char in name):  # Ignore names with digits
-        return False
-
-    if name.islower():  # Ignore entirely lowercase words
-        return False
-
-    if len(name.split()) > 3:
-        return False
-
-    # Exclude names that contain the boneset name (case-insensitive)
-    if boneset_name and boneset_name.lower() in name.lower():
-        return False
-
-    if "Home" in name or "The" in name:
-        return False
-
-    return True
-
 if __name__ == "__main__":
     # Get the directory of the current script
     current_dir = os.path.dirname(os.path.abspath(__file__))
 
     # Define the XML and JSON file paths relative to the script's directory
-    xml_file_path = os.path.join(current_dir, "BoneyPelvisSlide4.xml")
+    xml_file_path = os.path.join(current_dir, "slide9Pelvis.xml")
     json_file_path = os.path.join(current_dir, "output.json")
 
     # Extract bonesets and their bones

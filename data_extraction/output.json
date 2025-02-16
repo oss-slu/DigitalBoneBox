@@ -8,11 +8,20 @@
         ]
     },
     {
-        "boneset": "Iliac Crest",
+        "boneset": "Ilium",
+        "bones": []
+    },
+    {
+        "boneset": "Ischium",
         "bones": [
-            "Anterior iliac spines",
-            "Auricular surface",
-            "Posterior iliac spines"
+            "Ischial spine",
+            "Ischial tuberosity",
+            "Ramus",
+            "Sciatic notches"
         ]
+    },
+    {
+        "boneset": "Pubis",
+        "bones": []
     }
 ]

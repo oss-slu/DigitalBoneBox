@@ -1,2 +1,1237 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<p:sld xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"><p:cSld><p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr><p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/><a:chOff x="0" y="0"/><a:chExt cx="0" cy="0"/></a:xfrm></p:grpSpPr><p:sp><p:nvSpPr><p:cNvPr id="4" name="Rectangle 3"/><p:cNvSpPr/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="2743200" y="1299410"/><a:ext cx="5943600" cy="4952999"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></p:spPr><p:style><a:lnRef idx="2"><a:schemeClr val="dk1"><a:shade val="50000"/></a:schemeClr></a:lnRef><a:fillRef idx="1"><a:schemeClr val="dk1"/></a:fillRef><a:effectRef idx="0"><a:schemeClr val="dk1"/></a:effectRef><a:fontRef idx="minor"><a:schemeClr val="lt1"/></a:fontRef></p:style><p:txBody><a:bodyPr rtlCol="0" anchor="ctr"/><a:lstStyle/><a:p><a:pPr algn="ctr"/><a:endParaRPr lang="en-US" dirty="0"/></a:p></p:txBody></p:sp><p:sp><p:nvSpPr><p:cNvPr id="28" name="Rectangle 27"/><p:cNvSpPr/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="1524000" y="1311439"/><a:ext cx="1219200" cy="4936961"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></p:spPr><p:style><a:lnRef idx="2"><a:schemeClr val="dk1"/></a:lnRef><a:fillRef idx="1"><a:schemeClr val="lt1"/></a:fillRef><a:effectRef idx="0"><a:schemeClr val="dk1"/></a:effectRef><a:fontRef idx="minor"><a:schemeClr val="dk1"/></a:fontRef></p:style><p:txBody><a:bodyPr rtlCol="0" anchor="ctr"/><a:lstStyle/><a:p><a:pPr algn="ctr"/><a:endParaRPr lang="en-US"/></a:p></p:txBody></p:sp><p:sp><p:nvSpPr><p:cNvPr id="2" name="Title 1"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr><p:ph type="title"/></p:nvPr></p:nvSpPr><p:spPr/><p:txBody><a:bodyPr/><a:lstStyle/><a:p><a:r><a:rPr lang="en-US" dirty="0"/><a:t>Upper Limb</a:t></a:r></a:p></p:txBody></p:sp><p:sp><p:nvSpPr><p:cNvPr id="3" name="TextBox 2"><a:hlinkClick r:id="" action="ppaction://hlinkshowjump?jump=firstslide"/></p:cNvPr><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="1752600" y="6400801"/><a:ext cx="723900" cy="307777"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:ln/></p:spPr><p:style><a:lnRef idx="1"><a:schemeClr val="dk1"/></a:lnRef><a:fillRef idx="2"><a:schemeClr val="dk1"/></a:fillRef><a:effectRef idx="1"><a:schemeClr val="dk1"/></a:effectRef><a:fontRef idx="minor"><a:schemeClr val="dk1"/></a:fontRef></p:style><p:txBody><a:bodyPr wrap="square" rtlCol="0"><a:spAutoFit/></a:bodyPr><a:lstStyle/><a:p><a:pPr algn="ctr"/><a:r><a:rPr lang="en-US" sz="1400" b="1" dirty="0"/><a:t>Home</a:t></a:r></a:p></p:txBody></p:sp><p:sp><p:nvSpPr><p:cNvPr id="6" name="Line 31"/><p:cNvSpPr><a:spLocks noChangeShapeType="1"/></p:cNvSpPr><p:nvPr/></p:nvSpPr><p:spPr bwMode="auto"><a:xfrm><a:off x="1524000" y="6248400"/><a:ext cx="9144000" cy="0"/></a:xfrm><a:prstGeom prst="line"><a:avLst/></a:prstGeom><a:noFill/><a:ln w="28575"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill><a:round/><a:headEnd/><a:tailEnd/></a:ln><a:extLst><a:ext uri="{909E8E84-426E-40dd-AFC4-6F175D3DCCD1}"><a14:hiddenFill xmlns="" xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main"><a:noFill/></a14:hiddenFill></a:ext></a:extLst></p:spPr><p:txBody><a:bodyPr/><a:lstStyle/><a:p><a:endParaRPr lang="en-US"/></a:p></p:txBody></p:sp><p:sp><p:nvSpPr><p:cNvPr id="10" name="Rectangle 9"/><p:cNvSpPr/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="8686800" y="1311440"/><a:ext cx="1981200" cy="4936961"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></p:spPr><p:style><a:lnRef idx="2"><a:schemeClr val="dk1"/></a:lnRef><a:fillRef idx="1"><a:schemeClr val="lt1"/></a:fillRef><a:effectRef idx="0"><a:schemeClr val="dk1"/></a:effectRef><a:fontRef idx="minor"><a:schemeClr val="dk1"/></a:fontRef></p:style><p:txBody><a:bodyPr rtlCol="0" anchor="ctr"/><a:lstStyle/><a:p><a:pPr algn="ctr"/><a:endParaRPr lang="en-US"/></a:p></p:txBody></p:sp><p:sp><p:nvSpPr><p:cNvPr id="9" name="TextBox 8"/><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="1529348" y="1330154"/><a:ext cx="1213853" cy="1200329"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr><p:txBody><a:bodyPr wrap="square" rtlCol="0"><a:spAutoFit/></a:bodyPr><a:lstStyle/><a:p><a:r><a:rPr lang="en-US" sz="1200" b="1" dirty="0"><a:hlinkClick r:id="rId3" action="ppaction://hlinksldjump"/></a:rPr><a:t>Upper limb</a:t></a:r><a:endParaRPr lang="en-US" sz="1200" b="1" dirty="0"/></a:p><a:p><a:r><a:rPr lang="en-US" sz="1200" b="1" dirty="0"/><a:t>   </a:t></a:r><a:r><a:rPr lang="en-US" sz="1200" dirty="0"><a:hlinkClick r:id="rId4" action="ppaction://hlinksldjump"/></a:rPr><a:t>Humerus</a:t></a:r><a:endParaRPr lang="en-US" sz="1200" dirty="0"/></a:p><a:p><a:r><a:rPr lang="en-US" sz="1200" b="1" dirty="0"/><a:t>   </a:t></a:r><a:r><a:rPr lang="en-US" sz="1200" dirty="0"><a:hlinkClick r:id="rId5" action="ppaction://hlinksldjump"/></a:rPr><a:t>Ulna</a:t></a:r><a:endParaRPr lang="en-US" sz="1200" dirty="0"/></a:p><a:p><a:r><a:rPr lang="en-US" sz="1200" b="1" dirty="0"/><a:t>   </a:t></a:r><a:r><a:rPr lang="en-US" sz="1200" dirty="0"><a:hlinkClick r:id="rId6" action="ppaction://hlinksldjump"/></a:rPr><a:t>Radius</a:t></a:r><a:endParaRPr lang="en-US" sz="1200" dirty="0"/></a:p><a:p><a:r><a:rPr lang="en-US" sz="1200" b="1" dirty="0"/><a:t>   </a:t></a:r><a:r><a:rPr lang="en-US" sz="1200" dirty="0"><a:hlinkClick r:id="rId7" action="ppaction://hlinksldjump"/></a:rPr><a:t>Hand</a:t></a:r><a:endParaRPr lang="en-US" sz="1200" b="1" dirty="0"/></a:p><a:p><a:r><a:rPr lang="en-US" sz="1200" dirty="0"/><a:t>   </a:t></a:r></a:p></p:txBody></p:sp><p:cxnSp><p:nvCxnSpPr><p:cNvPr id="24" name="Straight Connector 23"/><p:cNvCxnSpPr/><p:nvPr/></p:nvCxnSpPr><p:spPr><a:xfrm><a:off x="1524000" y="1295401"/><a:ext cx="9144000" cy="4009"/></a:xfrm><a:prstGeom prst="line"><a:avLst/></a:prstGeom><a:ln><a:solidFill><a:srgbClr val="000000"/></a:solidFill></a:ln><a:effectLst/></p:spPr><p:style><a:lnRef idx="2"><a:schemeClr val="accent1"/></a:lnRef><a:fillRef idx="0"><a:schemeClr val="accent1"/></a:fillRef><a:effectRef idx="1"><a:schemeClr val="accent1"/></a:effectRef><a:fontRef idx="minor"><a:schemeClr val="tx1"/></a:fontRef></p:style></p:cxnSp><p:pic><p:nvPicPr><p:cNvPr id="22" name="Picture 21" descr="hand_dors_blk.psd"><a:hlinkClick r:id="rId7" action="ppaction://hlinksldjump"/></p:cNvPr><p:cNvPicPr><a:picLocks noChangeAspect="1"/></p:cNvPicPr><p:nvPr/></p:nvPicPr><p:blipFill><a:blip r:embed="rId8" cstate="email"><a:extLst><a:ext uri="{BEBA8EAE-BF5A-486C-A8C5-ECC9F3942E4B}"><a14:imgProps xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main"><a14:imgLayer r:embed="rId9"><a14:imgEffect><a14:saturation sat="66000"/></a14:imgEffect></a14:imgLayer></a14:imgProps></a:ext><a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}"><a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main"/></a:ext></a:extLst></a:blip><a:stretch><a:fillRect/></a:stretch></p:blipFill><p:spPr><a:xfrm rot="4199006"><a:off x="6761293" y="5389425"/><a:ext cx="885687" cy="659888"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></p:spPr></p:pic><p:pic><p:nvPicPr><p:cNvPr id="36" name="Picture 35" descr="radius_post_blk.psd"><a:hlinkClick r:id="rId6" action="ppaction://hlinksldjump"/></p:cNvPr><p:cNvPicPr><a:picLocks noChangeAspect="1"/></p:cNvPicPr><p:nvPr/></p:nvPicPr><p:blipFill rotWithShape="1"><a:blip r:embed="rId10" cstate="email"><a:extLst><a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}"><a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main"/></a:ext></a:extLst></a:blip><a:srcRect/><a:stretch/></p:blipFill><p:spPr><a:xfrm rot="21391745" flipH="1"><a:off x="7072896" y="3803273"/><a:ext cx="246741" cy="1477710"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></p:spPr></p:pic><p:pic><p:nvPicPr><p:cNvPr id="38" name="Picture 37" descr="ulna_post_blk.psd"><a:hlinkClick r:id="rId5" action="ppaction://hlinksldjump"/></p:cNvPr><p:cNvPicPr><a:picLocks noChangeAspect="1"/></p:cNvPicPr><p:nvPr/></p:nvPicPr><p:blipFill rotWithShape="1"><a:blip r:embed="rId11" cstate="email"><a:extLst><a:ext uri="{BEBA8EAE-BF5A-486C-A8C5-ECC9F3942E4B}"><a14:imgProps xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main"><a14:imgLayer r:embed="rId12"><a14:imgEffect><a14:saturation sat="66000"/></a14:imgEffect></a14:imgLayer></a14:imgProps></a:ext><a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}"><a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main"/></a:ext></a:extLst></a:blip><a:srcRect/><a:stretch/></p:blipFill><p:spPr><a:xfrm rot="21364452"><a:off x="6879014" y="3585643"/><a:ext cx="214932" cy="1636478"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></p:spPr></p:pic><p:pic><p:nvPicPr><p:cNvPr id="45" name="Picture 44" descr="Humerus_post.psd"><a:hlinkClick r:id="rId4" action="ppaction://hlinksldjump"/></p:cNvPr><p:cNvPicPr><a:picLocks noChangeAspect="1"/></p:cNvPicPr><p:nvPr/></p:nvPicPr><p:blipFill rotWithShape="1"><a:blip r:embed="rId13" cstate="email"><a:extLst><a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}"><a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main"/></a:ext></a:extLst></a:blip><a:srcRect/><a:stretch/></p:blipFill><p:spPr><a:xfrm flipH="1"><a:off x="6756134" y="1331864"/><a:ext cx="522852" cy="2286719"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></p:spPr></p:pic><p:pic><p:nvPicPr><p:cNvPr id="34" name="Picture 33" descr="hand_palm_blk.psd"><a:hlinkClick r:id="rId7" action="ppaction://hlinksldjump"/></p:cNvPr><p:cNvPicPr><a:picLocks noChangeAspect="1"/></p:cNvPicPr><p:nvPr/></p:nvPicPr><p:blipFill><a:blip r:embed="rId14" cstate="email"><a:extLst><a:ext uri="{BEBA8EAE-BF5A-486C-A8C5-ECC9F3942E4B}"><a14:imgProps xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main"><a14:imgLayer r:embed="rId15"><a14:imgEffect><a14:brightnessContrast bright="20000"/></a14:imgEffect></a14:imgLayer></a14:imgProps></a:ext><a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}"><a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main"/></a:ext></a:extLst></a:blip><a:stretch><a:fillRect/></a:stretch></p:blipFill><p:spPr><a:xfrm rot="12293811"><a:off x="4075038" y="5324046"/><a:ext cx="668039" cy="829836"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></p:spPr></p:pic><p:pic><p:nvPicPr><p:cNvPr id="37" name="Picture 36" descr="ulna_ant_blk.psd"><a:hlinkClick r:id="rId5" action="ppaction://hlinksldjump"/></p:cNvPr><p:cNvPicPr><a:picLocks noChangeAspect="1"/></p:cNvPicPr><p:nvPr/></p:nvPicPr><p:blipFill rotWithShape="1"><a:blip r:embed="rId16" cstate="email"><a:extLst><a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}"><a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main"/></a:ext></a:extLst></a:blip><a:srcRect/><a:stretch/></p:blipFill><p:spPr><a:xfrm><a:off x="4385133" y="3601345"/><a:ext cx="252292" cy="1620643"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></p:spPr></p:pic><p:pic><p:nvPicPr><p:cNvPr id="35" name="Picture 34" descr="radius_ant_blk.psd"><a:hlinkClick r:id="rId6" action="ppaction://hlinksldjump"/></p:cNvPr><p:cNvPicPr><a:picLocks noChangeAspect="1"/></p:cNvPicPr><p:nvPr/></p:nvPicPr><p:blipFill rotWithShape="1"><a:blip r:embed="rId17" cstate="email"><a:extLst><a:ext uri="{BEBA8EAE-BF5A-486C-A8C5-ECC9F3942E4B}"><a14:imgProps xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main"><a14:imgLayer r:embed="rId18"><a14:imgEffect><a14:saturation sat="66000"/></a14:imgEffect></a14:imgLayer></a14:imgProps></a:ext><a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}"><a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main"/></a:ext></a:extLst></a:blip><a:srcRect/><a:stretch/></p:blipFill><p:spPr><a:xfrm rot="21377369" flipH="1"><a:off x="4120290" y="3797591"/><a:ext cx="238895" cy="1560494"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></p:spPr></p:pic><p:pic><p:nvPicPr><p:cNvPr id="46" name="Picture 45" descr="Humerus_ant.psd"><a:hlinkClick r:id="rId4" action="ppaction://hlinksldjump"/></p:cNvPr><p:cNvPicPr><a:picLocks noChangeAspect="1"/></p:cNvPicPr><p:nvPr/></p:nvPicPr><p:blipFill rotWithShape="1"><a:blip r:embed="rId19" cstate="email"><a:extLst><a:ext uri="{BEBA8EAE-BF5A-486C-A8C5-ECC9F3942E4B}"><a14:imgProps xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main"><a14:imgLayer r:embed="rId20"><a14:imgEffect><a14:brightnessContrast bright="20000"/></a14:imgEffect></a14:imgLayer></a14:imgProps></a:ext><a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}"><a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main"/></a:ext></a:extLst></a:blip><a:srcRect/><a:stretch/></p:blipFill><p:spPr><a:xfrm rot="169485" flipH="1"><a:off x="4208488" y="1330155"/><a:ext cx="451235" cy="2247067"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></p:spPr></p:pic><p:sp><p:nvSpPr><p:cNvPr id="48" name="TextBox 47"/><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="6306049" y="6248399"/><a:ext cx="1659429" cy="215444"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr><p:txBody><a:bodyPr wrap="none" rtlCol="0" anchor="t" anchorCtr="0"><a:spAutoFit/></a:bodyPr><a:lstStyle/><a:p><a:pPr algn="ctr"/><a:r><a:rPr lang="en-US" sz="800" b="1" dirty="0"/><a:t>Right upper limb </a:t></a:r><a:r><a:rPr lang="en-US" sz="800" dirty="0"/><a:t>(posterior aspect)</a:t></a:r><a:endParaRPr lang="en-US" sz="800" b="1" dirty="0"/></a:p></p:txBody></p:sp><p:sp><p:nvSpPr><p:cNvPr id="49" name="TextBox 48"/><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="3434678" y="6251729"/><a:ext cx="1613643" cy="215444"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr><p:txBody><a:bodyPr wrap="none" rtlCol="0" anchor="t" anchorCtr="0"><a:spAutoFit/></a:bodyPr><a:lstStyle/><a:p><a:pPr algn="ctr"/><a:r><a:rPr lang="en-US" sz="800" b="1" dirty="0"/><a:t>Right upper limb </a:t></a:r><a:r><a:rPr lang="en-US" sz="800" dirty="0"/><a:t>(anterior aspect)</a:t></a:r><a:endParaRPr lang="en-US" sz="800" b="1" dirty="0"/></a:p></p:txBody></p:sp><p:sp><p:nvSpPr><p:cNvPr id="21" name="TextBox 20"><a:hlinkClick r:id="rId4" action="ppaction://hlinksldjump"/></p:cNvPr><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="5428944" y="2254478"/><a:ext cx="590857" cy="215444"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr><p:txBody><a:bodyPr wrap="square" rtlCol="0" anchor="t" anchorCtr="0"><a:spAutoFit/></a:bodyPr><a:lstStyle/><a:p><a:pPr algn="ctr"/><a:r><a:rPr lang="en-US" sz="800" dirty="0"><a:solidFill><a:schemeClr val="bg1"/></a:solidFill></a:rPr><a:t>Humerus</a:t></a:r></a:p></p:txBody></p:sp><p:cxnSp><p:nvCxnSpPr><p:cNvPr id="23" name="Straight Connector 22"/><p:cNvCxnSpPr><a:stCxn id="21" idx="3"/></p:cNvCxnSpPr><p:nvPr/></p:nvCxnSpPr><p:spPr><a:xfrm><a:off x="6019800" y="2362201"/><a:ext cx="990600" cy="1"/></a:xfrm><a:prstGeom prst="line"><a:avLst/></a:prstGeom><a:ln><a:solidFill><a:schemeClr val="bg1"/></a:solidFill></a:ln></p:spPr><p:style><a:lnRef idx="1"><a:schemeClr val="dk1"/></a:lnRef><a:fillRef idx="0"><a:schemeClr val="dk1"/></a:fillRef><a:effectRef idx="0"><a:schemeClr val="dk1"/></a:effectRef><a:fontRef idx="minor"><a:schemeClr val="tx1"/></a:fontRef></p:style></p:cxnSp><p:cxnSp><p:nvCxnSpPr><p:cNvPr id="25" name="Straight Connector 24"/><p:cNvCxnSpPr><a:endCxn id="21" idx="1"/></p:cNvCxnSpPr><p:nvPr/></p:nvCxnSpPr><p:spPr><a:xfrm><a:off x="4416871" y="2362200"/><a:ext cx="1012072" cy="0"/></a:xfrm><a:prstGeom prst="line"><a:avLst/></a:prstGeom><a:ln><a:solidFill><a:schemeClr val="bg1"/></a:solidFill></a:ln></p:spPr><p:style><a:lnRef idx="1"><a:schemeClr val="dk1"/></a:lnRef><a:fillRef idx="0"><a:schemeClr val="dk1"/></a:fillRef><a:effectRef idx="0"><a:schemeClr val="dk1"/></a:effectRef><a:fontRef idx="minor"><a:schemeClr val="tx1"/></a:fontRef></p:style></p:cxnSp><p:sp><p:nvSpPr><p:cNvPr id="31" name="TextBox 30"><a:hlinkClick r:id="rId5" action="ppaction://hlinksldjump"/></p:cNvPr><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="5511424" y="4102857"/><a:ext cx="407152" cy="215444"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr><p:txBody><a:bodyPr wrap="square" rtlCol="0" anchor="t" anchorCtr="0"><a:spAutoFit/></a:bodyPr><a:lstStyle/><a:p><a:pPr algn="ctr"/><a:r><a:rPr lang="en-US" sz="800" dirty="0"><a:solidFill><a:schemeClr val="bg1"/></a:solidFill></a:rPr><a:t>Ulna</a:t></a:r></a:p></p:txBody></p:sp><p:sp><p:nvSpPr><p:cNvPr id="32" name="TextBox 31"><a:hlinkClick r:id="rId6" action="ppaction://hlinksldjump"/></p:cNvPr><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="7746248" y="4189504"/><a:ext cx="483352" cy="215444"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr><p:txBody><a:bodyPr wrap="square" rtlCol="0" anchor="t" anchorCtr="0"><a:spAutoFit/></a:bodyPr><a:lstStyle/><a:p><a:pPr algn="ctr"/><a:r><a:rPr lang="en-US" sz="800" dirty="0"><a:solidFill><a:schemeClr val="bg1"/></a:solidFill></a:rPr><a:t>Radius</a:t></a:r></a:p></p:txBody></p:sp><p:sp><p:nvSpPr><p:cNvPr id="33" name="TextBox 32"><a:hlinkClick r:id="rId6" action="ppaction://hlinksldjump"/></p:cNvPr><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="3124200" y="4189504"/><a:ext cx="483352" cy="215444"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr><p:txBody><a:bodyPr wrap="square" rtlCol="0" anchor="t" anchorCtr="0"><a:spAutoFit/></a:bodyPr><a:lstStyle/><a:p><a:pPr algn="ctr"/><a:r><a:rPr lang="en-US" sz="800" dirty="0"><a:solidFill><a:schemeClr val="bg1"/></a:solidFill></a:rPr><a:t>Radius</a:t></a:r></a:p></p:txBody></p:sp><p:sp><p:nvSpPr><p:cNvPr id="39" name="TextBox 38"><a:hlinkClick r:id="rId7" action="ppaction://hlinksldjump"/></p:cNvPr><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="5536448" y="5579064"/><a:ext cx="407152" cy="215444"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr><p:txBody><a:bodyPr wrap="square" rtlCol="0" anchor="t" anchorCtr="0"><a:spAutoFit/></a:bodyPr><a:lstStyle/><a:p><a:pPr algn="ctr"/><a:r><a:rPr lang="en-US" sz="800" dirty="0"><a:solidFill><a:schemeClr val="bg1"/></a:solidFill></a:rPr><a:t>Hand</a:t></a:r></a:p></p:txBody></p:sp><p:cxnSp><p:nvCxnSpPr><p:cNvPr id="40" name="Straight Connector 39"/><p:cNvCxnSpPr><a:stCxn id="39" idx="3"/></p:cNvCxnSpPr><p:nvPr/></p:nvCxnSpPr><p:spPr><a:xfrm><a:off x="5943600" y="5686787"/><a:ext cx="1012072" cy="937"/></a:xfrm><a:prstGeom prst="line"><a:avLst/></a:prstGeom><a:ln><a:solidFill><a:schemeClr val="bg1"/></a:solidFill></a:ln></p:spPr><p:style><a:lnRef idx="1"><a:schemeClr val="dk1"/></a:lnRef><a:fillRef idx="0"><a:schemeClr val="dk1"/></a:fillRef><a:effectRef idx="0"><a:schemeClr val="dk1"/></a:effectRef><a:fontRef idx="minor"><a:schemeClr val="tx1"/></a:fontRef></p:style></p:cxnSp><p:cxnSp><p:nvCxnSpPr><p:cNvPr id="41" name="Straight Connector 40"/><p:cNvCxnSpPr><a:endCxn id="39" idx="1"/></p:cNvCxnSpPr><p:nvPr/></p:nvCxnSpPr><p:spPr><a:xfrm><a:off x="4637426" y="5686786"/><a:ext cx="899023" cy="0"/></a:xfrm><a:prstGeom prst="line"><a:avLst/></a:prstGeom><a:ln><a:solidFill><a:schemeClr val="bg1"/></a:solidFill></a:ln></p:spPr><p:style><a:lnRef idx="1"><a:schemeClr val="dk1"/></a:lnRef><a:fillRef idx="0"><a:schemeClr val="dk1"/></a:fillRef><a:effectRef idx="0"><a:schemeClr val="dk1"/></a:effectRef><a:fontRef idx="minor"><a:schemeClr val="tx1"/></a:fontRef></p:style></p:cxnSp><p:cxnSp><p:nvCxnSpPr><p:cNvPr id="42" name="Straight Connector 41"/><p:cNvCxnSpPr><a:stCxn id="33" idx="3"/></p:cNvCxnSpPr><p:nvPr/></p:nvCxnSpPr><p:spPr><a:xfrm><a:off x="3607552" y="4297226"/><a:ext cx="583448" cy="0"/></a:xfrm><a:prstGeom prst="line"><a:avLst/></a:prstGeom><a:ln><a:solidFill><a:schemeClr val="bg1"/></a:solidFill></a:ln></p:spPr><p:style><a:lnRef idx="1"><a:schemeClr val="dk1"/></a:lnRef><a:fillRef idx="0"><a:schemeClr val="dk1"/></a:fillRef><a:effectRef idx="0"><a:schemeClr val="dk1"/></a:effectRef><a:fontRef idx="minor"><a:schemeClr val="tx1"/></a:fontRef></p:style></p:cxnSp><p:cxnSp><p:nvCxnSpPr><p:cNvPr id="43" name="Straight Connector 42"/><p:cNvCxnSpPr><a:endCxn id="32" idx="1"/></p:cNvCxnSpPr><p:nvPr/></p:nvCxnSpPr><p:spPr><a:xfrm><a:off x="7278986" y="4297226"/><a:ext cx="467262" cy="0"/></a:xfrm><a:prstGeom prst="line"><a:avLst/></a:prstGeom><a:ln><a:solidFill><a:schemeClr val="bg1"/></a:solidFill></a:ln></p:spPr><p:style><a:lnRef idx="1"><a:schemeClr val="dk1"/></a:lnRef><a:fillRef idx="0"><a:schemeClr val="dk1"/></a:fillRef><a:effectRef idx="0"><a:schemeClr val="dk1"/></a:effectRef><a:fontRef idx="minor"><a:schemeClr val="tx1"/></a:fontRef></p:style></p:cxnSp><p:cxnSp><p:nvCxnSpPr><p:cNvPr id="44" name="Straight Connector 43"/><p:cNvCxnSpPr><a:endCxn id="31" idx="1"/></p:cNvCxnSpPr><p:nvPr/></p:nvCxnSpPr><p:spPr><a:xfrm><a:off x="4544248" y="4210579"/><a:ext cx="967177" cy="0"/></a:xfrm><a:prstGeom prst="line"><a:avLst/></a:prstGeom><a:ln><a:solidFill><a:schemeClr val="bg1"/></a:solidFill></a:ln></p:spPr><p:style><a:lnRef idx="1"><a:schemeClr val="dk1"/></a:lnRef><a:fillRef idx="0"><a:schemeClr val="dk1"/></a:fillRef><a:effectRef idx="0"><a:schemeClr val="dk1"/></a:effectRef><a:fontRef idx="minor"><a:schemeClr val="tx1"/></a:fontRef></p:style></p:cxnSp><p:cxnSp><p:nvCxnSpPr><p:cNvPr id="47" name="Straight Connector 46"/><p:cNvCxnSpPr><a:stCxn id="31" idx="3"/></p:cNvCxnSpPr><p:nvPr/></p:nvCxnSpPr><p:spPr><a:xfrm><a:off x="5918576" y="4210580"/><a:ext cx="1012072" cy="1"/></a:xfrm><a:prstGeom prst="line"><a:avLst/></a:prstGeom><a:ln><a:solidFill><a:schemeClr val="bg1"/></a:solidFill></a:ln></p:spPr><p:style><a:lnRef idx="1"><a:schemeClr val="dk1"/></a:lnRef><a:fillRef idx="0"><a:schemeClr val="dk1"/></a:fillRef><a:effectRef idx="0"><a:schemeClr val="dk1"/></a:effectRef><a:fontRef idx="minor"><a:schemeClr val="tx1"/></a:fontRef></p:style></p:cxnSp></p:spTree><p:extLst><p:ext uri="{BB962C8B-B14F-4D97-AF65-F5344CB8AC3E}"><p14:creationId xmlns:p14="http://schemas.microsoft.com/office/powerpoint/2010/main" val="3645722813"/></p:ext></p:extLst></p:cSld><p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr></p:sld>
+<p:sld xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+    xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+    xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main">
+    <p:cSld>
+        <p:spTree>
+            <p:nvGrpSpPr>
+                <p:cNvPr id="1" name="" />
+                <p:cNvGrpSpPr />
+                <p:nvPr />
+            </p:nvGrpSpPr>
+            <p:grpSpPr>
+                <a:xfrm>
+                    <a:off x="0" y="0" />
+                    <a:ext cx="0" cy="0" />
+                    <a:chOff x="0" y="0" />
+                    <a:chExt cx="0" cy="0" />
+                </a:xfrm>
+            </p:grpSpPr>
+            <p:sp>
+                <p:nvSpPr>
+                    <p:cNvPr id="4" name="Rectangle 3" />
+                    <p:cNvSpPr />
+                    <p:nvPr />
+                </p:nvSpPr>
+                <p:spPr>
+                    <a:xfrm>
+                        <a:off x="2743200" y="1299410" />
+                        <a:ext cx="5943600" cy="4952999" />
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                        <a:avLst />
+                    </a:prstGeom>
+                </p:spPr>
+                <p:style>
+                    <a:lnRef idx="2">
+                        <a:schemeClr val="dk1">
+                            <a:shade val="50000" />
+                        </a:schemeClr>
+                    </a:lnRef>
+                    <a:fillRef idx="1">
+                        <a:schemeClr val="dk1" />
+                    </a:fillRef>
+                    <a:effectRef idx="0">
+                        <a:schemeClr val="dk1" />
+                    </a:effectRef>
+                    <a:fontRef idx="minor">
+                        <a:schemeClr val="lt1" />
+                    </a:fontRef>
+                </p:style>
+                <p:txBody>
+                    <a:bodyPr rtlCol="0" anchor="ctr" />
+                    <a:lstStyle />
+                    <a:p>
+                        <a:pPr algn="ctr" />
+                        <a:endParaRPr lang="en-US" dirty="0" />
+                    </a:p>
+                </p:txBody>
+            </p:sp>
+            <p:sp>
+                <p:nvSpPr>
+                    <p:cNvPr id="28" name="Rectangle 27" />
+                    <p:cNvSpPr />
+                    <p:nvPr />
+                </p:nvSpPr>
+                <p:spPr>
+                    <a:xfrm>
+                        <a:off x="1524000" y="1311439" />
+                        <a:ext cx="1219200" cy="4936961" />
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                        <a:avLst />
+                    </a:prstGeom>
+                </p:spPr>
+                <p:style>
+                    <a:lnRef idx="2">
+                        <a:schemeClr val="dk1" />
+                    </a:lnRef>
+                    <a:fillRef idx="1">
+                        <a:schemeClr val="lt1" />
+                    </a:fillRef>
+                    <a:effectRef idx="0">
+                        <a:schemeClr val="dk1" />
+                    </a:effectRef>
+                    <a:fontRef idx="minor">
+                        <a:schemeClr val="dk1" />
+                    </a:fontRef>
+                </p:style>
+                <p:txBody>
+                    <a:bodyPr rtlCol="0" anchor="ctr" />
+                    <a:lstStyle />
+                    <a:p>
+                        <a:pPr algn="ctr" />
+                        <a:endParaRPr lang="en-US" />
+                    </a:p>
+                </p:txBody>
+            </p:sp>
+            <p:sp>
+                <p:nvSpPr>
+                    <p:cNvPr id="2" name="Title 1" />
+                    <p:cNvSpPr>
+                        <a:spLocks noGrp="1" />
+                    </p:cNvSpPr>
+                    <p:nvPr>
+                        <p:ph type="title" />
+                    </p:nvPr>
+                </p:nvSpPr>
+                <p:spPr />
+                <p:txBody>
+                    <a:bodyPr />
+                    <a:lstStyle />
+                    <a:p>
+                        <a:r>
+                            <a:rPr lang="en-US" dirty="0" />
+                            <a:t>Upper Limb</a:t>
+                        </a:r>
+                    </a:p>
+                </p:txBody>
+            </p:sp>
+            <p:sp>
+                <p:nvSpPr>
+                    <p:cNvPr id="3" name="TextBox 2">
+                        <a:hlinkClick r:id="" action="ppaction://hlinkshowjump?jump=firstslide" />
+                    </p:cNvPr>
+                    <p:cNvSpPr txBox="1" />
+                    <p:nvPr />
+                </p:nvSpPr>
+                <p:spPr>
+                    <a:xfrm>
+                        <a:off x="1752600" y="6400801" />
+                        <a:ext cx="723900" cy="307777" />
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                        <a:avLst />
+                    </a:prstGeom>
+                    <a:ln />
+                </p:spPr>
+                <p:style>
+                    <a:lnRef idx="1">
+                        <a:schemeClr val="dk1" />
+                    </a:lnRef>
+                    <a:fillRef idx="2">
+                        <a:schemeClr val="dk1" />
+                    </a:fillRef>
+                    <a:effectRef idx="1">
+                        <a:schemeClr val="dk1" />
+                    </a:effectRef>
+                    <a:fontRef idx="minor">
+                        <a:schemeClr val="dk1" />
+                    </a:fontRef>
+                </p:style>
+                <p:txBody>
+                    <a:bodyPr wrap="square" rtlCol="0">
+                        <a:spAutoFit />
+                    </a:bodyPr>
+                    <a:lstStyle />
+                    <a:p>
+                        <a:pPr algn="ctr" />
+                        <a:r>
+                            <a:rPr lang="en-US" sz="1400" b="1" dirty="0" />
+                            <a:t>Home</a:t>
+                        </a:r>
+                    </a:p>
+                </p:txBody>
+            </p:sp>
+            <p:sp>
+                <p:nvSpPr>
+                    <p:cNvPr id="6" name="Line 31" />
+                    <p:cNvSpPr>
+                        <a:spLocks noChangeShapeType="1" />
+                    </p:cNvSpPr>
+                    <p:nvPr />
+                </p:nvSpPr>
+                <p:spPr bwMode="auto">
+                    <a:xfrm>
+                        <a:off x="1524000" y="6248400" />
+                        <a:ext cx="9144000" cy="0" />
+                    </a:xfrm>
+                    <a:prstGeom prst="line">
+                        <a:avLst />
+                    </a:prstGeom>
+                    <a:noFill />
+                    <a:ln w="28575">
+                        <a:solidFill>
+                            <a:schemeClr val="tx1" />
+                        </a:solidFill>
+                        <a:round />
+                        <a:headEnd />
+                        <a:tailEnd />
+                    </a:ln>
+                    <a:extLst>
+                        <a:ext uri="{909E8E84-426E-40dd-AFC4-6F175D3DCCD1}">
+                            <a14:hiddenFill xmlns=""
+                                xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main">
+                                <a:noFill />
+                            </a14:hiddenFill>
+                        </a:ext>
+                    </a:extLst>
+                </p:spPr>
+                <p:txBody>
+                    <a:bodyPr />
+                    <a:lstStyle />
+                    <a:p>
+                        <a:endParaRPr lang="en-US" />
+                    </a:p>
+                </p:txBody>
+            </p:sp>
+            <p:sp>
+                <p:nvSpPr>
+                    <p:cNvPr id="10" name="Rectangle 9" />
+                    <p:cNvSpPr />
+                    <p:nvPr />
+                </p:nvSpPr>
+                <p:spPr>
+                    <a:xfrm>
+                        <a:off x="8686800" y="1311440" />
+                        <a:ext cx="1981200" cy="4936961" />
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                        <a:avLst />
+                    </a:prstGeom>
+                </p:spPr>
+                <p:style>
+                    <a:lnRef idx="2">
+                        <a:schemeClr val="dk1" />
+                    </a:lnRef>
+                    <a:fillRef idx="1">
+                        <a:schemeClr val="lt1" />
+                    </a:fillRef>
+                    <a:effectRef idx="0">
+                        <a:schemeClr val="dk1" />
+                    </a:effectRef>
+                    <a:fontRef idx="minor">
+                        <a:schemeClr val="dk1" />
+                    </a:fontRef>
+                </p:style>
+                <p:txBody>
+                    <a:bodyPr rtlCol="0" anchor="ctr" />
+                    <a:lstStyle />
+                    <a:p>
+                        <a:pPr algn="ctr" />
+                        <a:endParaRPr lang="en-US" />
+                    </a:p>
+                </p:txBody>
+            </p:sp>
+            <p:sp>
+                <p:nvSpPr>
+                    <p:cNvPr id="9" name="TextBox 8" />
+                    <p:cNvSpPr txBox="1" />
+                    <p:nvPr />
+                </p:nvSpPr>
+                <p:spPr>
+                    <a:xfrm>
+                        <a:off x="1529348" y="1330154" />
+                        <a:ext cx="1213853" cy="1200329" />
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                        <a:avLst />
+                    </a:prstGeom>
+                    <a:noFill />
+                </p:spPr>
+                <p:txBody>
+                    <a:bodyPr wrap="square" rtlCol="0">
+                        <a:spAutoFit />
+                    </a:bodyPr>
+                    <a:lstStyle />
+                    <a:p>
+                        <a:r>
+                            <a:rPr lang="en-US" sz="1200" b="1" dirty="0">
+                                <a:hlinkClick r:id="rId3" action="ppaction://hlinksldjump" />
+                            </a:rPr>
+                            <a:t>Upper limb</a:t>
+                        </a:r>
+                        <a:endParaRPr lang="en-US" sz="1200" b="1" dirty="0" />
+                    </a:p>
+                    <a:p>
+                        <a:r>
+                            <a:rPr lang="en-US" sz="1200" b="1" dirty="0" />
+                            <a:t> </a:t>
+                        </a:r>
+                        <a:r>
+                            <a:rPr lang="en-US" sz="1200" dirty="0">
+                                <a:hlinkClick r:id="rId4" action="ppaction://hlinksldjump" />
+                            </a:rPr>
+                            <a:t>Humerus</a:t>
+                        </a:r>
+                        <a:endParaRPr lang="en-US" sz="1200" dirty="0" />
+                    </a:p>
+                    <a:p>
+                        <a:r>
+                            <a:rPr lang="en-US" sz="1200" b="1" dirty="0" />
+                            <a:t> </a:t>
+                        </a:r>
+                        <a:r>
+                            <a:rPr lang="en-US" sz="1200" dirty="0">
+                                <a:hlinkClick r:id="rId5" action="ppaction://hlinksldjump" />
+                            </a:rPr>
+                            <a:t>Ulna</a:t>
+                        </a:r>
+                        <a:endParaRPr lang="en-US" sz="1200" dirty="0" />
+                    </a:p>
+                    <a:p>
+                        <a:r>
+                            <a:rPr lang="en-US" sz="1200" b="1" dirty="0" />
+                            <a:t> </a:t>
+                        </a:r>
+                        <a:r>
+                            <a:rPr lang="en-US" sz="1200" dirty="0">
+                                <a:hlinkClick r:id="rId6" action="ppaction://hlinksldjump" />
+                            </a:rPr>
+                            <a:t>Radius</a:t>
+                        </a:r>
+                        <a:endParaRPr lang="en-US" sz="1200" dirty="0" />
+                    </a:p>
+                    <a:p>
+                        <a:r>
+                            <a:rPr lang="en-US" sz="1200" b="1" dirty="0" />
+                            <a:t> </a:t>
+                        </a:r>
+                        <a:r>
+                            <a:rPr lang="en-US" sz="1200" dirty="0">
+                                <a:hlinkClick r:id="rId7" action="ppaction://hlinksldjump" />
+                            </a:rPr>
+                            <a:t>Hand</a:t>
+                        </a:r>
+                        <a:endParaRPr lang="en-US" sz="1200" b="1" dirty="0" />
+                    </a:p>
+                    <a:p>
+                        <a:r>
+                            <a:rPr lang="en-US" sz="1200" dirty="0" />
+                            <a:t> </a:t>
+                        </a:r>
+                    </a:p>
+                </p:txBody>
+            </p:sp>
+            <p:cxnSp>
+                <p:nvCxnSpPr>
+                    <p:cNvPr id="24" name="Straight Connector 23" />
+                    <p:cNvCxnSpPr />
+                    <p:nvPr />
+                </p:nvCxnSpPr>
+                <p:spPr>
+                    <a:xfrm>
+                        <a:off x="1524000" y="1295401" />
+                        <a:ext cx="9144000" cy="4009" />
+                    </a:xfrm>
+                    <a:prstGeom prst="line">
+                        <a:avLst />
+                    </a:prstGeom>
+                    <a:ln>
+                        <a:solidFill>
+                            <a:srgbClr val="000000" />
+                        </a:solidFill>
+                    </a:ln>
+                    <a:effectLst />
+                </p:spPr>
+                <p:style>
+                    <a:lnRef idx="2">
+                        <a:schemeClr val="accent1" />
+                    </a:lnRef>
+                    <a:fillRef idx="0">
+                        <a:schemeClr val="accent1" />
+                    </a:fillRef>
+                    <a:effectRef idx="1">
+                        <a:schemeClr val="accent1" />
+                    </a:effectRef>
+                    <a:fontRef idx="minor">
+                        <a:schemeClr val="tx1" />
+                    </a:fontRef>
+                </p:style>
+            </p:cxnSp>
+            <p:pic>
+                <p:nvPicPr>
+                    <p:cNvPr id="22" name="Picture 21" descr="hand_dors_blk.psd">
+                        <a:hlinkClick r:id="rId7" action="ppaction://hlinksldjump" />
+                    </p:cNvPr>
+                    <p:cNvPicPr>
+                        <a:picLocks noChangeAspect="1" />
+                    </p:cNvPicPr>
+                    <p:nvPr />
+                </p:nvPicPr>
+                <p:blipFill>
+                    <a:blip r:embed="rId8" cstate="email">
+                        <a:extLst>
+                            <a:ext uri="{BEBA8EAE-BF5A-486C-A8C5-ECC9F3942E4B}">
+                                <a14:imgProps
+                                    xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main">
+                                    <a14:imgLayer r:embed="rId9">
+                                        <a14:imgEffect>
+                                            <a14:saturation sat="66000" />
+                                        </a14:imgEffect>
+                                    </a14:imgLayer>
+                                </a14:imgProps>
+                            </a:ext>
+                            <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                                <a14:useLocalDpi
+                                    xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" />
+                            </a:ext>
+                        </a:extLst>
+                    </a:blip>
+                    <a:stretch>
+                        <a:fillRect />
+                    </a:stretch>
+                </p:blipFill>
+                <p:spPr>
+                    <a:xfrm rot="4199006">
+                        <a:off x="6761293" y="5389425" />
+                        <a:ext cx="885687" cy="659888" />
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                        <a:avLst />
+                    </a:prstGeom>
+                </p:spPr>
+            </p:pic>
+            <p:pic>
+                <p:nvPicPr>
+                    <p:cNvPr id="36" name="Picture 35" descr="radius_post_blk.psd">
+                        <a:hlinkClick r:id="rId6" action="ppaction://hlinksldjump" />
+                    </p:cNvPr>
+                    <p:cNvPicPr>
+                        <a:picLocks noChangeAspect="1" />
+                    </p:cNvPicPr>
+                    <p:nvPr />
+                </p:nvPicPr>
+                <p:blipFill rotWithShape="1">
+                    <a:blip r:embed="rId10" cstate="email">
+                        <a:extLst>
+                            <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                                <a14:useLocalDpi
+                                    xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" />
+                            </a:ext>
+                        </a:extLst>
+                    </a:blip>
+                    <a:srcRect />
+                    <a:stretch />
+                </p:blipFill>
+                <p:spPr>
+                    <a:xfrm rot="21391745" flipH="1">
+                        <a:off x="7072896" y="3803273" />
+                        <a:ext cx="246741" cy="1477710" />
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                        <a:avLst />
+                    </a:prstGeom>
+                </p:spPr>
+            </p:pic>
+            <p:pic>
+                <p:nvPicPr>
+                    <p:cNvPr id="38" name="Picture 37" descr="ulna_post_blk.psd">
+                        <a:hlinkClick r:id="rId5" action="ppaction://hlinksldjump" />
+                    </p:cNvPr>
+                    <p:cNvPicPr>
+                        <a:picLocks noChangeAspect="1" />
+                    </p:cNvPicPr>
+                    <p:nvPr />
+                </p:nvPicPr>
+                <p:blipFill rotWithShape="1">
+                    <a:blip r:embed="rId11" cstate="email">
+                        <a:extLst>
+                            <a:ext uri="{BEBA8EAE-BF5A-486C-A8C5-ECC9F3942E4B}">
+                                <a14:imgProps
+                                    xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main">
+                                    <a14:imgLayer r:embed="rId12">
+                                        <a14:imgEffect>
+                                            <a14:saturation sat="66000" />
+                                        </a14:imgEffect>
+                                    </a14:imgLayer>
+                                </a14:imgProps>
+                            </a:ext>
+                            <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                                <a14:useLocalDpi
+                                    xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" />
+                            </a:ext>
+                        </a:extLst>
+                    </a:blip>
+                    <a:srcRect />
+                    <a:stretch />
+                </p:blipFill>
+                <p:spPr>
+                    <a:xfrm rot="21364452">
+                        <a:off x="6879014" y="3585643" />
+                        <a:ext cx="214932" cy="1636478" />
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                        <a:avLst />
+                    </a:prstGeom>
+                </p:spPr>
+            </p:pic>
+            <p:pic>
+                <p:nvPicPr>
+                    <p:cNvPr id="45" name="Picture 44" descr="Humerus_post.psd">
+                        <a:hlinkClick r:id="rId4" action="ppaction://hlinksldjump" />
+                    </p:cNvPr>
+                    <p:cNvPicPr>
+                        <a:picLocks noChangeAspect="1" />
+                    </p:cNvPicPr>
+                    <p:nvPr />
+                </p:nvPicPr>
+                <p:blipFill rotWithShape="1">
+                    <a:blip r:embed="rId13" cstate="email">
+                        <a:extLst>
+                            <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                                <a14:useLocalDpi
+                                    xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" />
+                            </a:ext>
+                        </a:extLst>
+                    </a:blip>
+                    <a:srcRect />
+                    <a:stretch />
+                </p:blipFill>
+                <p:spPr>
+                    <a:xfrm flipH="1">
+                        <a:off x="6756134" y="1331864" />
+                        <a:ext cx="522852" cy="2286719" />
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                        <a:avLst />
+                    </a:prstGeom>
+                </p:spPr>
+            </p:pic>
+            <p:pic>
+                <p:nvPicPr>
+                    <p:cNvPr id="34" name="Picture 33" descr="hand_palm_blk.psd">
+                        <a:hlinkClick r:id="rId7" action="ppaction://hlinksldjump" />
+                    </p:cNvPr>
+                    <p:cNvPicPr>
+                        <a:picLocks noChangeAspect="1" />
+                    </p:cNvPicPr>
+                    <p:nvPr />
+                </p:nvPicPr>
+                <p:blipFill>
+                    <a:blip r:embed="rId14" cstate="email">
+                        <a:extLst>
+                            <a:ext uri="{BEBA8EAE-BF5A-486C-A8C5-ECC9F3942E4B}">
+                                <a14:imgProps
+                                    xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main">
+                                    <a14:imgLayer r:embed="rId15">
+                                        <a14:imgEffect>
+                                            <a14:brightnessContrast bright="20000" />
+                                        </a14:imgEffect>
+                                    </a14:imgLayer>
+                                </a14:imgProps>
+                            </a:ext>
+                            <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                                <a14:useLocalDpi
+                                    xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" />
+                            </a:ext>
+                        </a:extLst>
+                    </a:blip>
+                    <a:stretch>
+                        <a:fillRect />
+                    </a:stretch>
+                </p:blipFill>
+                <p:spPr>
+                    <a:xfrm rot="12293811">
+                        <a:off x="4075038" y="5324046" />
+                        <a:ext cx="668039" cy="829836" />
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                        <a:avLst />
+                    </a:prstGeom>
+                </p:spPr>
+            </p:pic>
+            <p:pic>
+                <p:nvPicPr>
+                    <p:cNvPr id="37" name="Picture 36" descr="ulna_ant_blk.psd">
+                        <a:hlinkClick r:id="rId5" action="ppaction://hlinksldjump" />
+                    </p:cNvPr>
+                    <p:cNvPicPr>
+                        <a:picLocks noChangeAspect="1" />
+                    </p:cNvPicPr>
+                    <p:nvPr />
+                </p:nvPicPr>
+                <p:blipFill rotWithShape="1">
+                    <a:blip r:embed="rId16" cstate="email">
+                        <a:extLst>
+                            <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                                <a14:useLocalDpi
+                                    xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" />
+                            </a:ext>
+                        </a:extLst>
+                    </a:blip>
+                    <a:srcRect />
+                    <a:stretch />
+                </p:blipFill>
+                <p:spPr>
+                    <a:xfrm>
+                        <a:off x="4385133" y="3601345" />
+                        <a:ext cx="252292" cy="1620643" />
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                        <a:avLst />
+                    </a:prstGeom>
+                </p:spPr>
+            </p:pic>
+            <p:pic>
+                <p:nvPicPr>
+                    <p:cNvPr id="35" name="Picture 34" descr="radius_ant_blk.psd">
+                        <a:hlinkClick r:id="rId6" action="ppaction://hlinksldjump" />
+                    </p:cNvPr>
+                    <p:cNvPicPr>
+                        <a:picLocks noChangeAspect="1" />
+                    </p:cNvPicPr>
+                    <p:nvPr />
+                </p:nvPicPr>
+                <p:blipFill rotWithShape="1">
+                    <a:blip r:embed="rId17" cstate="email">
+                        <a:extLst>
+                            <a:ext uri="{BEBA8EAE-BF5A-486C-A8C5-ECC9F3942E4B}">
+                                <a14:imgProps
+                                    xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main">
+                                    <a14:imgLayer r:embed="rId18">
+                                        <a14:imgEffect>
+                                            <a14:saturation sat="66000" />
+                                        </a14:imgEffect>
+                                    </a14:imgLayer>
+                                </a14:imgProps>
+                            </a:ext>
+                            <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                                <a14:useLocalDpi
+                                    xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" />
+                            </a:ext>
+                        </a:extLst>
+                    </a:blip>
+                    <a:srcRect />
+                    <a:stretch />
+                </p:blipFill>
+                <p:spPr>
+                    <a:xfrm rot="21377369" flipH="1">
+                        <a:off x="4120290" y="3797591" />
+                        <a:ext cx="238895" cy="1560494" />
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                        <a:avLst />
+                    </a:prstGeom>
+                </p:spPr>
+            </p:pic>
+            <p:pic>
+                <p:nvPicPr>
+                    <p:cNvPr id="46" name="Picture 45" descr="Humerus_ant.psd">
+                        <a:hlinkClick r:id="rId4" action="ppaction://hlinksldjump" />
+                    </p:cNvPr>
+                    <p:cNvPicPr>
+                        <a:picLocks noChangeAspect="1" />
+                    </p:cNvPicPr>
+                    <p:nvPr />
+                </p:nvPicPr>
+                <p:blipFill rotWithShape="1">
+                    <a:blip r:embed="rId19" cstate="email">
+                        <a:extLst>
+                            <a:ext uri="{BEBA8EAE-BF5A-486C-A8C5-ECC9F3942E4B}">
+                                <a14:imgProps
+                                    xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main">
+                                    <a14:imgLayer r:embed="rId20">
+                                        <a14:imgEffect>
+                                            <a14:brightnessContrast bright="20000" />
+                                        </a14:imgEffect>
+                                    </a14:imgLayer>
+                                </a14:imgProps>
+                            </a:ext>
+                            <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                                <a14:useLocalDpi
+                                    xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" />
+                            </a:ext>
+                        </a:extLst>
+                    </a:blip>
+                    <a:srcRect />
+                    <a:stretch />
+                </p:blipFill>
+                <p:spPr>
+                    <a:xfrm rot="169485" flipH="1">
+                        <a:off x="4208488" y="1330155" />
+                        <a:ext cx="451235" cy="2247067" />
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                        <a:avLst />
+                    </a:prstGeom>
+                </p:spPr>
+            </p:pic>
+            <p:sp>
+                <p:nvSpPr>
+                    <p:cNvPr id="48" name="TextBox 47" />
+                    <p:cNvSpPr txBox="1" />
+                    <p:nvPr />
+                </p:nvSpPr>
+                <p:spPr>
+                    <a:xfrm>
+                        <a:off x="6306049" y="6248399" />
+                        <a:ext cx="1659429" cy="215444" />
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                        <a:avLst />
+                    </a:prstGeom>
+                    <a:noFill />
+                </p:spPr>
+                <p:txBody>
+                    <a:bodyPr wrap="none" rtlCol="0" anchor="t" anchorCtr="0">
+                        <a:spAutoFit />
+                    </a:bodyPr>
+                    <a:lstStyle />
+                    <a:p>
+                        <a:pPr algn="ctr" />
+                        <a:r>
+                            <a:rPr lang="en-US" sz="800" b="1" dirty="0" />
+                            <a:t>Right upper limb </a:t>
+                        </a:r>
+                        <a:r>
+                            <a:rPr lang="en-US" sz="800" dirty="0" />
+                            <a:t>(posterior aspect)</a:t>
+                        </a:r>
+                        <a:endParaRPr lang="en-US" sz="800" b="1" dirty="0" />
+                    </a:p>
+                </p:txBody>
+            </p:sp>
+            <p:sp>
+                <p:nvSpPr>
+                    <p:cNvPr id="49" name="TextBox 48" />
+                    <p:cNvSpPr txBox="1" />
+                    <p:nvPr />
+                </p:nvSpPr>
+                <p:spPr>
+                    <a:xfrm>
+                        <a:off x="3434678" y="6251729" />
+                        <a:ext cx="1613643" cy="215444" />
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                        <a:avLst />
+                    </a:prstGeom>
+                    <a:noFill />
+                </p:spPr>
+                <p:txBody>
+                    <a:bodyPr wrap="none" rtlCol="0" anchor="t" anchorCtr="0">
+                        <a:spAutoFit />
+                    </a:bodyPr>
+                    <a:lstStyle />
+                    <a:p>
+                        <a:pPr algn="ctr" />
+                        <a:r>
+                            <a:rPr lang="en-US" sz="800" b="1" dirty="0" />
+                            <a:t>Right upper limb </a:t>
+                        </a:r>
+                        <a:r>
+                            <a:rPr lang="en-US" sz="800" dirty="0" />
+                            <a:t>(anterior aspect)</a:t>
+                        </a:r>
+                        <a:endParaRPr lang="en-US" sz="800" b="1" dirty="0" />
+                    </a:p>
+                </p:txBody>
+            </p:sp>
+            <p:sp>
+                <p:nvSpPr>
+                    <p:cNvPr id="21" name="TextBox 20">
+                        <a:hlinkClick r:id="rId4" action="ppaction://hlinksldjump" />
+                    </p:cNvPr>
+                    <p:cNvSpPr txBox="1" />
+                    <p:nvPr />
+                </p:nvSpPr>
+                <p:spPr>
+                    <a:xfrm>
+                        <a:off x="5428944" y="2254478" />
+                        <a:ext cx="590857" cy="215444" />
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                        <a:avLst />
+                    </a:prstGeom>
+                    <a:noFill />
+                </p:spPr>
+                <p:txBody>
+                    <a:bodyPr wrap="square" rtlCol="0" anchor="t" anchorCtr="0">
+                        <a:spAutoFit />
+                    </a:bodyPr>
+                    <a:lstStyle />
+                    <a:p>
+                        <a:pPr algn="ctr" />
+                        <a:r>
+                            <a:rPr lang="en-US" sz="800" dirty="0">
+                                <a:solidFill>
+                                    <a:schemeClr val="bg1" />
+                                </a:solidFill>
+                            </a:rPr>
+                            <a:t>Humerus</a:t>
+                        </a:r>
+                    </a:p>
+                </p:txBody>
+            </p:sp>
+            <p:cxnSp>
+                <p:nvCxnSpPr>
+                    <p:cNvPr id="23" name="Straight Connector 22" />
+                    <p:cNvCxnSpPr>
+                        <a:stCxn id="21" idx="3" />
+                    </p:cNvCxnSpPr>
+                    <p:nvPr />
+                </p:nvCxnSpPr>
+                <p:spPr>
+                    <a:xfrm>
+                        <a:off x="6019800" y="2362201" />
+                        <a:ext cx="990600" cy="1" />
+                    </a:xfrm>
+                    <a:prstGeom prst="line">
+                        <a:avLst />
+                    </a:prstGeom>
+                    <a:ln>
+                        <a:solidFill>
+                            <a:schemeClr val="bg1" />
+                        </a:solidFill>
+                    </a:ln>
+                </p:spPr>
+                <p:style>
+                    <a:lnRef idx="1">
+                        <a:schemeClr val="dk1" />
+                    </a:lnRef>
+                    <a:fillRef idx="0">
+                        <a:schemeClr val="dk1" />
+                    </a:fillRef>
+                    <a:effectRef idx="0">
+                        <a:schemeClr val="dk1" />
+                    </a:effectRef>
+                    <a:fontRef idx="minor">
+                        <a:schemeClr val="tx1" />
+                    </a:fontRef>
+                </p:style>
+            </p:cxnSp>
+            <p:cxnSp>
+                <p:nvCxnSpPr>
+                    <p:cNvPr id="25" name="Straight Connector 24" />
+                    <p:cNvCxnSpPr>
+                        <a:endCxn id="21" idx="1" />
+                    </p:cNvCxnSpPr>
+                    <p:nvPr />
+                </p:nvCxnSpPr>
+                <p:spPr>
+                    <a:xfrm>
+                        <a:off x="4416871" y="2362200" />
+                        <a:ext cx="1012072" cy="0" />
+                    </a:xfrm>
+                    <a:prstGeom prst="line">
+                        <a:avLst />
+                    </a:prstGeom>
+                    <a:ln>
+                        <a:solidFill>
+                            <a:schemeClr val="bg1" />
+                        </a:solidFill>
+                    </a:ln>
+                </p:spPr>
+                <p:style>
+                    <a:lnRef idx="1">
+                        <a:schemeClr val="dk1" />
+                    </a:lnRef>
+                    <a:fillRef idx="0">
+                        <a:schemeClr val="dk1" />
+                    </a:fillRef>
+                    <a:effectRef idx="0">
+                        <a:schemeClr val="dk1" />
+                    </a:effectRef>
+                    <a:fontRef idx="minor">
+                        <a:schemeClr val="tx1" />
+                    </a:fontRef>
+                </p:style>
+            </p:cxnSp>
+            <p:sp>
+                <p:nvSpPr>
+                    <p:cNvPr id="31" name="TextBox 30">
+                        <a:hlinkClick r:id="rId5" action="ppaction://hlinksldjump" />
+                    </p:cNvPr>
+                    <p:cNvSpPr txBox="1" />
+                    <p:nvPr />
+                </p:nvSpPr>
+                <p:spPr>
+                    <a:xfrm>
+                        <a:off x="5511424" y="4102857" />
+                        <a:ext cx="407152" cy="215444" />
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                        <a:avLst />
+                    </a:prstGeom>
+                    <a:noFill />
+                </p:spPr>
+                <p:txBody>
+                    <a:bodyPr wrap="square" rtlCol="0" anchor="t" anchorCtr="0">
+                        <a:spAutoFit />
+                    </a:bodyPr>
+                    <a:lstStyle />
+                    <a:p>
+                        <a:pPr algn="ctr" />
+                        <a:r>
+                            <a:rPr lang="en-US" sz="800" dirty="0">
+                                <a:solidFill>
+                                    <a:schemeClr val="bg1" />
+                                </a:solidFill>
+                            </a:rPr>
+                            <a:t>Ulna</a:t>
+                        </a:r>
+                    </a:p>
+                </p:txBody>
+            </p:sp>
+            <p:sp>
+                <p:nvSpPr>
+                    <p:cNvPr id="32" name="TextBox 31">
+                        <a:hlinkClick r:id="rId6" action="ppaction://hlinksldjump" />
+                    </p:cNvPr>
+                    <p:cNvSpPr txBox="1" />
+                    <p:nvPr />
+                </p:nvSpPr>
+                <p:spPr>
+                    <a:xfrm>
+                        <a:off x="7746248" y="4189504" />
+                        <a:ext cx="483352" cy="215444" />
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                        <a:avLst />
+                    </a:prstGeom>
+                    <a:noFill />
+                </p:spPr>
+                <p:txBody>
+                    <a:bodyPr wrap="square" rtlCol="0" anchor="t" anchorCtr="0">
+                        <a:spAutoFit />
+                    </a:bodyPr>
+                    <a:lstStyle />
+                    <a:p>
+                        <a:pPr algn="ctr" />
+                        <a:r>
+                            <a:rPr lang="en-US" sz="800" dirty="0">
+                                <a:solidFill>
+                                    <a:schemeClr val="bg1" />
+                                </a:solidFill>
+                            </a:rPr>
+                            <a:t>Radius</a:t>
+                        </a:r>
+                    </a:p>
+                </p:txBody>
+            </p:sp>
+            <p:sp>
+                <p:nvSpPr>
+                    <p:cNvPr id="33" name="TextBox 32">
+                        <a:hlinkClick r:id="rId6" action="ppaction://hlinksldjump" />
+                    </p:cNvPr>
+                    <p:cNvSpPr txBox="1" />
+                    <p:nvPr />
+                </p:nvSpPr>
+                <p:spPr>
+                    <a:xfrm>
+                        <a:off x="3124200" y="4189504" />
+                        <a:ext cx="483352" cy="215444" />
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                        <a:avLst />
+                    </a:prstGeom>
+                    <a:noFill />
+                </p:spPr>
+                <p:txBody>
+                    <a:bodyPr wrap="square" rtlCol="0" anchor="t" anchorCtr="0">
+                        <a:spAutoFit />
+                    </a:bodyPr>
+                    <a:lstStyle />
+                    <a:p>
+                        <a:pPr algn="ctr" />
+                        <a:r>
+                            <a:rPr lang="en-US" sz="800" dirty="0">
+                                <a:solidFill>
+                                    <a:schemeClr val="bg1" />
+                                </a:solidFill>
+                            </a:rPr>
+                            <a:t>Radius</a:t>
+                        </a:r>
+                    </a:p>
+                </p:txBody>
+            </p:sp>
+            <p:sp>
+                <p:nvSpPr>
+                    <p:cNvPr id="39" name="TextBox 38">
+                        <a:hlinkClick r:id="rId7" action="ppaction://hlinksldjump" />
+                    </p:cNvPr>
+                    <p:cNvSpPr txBox="1" />
+                    <p:nvPr />
+                </p:nvSpPr>
+                <p:spPr>
+                    <a:xfrm>
+                        <a:off x="5536448" y="5579064" />
+                        <a:ext cx="407152" cy="215444" />
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                        <a:avLst />
+                    </a:prstGeom>
+                    <a:noFill />
+                </p:spPr>
+                <p:txBody>
+                    <a:bodyPr wrap="square" rtlCol="0" anchor="t" anchorCtr="0">
+                        <a:spAutoFit />
+                    </a:bodyPr>
+                    <a:lstStyle />
+                    <a:p>
+                        <a:pPr algn="ctr" />
+                        <a:r>
+                            <a:rPr lang="en-US" sz="800" dirty="0">
+                                <a:solidFill>
+                                    <a:schemeClr val="bg1" />
+                                </a:solidFill>
+                            </a:rPr>
+                            <a:t>Hand</a:t>
+                        </a:r>
+                    </a:p>
+                </p:txBody>
+            </p:sp>
+            <p:cxnSp>
+                <p:nvCxnSpPr>
+                    <p:cNvPr id="40" name="Straight Connector 39" />
+                    <p:cNvCxnSpPr>
+                        <a:stCxn id="39" idx="3" />
+                    </p:cNvCxnSpPr>
+                    <p:nvPr />
+                </p:nvCxnSpPr>
+                <p:spPr>
+                    <a:xfrm>
+                        <a:off x="5943600" y="5686787" />
+                        <a:ext cx="1012072" cy="937" />
+                    </a:xfrm>
+                    <a:prstGeom prst="line">
+                        <a:avLst />
+                    </a:prstGeom>
+                    <a:ln>
+                        <a:solidFill>
+                            <a:schemeClr val="bg1" />
+                        </a:solidFill>
+                    </a:ln>
+                </p:spPr>
+                <p:style>
+                    <a:lnRef idx="1">
+                        <a:schemeClr val="dk1" />
+                    </a:lnRef>
+                    <a:fillRef idx="0">
+                        <a:schemeClr val="dk1" />
+                    </a:fillRef>
+                    <a:effectRef idx="0">
+                        <a:schemeClr val="dk1" />
+                    </a:effectRef>
+                    <a:fontRef idx="minor">
+                        <a:schemeClr val="tx1" />
+                    </a:fontRef>
+                </p:style>
+            </p:cxnSp>
+            <p:cxnSp>
+                <p:nvCxnSpPr>
+                    <p:cNvPr id="41" name="Straight Connector 40" />
+                    <p:cNvCxnSpPr>
+                        <a:endCxn id="39" idx="1" />
+                    </p:cNvCxnSpPr>
+                    <p:nvPr />
+                </p:nvCxnSpPr>
+                <p:spPr>
+                    <a:xfrm>
+                        <a:off x="4637426" y="5686786" />
+                        <a:ext cx="899023" cy="0" />
+                    </a:xfrm>
+                    <a:prstGeom prst="line">
+                        <a:avLst />
+                    </a:prstGeom>
+                    <a:ln>
+                        <a:solidFill>
+                            <a:schemeClr val="bg1" />
+                        </a:solidFill>
+                    </a:ln>
+                </p:spPr>
+                <p:style>
+                    <a:lnRef idx="1">
+                        <a:schemeClr val="dk1" />
+                    </a:lnRef>
+                    <a:fillRef idx="0">
+                        <a:schemeClr val="dk1" />
+                    </a:fillRef>
+                    <a:effectRef idx="0">
+                        <a:schemeClr val="dk1" />
+                    </a:effectRef>
+                    <a:fontRef idx="minor">
+                        <a:schemeClr val="tx1" />
+                    </a:fontRef>
+                </p:style>
+            </p:cxnSp>
+            <p:cxnSp>
+                <p:nvCxnSpPr>
+                    <p:cNvPr id="42" name="Straight Connector 41" />
+                    <p:cNvCxnSpPr>
+                        <a:stCxn id="33" idx="3" />
+                    </p:cNvCxnSpPr>
+                    <p:nvPr />
+                </p:nvCxnSpPr>
+                <p:spPr>
+                    <a:xfrm>
+                        <a:off x="3607552" y="4297226" />
+                        <a:ext cx="583448" cy="0" />
+                    </a:xfrm>
+                    <a:prstGeom prst="line">
+                        <a:avLst />
+                    </a:prstGeom>
+                    <a:ln>
+                        <a:solidFill>
+                            <a:schemeClr val="bg1" />
+                        </a:solidFill>
+                    </a:ln>
+                </p:spPr>
+                <p:style>
+                    <a:lnRef idx="1">
+                        <a:schemeClr val="dk1" />
+                    </a:lnRef>
+                    <a:fillRef idx="0">
+                        <a:schemeClr val="dk1" />
+                    </a:fillRef>
+                    <a:effectRef idx="0">
+                        <a:schemeClr val="dk1" />
+                    </a:effectRef>
+                    <a:fontRef idx="minor">
+                        <a:schemeClr val="tx1" />
+                    </a:fontRef>
+                </p:style>
+            </p:cxnSp>
+            <p:cxnSp>
+                <p:nvCxnSpPr>
+                    <p:cNvPr id="43" name="Straight Connector 42" />
+                    <p:cNvCxnSpPr>
+                        <a:endCxn id="32" idx="1" />
+                    </p:cNvCxnSpPr>
+                    <p:nvPr />
+                </p:nvCxnSpPr>
+                <p:spPr>
+                    <a:xfrm>
+                        <a:off x="7278986" y="4297226" />
+                        <a:ext cx="467262" cy="0" />
+                    </a:xfrm>
+                    <a:prstGeom prst="line">
+                        <a:avLst />
+                    </a:prstGeom>
+                    <a:ln>
+                        <a:solidFill>
+                            <a:schemeClr val="bg1" />
+                        </a:solidFill>
+                    </a:ln>
+                </p:spPr>
+                <p:style>
+                    <a:lnRef idx="1">
+                        <a:schemeClr val="dk1" />
+                    </a:lnRef>
+                    <a:fillRef idx="0">
+                        <a:schemeClr val="dk1" />
+                    </a:fillRef>
+                    <a:effectRef idx="0">
+                        <a:schemeClr val="dk1" />
+                    </a:effectRef>
+                    <a:fontRef idx="minor">
+                        <a:schemeClr val="tx1" />
+                    </a:fontRef>
+                </p:style>
+            </p:cxnSp>
+            <p:cxnSp>
+                <p:nvCxnSpPr>
+                    <p:cNvPr id="44" name="Straight Connector 43" />
+                    <p:cNvCxnSpPr>
+                        <a:endCxn id="31" idx="1" />
+                    </p:cNvCxnSpPr>
+                    <p:nvPr />
+                </p:nvCxnSpPr>
+                <p:spPr>
+                    <a:xfrm>
+                        <a:off x="4544248" y="4210579" />
+                        <a:ext cx="967177" cy="0" />
+                    </a:xfrm>
+                    <a:prstGeom prst="line">
+                        <a:avLst />
+                    </a:prstGeom>
+                    <a:ln>
+                        <a:solidFill>
+                            <a:schemeClr val="bg1" />
+                        </a:solidFill>
+                    </a:ln>
+                </p:spPr>
+                <p:style>
+                    <a:lnRef idx="1">
+                        <a:schemeClr val="dk1" />
+                    </a:lnRef>
+                    <a:fillRef idx="0">
+                        <a:schemeClr val="dk1" />
+                    </a:fillRef>
+                    <a:effectRef idx="0">
+                        <a:schemeClr val="dk1" />
+                    </a:effectRef>
+                    <a:fontRef idx="minor">
+                        <a:schemeClr val="tx1" />
+                    </a:fontRef>
+                </p:style>
+            </p:cxnSp>
+            <p:cxnSp>
+                <p:nvCxnSpPr>
+                    <p:cNvPr id="47" name="Straight Connector 46" />
+                    <p:cNvCxnSpPr>
+                        <a:stCxn id="31" idx="3" />
+                    </p:cNvCxnSpPr>
+                    <p:nvPr />
+                </p:nvCxnSpPr>
+                <p:spPr>
+                    <a:xfrm>
+                        <a:off x="5918576" y="4210580" />
+                        <a:ext cx="1012072" cy="1" />
+                    </a:xfrm>
+                    <a:prstGeom prst="line">
+                        <a:avLst />
+                    </a:prstGeom>
+                    <a:ln>
+                        <a:solidFill>
+                            <a:schemeClr val="bg1" />
+                        </a:solidFill>
+                    </a:ln>
+                </p:spPr>
+                <p:style>
+                    <a:lnRef idx="1">
+                        <a:schemeClr val="dk1" />
+                    </a:lnRef>
+                    <a:fillRef idx="0">
+                        <a:schemeClr val="dk1" />
+                    </a:fillRef>
+                    <a:effectRef idx="0">
+                        <a:schemeClr val="dk1" />
+                    </a:effectRef>
+                    <a:fontRef idx="minor">
+                        <a:schemeClr val="tx1" />
+                    </a:fontRef>
+                </p:style>
+            </p:cxnSp>
+        </p:spTree>
+        <p:extLst>
+            <p:ext uri="{BB962C8B-B14F-4D97-AF65-F5344CB8AC3E}">
+                <p14:creationId xmlns:p14="http://schemas.microsoft.com/office/powerpoint/2010/main"
+                    val="3645722813" />
+            </p:ext>
+        </p:extLst>
+    </p:cSld>
+    <p:clrMapOvr>
+        <a:masterClrMapping />
+    </p:clrMapOvr>
+</p:sld>
