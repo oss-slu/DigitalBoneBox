@@ -9,13 +9,222 @@
         }
     },
     {
-        "text": "Humerus",
+        "text": "Bony Pelvis",
         "position": {
             "x": 5428944,
             "y": 2254478,
             "width": 590857,
             "height": 215444
         }
+    },
+    {
+        "text": "Home",
+        "position": {
+            "x": "1752600",
+            "y": "6400801",
+            "width": "723900",
+            "height": "307777"
+        }
+    },
+    {
+        "position": {
+            "x": "1524000",
+            "y": "6248400",
+            "width": "9144000",
+            "height": "0"
+        }
+    },
+    {
+        "position": {
+            "x": "8686800",
+            "y": "1311440",
+            "width": "1981200",
+            "height": "4936961"
+        }
+    },
+    {
+        "position": {
+            "x": "1524000",
+            "y": "1311439",
+            "width": "1219200",
+            "height": "4936961"
+        }
+    },
+    {
+        "text": "Right Pelvis(medial aspect)",
+        "position": {
+            "x": "6477427",
+            "y": "6248399",
+            "width": "1316687",
+            "height": "215444"
+        }
+    },
+    {
+        "text": "Right Pelvis (lateral aspect)",
+        "position": {
+            "x": "3579863",
+            "y": "6251729",
+            "width": "1323299",
+            "height": "215444"
+        }
+    },
+    {
+        "text": "Iliac CrestAnterior Iliac spinesPosterior Iliac spinesAuricular surface",
+        "position": {
+            "x": "8823068",
+            "y": "1322155",
+            "width": "1148008",
+            "height": "805605"
+        }
+    },
+    {
+        "text": "IliumThe Ilium forms the superior part of the bony pelvis.It articulates with the sacrum to form the sacroiliac joint.",
+        "position": {
+            "x": "8757818",
+            "y": "3505200",
+            "width": "1828800",
+            "height": "1231106"
+        }
+    },
+    {
+        "text": "Bony Pelvis   Ilium   Ischium   Pubis    ",
+        "position": {
+            "x": "1529348",
+            "y": "1330154",
+            "width": "1213853",
+            "height": "1015663"
+        }
+    },
+    {
+        "text": "Iliac Crest",
+        "position": {
+            "x": "5431116",
+            "y": "1912315",
+            "width": "595035",
+            "height": "215444"
+        }
+    },
+    {
+        "text": "Anterior Superior Iliac Spine",
+        "position": {
+            "x": "5407752",
+            "y": "2590801",
+            "width": "766897",
+            "height": "461665"
+        }
+    },
+    {
+        "text": "Anterior Inferior Iliac Spine",
+        "position": {
+            "x": "5271485",
+            "y": "3229154",
+            "width": "766897",
+            "height": "461665"
+        }
+    },
+    {
+        "text": "Posterior Inferior Iliac Spine",
+        "position": {
+            "x": "7887969",
+            "y": "3816698",
+            "width": "766897",
+            "height": "461665"
+        }
+    },
+    {
+        "text": "Posterior Superior Iliac Spine",
+        "position": {
+            "x": "7881241",
+            "y": "1445569",
+            "width": "766897",
+            "height": "461665"
+        }
+    },
+    {
+        "text": "Auricular surface",
+        "position": {
+            "x": "7169365",
+            "y": "1417638",
+            "width": "624749",
+            "height": "338554"
+        }
+    },
+    {
+        "text": "No labels",
+        "position": {
+            "x": "9189990",
+            "y": "6400801",
+            "width": "974820",
+            "height": "307777"
+        }
+    },
+    {
+        "shape": "line",
+        "color": "000000",
+        "position": {
+            "x": "1524000",
+            "y": "1295401",
+            "width": "9144000",
+            "height": "4009"
+        }
+    },
+    {
+        "shape": "line",
+        "position": {
+            "x": "8686800",
+            "y": "3459986",
+            "width": "1965420",
+            "height": "0"
+        }
+    },
+    {
+        "shape": "line",
+        "position": {
+            "x": "4212167",
+            "y": "2020037",
+            "width": "1218948",
+            "height": "0"
+        }
+    },
+    {
+        "shape": "line",
+        "position": {
+            "x": "6026150",
+            "y": "2020037",
+            "width": "1212850",
+            "height": "0"
+        }
+    },
+    {
+        "shape": "line",
+        "position": {
+            "x": "5008205",
+            "y": "2821633",
+            "width": "399547",
+            "height": "0"
+        }
+    },
+    {
+        "shape": "line",
+        "position": {
+            "x": "4915392",
+            "y": "3459986",
+            "width": "356092",
+            "height": "0"
+        }
+    },
+    {
+        "shape": "line",
+        "position": {
+            "x": "8153401",
+            "y": "3505201",
+            "width": "118017",
+            "height": "311497"
+        }
+    },
+    {
+        "shape": "line",
+       
     },
     {
         "text": "Radius",
