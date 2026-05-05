@@ -2,7 +2,7 @@
 name: Good First Issue
 about: Template for issues suitable for new contributors
 title: ''
-labels: 'good-first-issue'
+labels: 'good first issue'
 assignees: ''
 
 ---
