@@ -64,7 +64,7 @@ Once you've found an issue that interests you, here’s how to get started:
 
 3. Work on the Code: Make the necessary changes to the code to address the issue.
 
-4. Submit a Pull Request: Once you're finished, submit a pull request. we have a pull request template we use for our project which you can use for your reference, as `.github/pull_request_template.md` (it should fill in the pull request description field automatically when you create one). Once that is done, Our team will then review your work.
+4. Submit a Pull Request: Once you're finished, submit a pull request. We have a pull request template for our project that you can use as a reference: `.github/pull_request_template.md` (it should fill in the pull request description field automatically when you create one). Once that is done, our team will review your work.
 
 ## Questions or Need Help?
 
