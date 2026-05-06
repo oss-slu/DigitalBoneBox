@@ -86,7 +86,6 @@ async function performSearch(query) {
         searchLoading.style.display = "none";
         selectedIndex = -1;
         
-        // Attach click handlers to new results
         attachClickHandlers();
         
     } catch (error) {
@@ -185,5 +184,4 @@ function clearSearchResults() {
     selectedIndex = -1;
 }
 
-// Initialize when DOM is loaded
 document.addEventListener("DOMContentLoaded", initializeSearch);

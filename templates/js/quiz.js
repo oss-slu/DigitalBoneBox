@@ -1,6 +1,4 @@
-// quiz.js - Quiz functionality for Digital Bone Box
-
-import {fetchBoneData, fetchCombinedData} from "./api.js";
+import {fetchBoneData} from "./api.js";
 import {displayColoredRegions} from "./coloredRegionsOverlay.js";
 
 class QuizManager {
@@ -8,7 +6,6 @@ class QuizManager {
         this.questions = [];
         this.currentQuestionIndex = 0;
         this.score = 0;
-        this.isQuizActive = false;
         this.totalQuestions = 10;
         this.allBones = [];
         this.allSubbones = [];
@@ -19,28 +16,18 @@ class QuizManager {
     /**
      * Initialize the quiz system
      */
-    async initialize() {
-        try {
-            // Fetch bone data
-            const data = await fetchCombinedData();
-            this.allBones = data.bones || [];
-            this.allSubbones = data.subbones || [];
+    async initialize(data) {
+        this.allBones = data.bones || [];
+        this.allSubbones = data.subbones || [];
 
-            // Create master question pool from bones + subbones
-            this.createMasterQuestionPool();
+        this.createMasterQuestionPool();
 
-            if (this.masterQuestionPool.length < 4) {
-                console.error("Not enough items to create a quiz. Need at least 4 items.");
-                return false;
-            }
-
-            // Setup event listeners
-            this.setupEventListeners();
-            return true;
-        } catch (error) {
-            console.error("Error initializing quiz:", error);
-            return false;
+        if (this.masterQuestionPool.length < 4) {
+            throw new Error(`Not enough items to create a quiz. Need at least 4 items. (Quiz pool length: ${this.masterQuestionPool.length})`);
         }
+
+        this.setupEventListeners();
+        return true;
     }
 
     /**
@@ -166,8 +153,8 @@ class QuizManager {
 async fetchBoneImage(itemId, container) {
     try {
         const data = await fetchBoneData(itemId);
-        
-        console.log(`Bone data for ${itemId}:`, data); // DEBUG
+
+        console.debug(`Bone data for ${itemId}:`, data);
         
         // Check if image exists in the response
         if (data.images && data.images.length > 0) {
@@ -243,13 +230,12 @@ startQuiz() {
     // Reset quiz state
     this.currentQuestionIndex = 0;
     this.score = 0;
-    this.isQuizActive = true;
     this.answered = false;
 
     // Show quiz container, hide main content
     this.showQuizMode();
 
-    // CRITICAL: Restore the quiz structure (in case we're coming from results screen)
+        // Restore the quiz structure (in case we're coming from results screen)
     const quizContainer = document.getElementById("quiz-container");
     if (quizContainer) {
         quizContainer.innerHTML = `
@@ -359,7 +345,7 @@ startQuiz() {
 
         choicesContainer.innerHTML = "";
 
-        question.allAnswers.forEach((answer, index) => {
+        question.allAnswers.forEach(answer => {
             const button = document.createElement("button");
             button.className = "quiz-choice-btn";
             button.textContent = answer;
@@ -494,17 +480,17 @@ showResults() {
         </div>
     `;
 
-    // CRITICAL: Wait for DOM to be ready, then add event listeners with arrow functions
+    // Wait for DOM to be ready, then add event listeners with arrow functions
     requestAnimationFrame(() => {
         const retryBtn = document.getElementById("retry-quiz-btn");
         const exitBtn = document.getElementById("exit-results-btn");
-        
-        console.log("Retry button found:", retryBtn); // Debug
-        console.log("Exit button found:", exitBtn); // Debug
+
+        console.debug("Retry button found:", retryBtn);
+        console.debug("Exit button found:", exitBtn);
         
         if (retryBtn) {
             retryBtn.onclick = () => {
-                console.log("TRY AGAIN CLICKED!"); // Debug
+                console.debug("TRY AGAIN CLICKED!");
                 this.startQuiz();
             };
         }
@@ -548,6 +534,5 @@ showResults() {
     }
 }
 
-// Create and export singleton instance
 const quizManager = new QuizManager();
 export default quizManager;

@@ -1,16 +1,12 @@
-// js/imageDisplay.js
-// Rendering helpers for the image area (no dropdown wiring).
-
 import { clearAnnotations, loadAndDrawAnnotations } from "./annotationOverlay.js";
 import { displayColoredRegions, clearAllColoredRegions } from "./coloredRegionsOverlay.js";
 import { imageCaptions } from "./imageCaptions.js";
 
-// Track the current boneId for colored regions
 let currentBoneId = null;
 let currentIsBonesetSelection = false; // Track if this is a boneset selection
 
 function getImageContainer() {
-  return /** @type {HTMLElement|null} */ (
+  return (
     document.getElementById("bone-image-container")
   );
 }
@@ -31,7 +27,7 @@ function clearCaptionContainer() {
   }
 }
 
-/** ---- Empty-state / clearing ------------------------------------------- */
+/** Empty-state / clearing */
 export function showPlaceholder() {
   const c = getImageContainer();
   if (!c) return;
@@ -40,12 +36,11 @@ export function showPlaceholder() {
       <p>Please select a bone from the dropdown to view its image.</p>
     </div>
   `;
-  // Clear both text annotations and colored regions
+
   clearAnnotations(c);
   clearAllColoredRegions();
   currentBoneId = null;
 
-  // Clear caption container
   clearCaptionContainer();
 
   // Remove black background class when showing placeholder
@@ -61,7 +56,6 @@ export function clearImages() {
     clearAllColoredRegions();
   }
 
-  // Clear caption container
   clearCaptionContainer();
 
   currentBoneId = null;
@@ -101,11 +95,9 @@ export function displayBoneImages(images, options = {}) {
     displayMultipleImages(images, container);
   }
 
-  // Add has-images class when images are displayed
   const imagesContent = document.querySelector(".images-content");
   if (imagesContent) imagesContent.classList.add("has-images");
 
-  // Draw annotations if provided
   if (options.annotationsUrl) {
     loadAndDrawAnnotations(container, options.annotationsUrl).catch(err =>
       console.warn("Failed to load annotations:", err)
@@ -113,15 +105,11 @@ export function displayBoneImages(images, options = {}) {
   }
 }
 
-//** ---- Single image ------------------------------------------------------ */
+/* Single image */
 function displaySingleImage(image, container, options = {}) {
-  // Get captions for this bone
   const captions = getCaptionsForBone(currentBoneId);
 
-  // 1. CRITICAL FIX: Add the 'single-image' class to the main container.
   container.className = "single-image";
-
-  // 2. Use innerHTML to directly create the necessary structure
   container.innerHTML = `
     <div class="single-image-wrapper">
       <img
@@ -132,14 +120,13 @@ function displaySingleImage(image, container, options = {}) {
     </div>
   `;
 
-  // --- MODIFIED: Caption Logic ---
+  // Caption Logic
   if (captions.image1) {
     clearCaptionContainer();
 
     const captionContainer = document.createElement("div");
     captionContainer.id = "caption-container";
 
-    // UPDATED: Added margin-top: 15px to move it down
     captionContainer.style.cssText = `
       text-align: center;
       padding: 12px 0 5px 0;
@@ -157,7 +144,7 @@ function displaySingleImage(image, container, options = {}) {
     container.insertAdjacentElement("afterend", captionContainer);
   }
 
-  // 3. Get reference to the image element for colored regions and event handlers
+  // Get reference to the image element for colored regions and event handlers
   const img = container.querySelector("img");
   if (img) {
     const loadColoredRegions = () => {
@@ -191,26 +178,9 @@ function displaySingleImage(image, container, options = {}) {
   }
 }
 
-/** ---- Two images (with rotation template) ------------------------------- */
-const TWO_IMAGE_ROTATION = {
-  left: { rot_deg: -16.999, flipH: false },
-  right: { rot_deg: 0, flipH: false },
-};
-
-function applyRotation(imgEl, { rot_deg = 0, flipH = false } = {}) {
-  const parts = [];
-  if (flipH) parts.push("scaleX(-1)");
-  if (rot_deg && Math.abs(rot_deg) > 0.001) parts.push(`rotate(${rot_deg}deg)`);
-  imgEl.style.transform = parts.join(" ") || "none";
-  imgEl.style.transformOrigin = "50% 50%";
-  imgEl.style.willChange = "transform";
-}
-
 function displayTwoImages(images, container, options = {}) {
-  // Get captions for this bone
   const captions = getCaptionsForBone(currentBoneId);
 
-  // Add the two-images class to the container for CSS styling
   container.className = "two-images";
 
   images.slice(0, 2).forEach((image, index) => {
@@ -254,14 +224,13 @@ function displayTwoImages(images, container, options = {}) {
     }, 10);
   });
 
-  // --- MODIFIED: Caption Logic ---
+  // Caption Logic
   if (captions.image1 || captions.image2) {
     clearCaptionContainer();
 
     const captionContainer = document.createElement("div");
     captionContainer.id = "caption-container";
 
-    // UPDATED: Added margin-top: 15px to move it down
     captionContainer.style.cssText = `
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -273,7 +242,6 @@ function displayTwoImages(images, container, options = {}) {
       margin-top: 15px;
     `;
 
-    // UPDATED: Changed text color to white for visibility
     const captionStyle = `
       text-align: center;
       color: #ffffff;
@@ -298,7 +266,7 @@ function displayTwoImages(images, container, options = {}) {
   }
 }
 
-/** ---- 3+ images grid ---------------------------------------------------- */
+/** 3+ images grid */
 function displayMultipleImages(images, container) {
   const wrapper = document.createElement("div");
   wrapper.className = "multiple-image-wrapper";

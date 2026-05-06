@@ -81,7 +81,7 @@ const OVERLAY_ADJUSTMENTS = {
  */
 async function fetchColoredRegionData(boneId, isBonesetSelection = false) {
     if (!boneId) {
-        console.debug("[ColoredRegions] No boneId provided for colored regions");
+        console.error("[ColoredRegions] No boneId provided for colored regions");
         return null;
     }
 
@@ -90,7 +90,7 @@ async function fetchColoredRegionData(boneId, isBonesetSelection = false) {
     // Map ilium to bony_pelvis for boneset selections
     let mappedBoneId = boneId;
     if (boneId === "ilium" && isBonesetSelection) {
-        console.log("[ColoredRegions] Mapping \"ilium\" to \"bony_pelvis\" for boneset selection");
+        console.debug("[ColoredRegions] Mapping \"ilium\" to \"bony_pelvis\" for boneset selection");
         mappedBoneId = "bony_pelvis";
     }
 
@@ -146,9 +146,9 @@ function convertCommandToPixels(command, dimensions, debugInfo = {}) {
     if (command.x !== undefined) {
         converted.x = emuToPixels(command.x, slideWidth, imageWidth);
         if (debugInfo.isFirstCommand) {
-            console.log(`[ColoredRegions] First coord conversion: EMU(${command.x}, ${command.y}) -> Pixel(${converted.x.toFixed(2)}, ${emuToPixels(command.y, slideHeight, imageHeight).toFixed(2)})`);
-            console.log(`[ColoredRegions]   EMU dimensions: ${slideWidth} x ${slideHeight}`);
-            console.log(`[ColoredRegions]   Pixel dimensions: ${imageWidth} x ${imageHeight}`);
+            console.debug(`[ColoredRegions] First coord conversion: EMU(${command.x}, ${command.y}) -> Pixel(${converted.x.toFixed(2)}, ${emuToPixels(command.y, slideHeight, imageHeight).toFixed(2)})`);
+            console.debug(`[ColoredRegions]   EMU dimensions: ${slideWidth} x ${slideHeight}`);
+            console.debug(`[ColoredRegions]   Pixel dimensions: ${imageWidth} x ${imageHeight}`);
         }
     }
     if (command.y !== undefined) {
@@ -235,14 +235,14 @@ function createColoredRegionsSVG(coloredRegions, imageWidth, imageHeight, imageD
     svg.style.width = "100%";
     svg.style.height = "100%";
     svg.style.pointerEvents = "none"; // Allow clicks to pass through to image
-    
-    console.log(`[ColoredRegions DEBUG] Creating SVG for bone: ${boneId}, imageIndex: ${imageIndex}`);
-    console.log("[ColoredRegions DEBUG] OVERLAY_ADJUSTMENTS lookup:", OVERLAY_ADJUSTMENTS[boneId]);
+
+    console.debug(`[ColoredRegions DEBUG] Creating SVG for bone: ${boneId}, imageIndex: ${imageIndex}`);
+    console.debug("[ColoredRegions DEBUG] OVERLAY_ADJUSTMENTS lookup:", OVERLAY_ADJUSTMENTS[boneId]);
     
     // Apply positioning adjustments if defined for this bone and image
     if (OVERLAY_ADJUSTMENTS[boneId] && OVERLAY_ADJUSTMENTS[boneId][imageIndex]) {
         const adjustments = OVERLAY_ADJUSTMENTS[boneId][imageIndex];
-        console.log("[ColoredRegions DEBUG] Found adjustments:", adjustments);
+        console.debug("[ColoredRegions DEBUG] Found adjustments:", adjustments);
         const transforms = [];
         
         if (adjustments.x !== 0 || adjustments.y !== 0) {
@@ -260,7 +260,7 @@ function createColoredRegionsSVG(coloredRegions, imageWidth, imageHeight, imageD
         if (transforms.length > 0) {
             svg.style.transform = transforms.join(" ");
             svg.style.transformOrigin = "center";
-            console.log(`[ColoredRegions] Applied positioning adjustments for ${boneId} image ${imageIndex}: ${svg.style.transform}`);
+            console.debug(`[ColoredRegions] Applied positioning adjustments for ${boneId} image ${imageIndex}: ${svg.style.transform}`);
         }
     }
 
@@ -273,8 +273,8 @@ function createColoredRegionsSVG(coloredRegions, imageWidth, imageHeight, imageD
         imageWidth: imageWidth,
         imageHeight: imageHeight
     };
-    
-    console.log("[ColoredRegions] Coordinate conversion:", {
+
+    console.debug("[ColoredRegions] Coordinate conversion:", {
         sourceWidth: dimensions.slideWidth,
         sourceHeight: dimensions.slideHeight,
         targetWidth: dimensions.imageWidth,
@@ -357,7 +357,6 @@ function createColoredRegionsSVG(coloredRegions, imageWidth, imageHeight, imageD
                         path.setAttribute("data-region-type", "fill");
                     }
                     
-                    // Add to SVG
                     svg.appendChild(path);
                     
                     console.debug(`Created colored region path ${pathIndex + 1}/${pathDataArray.length}: ${region.anatomical_name} (${region.color_name})`);
@@ -382,9 +381,8 @@ function createColoredRegionsSVG(coloredRegions, imageWidth, imageHeight, imageD
  * @returns {Promise<void>}
  */
 export async function displayColoredRegions(imageElement, boneId, imageIndex = 0, isBonesetSelection = false) {
-    console.log("[ColoredRegions] ============ START displayColoredRegions ============");
-    console.log(`[ColoredRegions] boneId: ${boneId}, imageIndex: ${imageIndex}, isBonesetSelection: ${isBonesetSelection}`);
-    console.log("[ColoredRegions] imageElement:", imageElement);
+    console.debug(`[ColoredRegions] boneId: ${boneId}, imageIndex: ${imageIndex}, isBonesetSelection: ${isBonesetSelection}`);
+    console.debug("[ColoredRegions] imageElement:", imageElement);
     
     if (!imageElement || !boneId) {
         console.debug("[ColoredRegions] Missing image element or boneId for colored regions");
@@ -395,7 +393,7 @@ export async function displayColoredRegions(imageElement, boneId, imageIndex = 0
     let mappedBoneId = boneId;
     if (boneId === "ilium" && isBonesetSelection) {
         mappedBoneId = "bony_pelvis";
-        console.log("[ColoredRegions] Using mapped bone ID \"bony_pelvis\" for positioning adjustments");
+        console.debug("[ColoredRegions] Using mapped bone ID \"bony_pelvis\" for positioning adjustments");
     }
 
     // Fetch colored region data
@@ -404,7 +402,7 @@ export async function displayColoredRegions(imageElement, boneId, imageIndex = 0
     
     // Return early if no colored region data exists
     if (!regionData) {
-        console.debug(`[ColoredRegions] No colored regions to display for ${boneId}`);
+        console.log(`[ColoredRegions] No colored regions to display for ${boneId}`);
         return;
     }
 
@@ -413,8 +411,8 @@ export async function displayColoredRegions(imageElement, boneId, imageIndex = 0
     let regionsToDisplay = [];
     
     if (regionData.images && Array.isArray(regionData.images)) {
-        // New structure: data organized by image
-        console.log(`[ColoredRegions] Using new multi-image structure with ${regionData.images.length} images`);
+        // One possible structure: data organized by image
+        console.debug(`[ColoredRegions] Using organized-by-image structure with ${regionData.images.length} images`);
         
         if (imageIndex >= 0 && imageIndex < regionData.images.length) {
             imageData = regionData.images[imageIndex];
@@ -424,8 +422,8 @@ export async function displayColoredRegions(imageElement, boneId, imageIndex = 0
             return;
         }
     } else if (regionData.colored_regions) {
-        // Old structure: single set of regions for all images
-        console.log("[ColoredRegions] Using old single-image structure");
+        // Alternate structure: single set of regions for all images
+        console.debug("[ColoredRegions] Using alternate structure");
         regionsToDisplay = regionData.colored_regions;
         imageData = {
             width: regionData.image_dimensions?.width,
@@ -442,7 +440,7 @@ export async function displayColoredRegions(imageElement, boneId, imageIndex = 0
 
     // Wait for image to load to get correct dimensions
     if (!imageElement.complete) {
-        console.log("[ColoredRegions] Waiting for image to complete loading...");
+        console.debug("[ColoredRegions] Waiting for image to complete loading...");
         await new Promise(resolve => {
             imageElement.addEventListener("load", resolve, { once: true });
         });
@@ -454,8 +452,8 @@ export async function displayColoredRegions(imageElement, boneId, imageIndex = 0
     const imageWidth = imageElement.naturalWidth;
     const imageHeight = imageElement.naturalHeight;
 
-    console.log(`[ColoredRegions] Image natural dimensions: ${imageWidth}x${imageHeight}`);
-    console.log(`[ColoredRegions] Image displayed dimensions: ${imageElement.offsetWidth}x${imageElement.offsetHeight}`);
+    console.debug(`[ColoredRegions] Image natural dimensions: ${imageWidth}x${imageHeight}`);
+    console.debug(`[ColoredRegions] Image displayed dimensions: ${imageElement.offsetWidth}x${imageElement.offsetHeight}`);
 
     if (imageWidth === 0 || imageHeight === 0) {
         console.warn("[ColoredRegions] Image has zero dimensions, cannot display colored regions");
@@ -492,13 +490,13 @@ export async function displayColoredRegions(imageElement, boneId, imageIndex = 0
 
     // Add the SVG overlay
     parent.appendChild(svg);
-    
-    console.log("[ColoredRegions] SVG appended to parent container");
-    console.log("[ColoredRegions] Parent element:", parent);
-    console.log("[ColoredRegions] Parent classes:", parent.className);
-    console.log("[ColoredRegions] SVG data-bone attribute:", svg.getAttribute("data-bone"));
-    console.log("[ColoredRegions] SVG element:", svg);
-    console.log(`[ColoredRegions] SVG has ${svg.children.length} path elements`);
+
+    console.debug("[ColoredRegions] SVG appended to parent container");
+    console.debug("[ColoredRegions] Parent element:", parent);
+    console.debug("[ColoredRegions] Parent classes:", parent.className);
+    console.debug("[ColoredRegions] SVG data-bone attribute:", svg.getAttribute("data-bone"));
+    console.debug("[ColoredRegions] SVG element:", svg);
+    console.debug(`[ColoredRegions] SVG has ${svg.children.length} path elements`);
 
     console.log(`[ColoredRegions] Successfully displayed ${regionsToDisplay.length} colored regions for image ${imageIndex}`);
 }

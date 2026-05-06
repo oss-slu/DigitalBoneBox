@@ -496,10 +496,8 @@ app.get("/api/search", searchLimiter, (req, res) => {
     }
 });
 
-//  CORRECTED SERVER STARTUP LOGIC 
-// 1. Initialize cache first. 2. Start server only if run directly (for testability).
 async function startServer() {
-    await initializeSearchCache(); // Wait for the cache to be built
+    await initializeSearchCache();
     
     // Start the server only if this file is run directly (not imported)
     if (require.main == module) {
@@ -509,7 +507,7 @@ async function startServer() {
     }
 }
 
-startServer(); // Call the async function to begin startup
+startServer();
 
 // Export for tests or other modules if needed
 module.exports = {

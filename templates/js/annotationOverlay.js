@@ -1,8 +1,3 @@
-// templates/js/annotationOverlay.js
-// Small, self-contained overlay module.
-
-const PPT_EMU = { W: 9_144_000, H: 6_858_000 }; // PowerPoint slide size in EMUs
-
 function ensureStage(container) {
   let stage = container.querySelector(".annotation-stage");
   if (!stage) {
@@ -31,14 +26,14 @@ export function clearAnnotations(container) {
  * @param {Object} norm - The normalized geometry {normX, normY, normW, normH}.
  * @returns {Object} Pixel coordinates {left, top, width, height}.
  */
-function normalizedRectToPx(rect, box, norm) { // <--- RENAMED to reflect change
-  // 🛑 FIX: Input coordinates (rect.x, rect.y, etc.) are now normalized decimals (0.0 to 1.0).
+function normalizedRectToPx(rect, box, norm) {
+  // Input coordinates (rect.x, rect.y, etc.) are now normalized decimals (0.0 to 1.0).
 
   // Normalized Offset (normX, normY are also 0.0 to 1.0)
   const normalizedOffsetX = norm.normX;
   const normalizedOffsetY = norm.normY;
 
-  // We now calculate pixel coordinates by: (Normalized Coord - Normalized Offset) * Effective Pixel Size (box.w/h)
+  // We calculate pixel coordinates by: (Normalized Coord - Normalized Offset) * Effective Pixel Size (box.w/h)
   return {
     left: (rect.x - normalizedOffsetX) * box.w,
     top: (rect.y - normalizedOffsetY) * box.h,
@@ -55,8 +50,7 @@ function normalizedRectToPx(rect, box, norm) { // <--- RENAMED to reflect change
  * @returns {Object} Pixel coordinates {x, y}.
  */
 function normalizedPointToPx(pt, box, norm) { // <--- RENAMED to reflect change
-  // 🛑 FIX: Input coordinates (pt.x, pt.y) are now normalized decimals (0.0 to 1.0).
-
+  // Input coordinates (pt.x, pt.y) are normalized decimals (0.0 to 1.0).
   const normalizedOffsetX = norm.normX;
   const normalizedOffsetY = norm.normY;
 
@@ -81,13 +75,13 @@ export function drawAnnotations(container, annotationsJson) {
   svg.innerHTML = "";
   labels.innerHTML = "";
 
-  // 1. Get current pixel dimensions of the image container.
+  // Get current pixel dimensions of the image container.
   const rect = container.getBoundingClientRect();
 
-  // 2. Extract the normalization factors from the JSON (provided by backend).
+  // Extract the normalization factors from the JSON (provided by backend).
   const norm = annotationsJson.normalized_geometry || { normX: 0, normY: 0, normW: 1, normH: 1 };
 
-  // 3. Define the *effective* coordinate box for scaling.
+  // Define the *effective* coordinate box for scaling.
   // We scale the container size (rect.width/height) by the crop ratios (normW/normH).
   // This calculates the effective pixel dimensions relative to the full PPT slide size.
   const box = {
@@ -95,7 +89,7 @@ export function drawAnnotations(container, annotationsJson) {
     h: rect.height / norm.normH
   };
 
-  // 4. Get the list of annotations.
+  // Get the list of annotations.
   const list = annotationsJson.annotations || annotationsJson.text_annotations || [];
 
   list.forEach((a) => {
@@ -118,8 +112,8 @@ export function drawAnnotations(container, annotationsJson) {
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      whiteSpace: "pre-line",   // 👈 KEY: show newlines
-      textAlign: "center",      // optional: center both lines
+      whiteSpace: "pre-line",   // show newlines
+      textAlign: "center",      // center both lines
     });
 
     labels.appendChild(el);
@@ -150,7 +144,7 @@ export async function loadAndDrawAnnotations(container, jsonUrl) {
   if (!res.ok) return;
   const data = await res.json();
 
-  // The backend now provides data in the structure expected by drawAnnotations
+  // The backend provides data in the structure expected by drawAnnotations
   drawAnnotations(container, data);
   attachAutoscale(container); // keep aligned on resize
 }
@@ -167,6 +161,3 @@ function attachAutoscale(container) {
   ro.observe(container);
   stage.__resizeObs = ro;
 }
-
-// Optional global for non-module usage
-window.AnnotationOverlay = { clearAnnotations, drawAnnotations, loadAndDrawAnnotations };

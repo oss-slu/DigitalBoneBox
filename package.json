@@ -35,6 +35,6 @@
     "jest-environment-jsdom": "^30.2.0"
   },
   "directories": {
-    "test": "tests"
+    "test": "templates/tests"
   }
 }
