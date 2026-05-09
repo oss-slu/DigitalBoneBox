@@ -2,6 +2,7 @@ import { loadDescription } from "./description.js";
 import {displayBoneImages, showPlaceholder} from "./imageDisplay.js";
 import {clearAnnotations} from "./annotationOverlay.js";
 import {fetchBoneData} from "./api.js";
+import { imageAnnotationToDropdownMap } from "./imageAnnotationToDropdownMap.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   showPlaceholder();
@@ -165,4 +166,47 @@ subboneSelect.addEventListener("change", (e) => {
     showPlaceholder();
   }
 });
+
+  // Image annotation clicked
+  document.addEventListener("annotationSelected", (e) => {
+    let clickedText = e.detail.text;
+    if (!clickedText) return;
+
+    clickedText = clickedText.replace(/\s+/g, " ").trim().toLowerCase();
+
+    const currentBone = boneSelect.value;
+
+    // Mapping the image annotation to dropdown option
+    // If the currently viewed bone has a dictionary, and the clicked text is in it, translate it.
+    if (currentBone && imageAnnotationToDropdownMap[currentBone] && imageAnnotationToDropdownMap[currentBone][clickedText]) {
+        clickedText = imageAnnotationToDropdownMap[currentBone][clickedText];
+    }
+
+    // Check Sub-bones
+    const matchedSubbone = combinedData.subbones.find(
+      sb => sb.name?.toLowerCase() === clickedText
+    );
+
+    if (matchedSubbone) {
+      if (boneSelect.value !== matchedSubbone.bone) {
+         boneSelect.value = matchedSubbone.bone;
+         boneSelect.dispatchEvent(new Event("change")); 
+      }
+      subboneSelect.value = matchedSubbone.id;
+      subboneSelect.dispatchEvent(new Event("change"));
+      return;
+    }
+
+    // Check Bones
+    const matchedBone = combinedData.bones.find(
+      b => b.name?.toLowerCase() === clickedText
+    );
+
+    if (matchedBone) {
+      boneSelect.value = matchedBone.id;
+      boneSelect.dispatchEvent(new Event("change"));
+      return;
+    }
+
+  });
 }
