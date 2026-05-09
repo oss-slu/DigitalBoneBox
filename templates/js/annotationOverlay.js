@@ -114,6 +114,17 @@ export function drawAnnotations(container, annotationsJson) {
       justifyContent: "center",
       whiteSpace: "pre-line",   // show newlines
       textAlign: "center",      // center both lines
+      cursor: "pointer",
+      zIndex: "100",
+      pointerEvents: "auto"
+    });
+
+    el.addEventListener("click", () => {
+        const clickEvent = new CustomEvent("annotationSelected", {
+            detail: {text: a.text_content},
+            bubbles: true
+        });
+        container.dispatchEvent(clickEvent);
     });
 
     labels.appendChild(el);
