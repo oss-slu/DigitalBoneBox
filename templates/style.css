@@ -2446,3 +2446,9 @@ button:disabled {
         padding: 8px 6px;
     }
 }
+
+.annotation-label:hover {
+    color: #007bff;
+    transform: scale(1.05);
+    z-index: 101
+}
