@@ -18,6 +18,12 @@ const API_BASE = "http://127.0.0.1:8000";
 /** Helper: fetch images for a bone/sub-bone and render them */
 async function loadBoneImages(boneId, options = {}) {
   const stage = getImageStage();
+
+  if (stage) { 
+      clearAnnotations(stage); 
+      stage.classList.remove("with-annotations"); 
+  }
+
   if (!boneId) {
     showPlaceholder();
     if (stage) { clearAnnotations(stage); stage.classList.remove("with-annotations"); }
@@ -86,9 +92,9 @@ bonesetSelect.addEventListener("change", (e) => {
   boneSelect.disabled = relatedBones.length === 0;
 
   if (!selectedBonesetId || relatedBones.length === 0) {
-    showPlaceholder();
     const stage = getImageStage();
     if (stage) { clearAnnotations(stage); stage.classList.remove("with-annotations"); }
+    showPlaceholder();
     return;
   }
 
@@ -137,9 +143,9 @@ boneSelect.addEventListener("change", (e) => {
     
     loadBoneImages(selectedBoneId, opts);
   } else {
-    showPlaceholder();
     const stage = getImageStage();
     if (stage) { clearAnnotations(stage); stage.classList.remove("with-annotations"); }
+    showPlaceholder();
   }
 });
 
@@ -166,6 +172,25 @@ subboneSelect.addEventListener("change", (e) => {
     showPlaceholder();
   }
 });
+
+  document.addEventListener("checkAnnotationLink", (e) => {
+    let checkText = e.detail.text;
+    if (!checkText) return;
+
+    checkText = checkText.replace(/\s+/g, " ").trim().toLowerCase();
+    const currentBone = boneSelect.value;
+
+    if (currentBone && imageAnnotationToDropdownMap[currentBone] && imageAnnotationToDropdownMap[currentBone][checkText]) {
+        checkText = imageAnnotationToDropdownMap[currentBone][checkText];
+    }
+
+    const isValidSubbone = combinedData.subbones.some(sb => sb.name?.toLowerCase() === checkText);
+    const isValidBone = combinedData.bones.some(b => b.name?.toLowerCase() === checkText);
+
+    if (isValidSubbone || isValidBone) {
+        e.detail.isValid = true; 
+    }
+  });
 
   // Image annotation clicked
   document.addEventListener("annotationSelected", (e) => {
