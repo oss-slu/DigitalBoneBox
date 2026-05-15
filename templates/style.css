@@ -2447,7 +2447,11 @@ button:disabled {
     }
 }
 
-.annotation-label:hover {
+.annotation-label.valid-link {
+    cursor: pointer;
+}
+
+.annotation-label.valid-link:hover {
     color: #007bff;
     transform: scale(1.05);
     z-index: 101
