@@ -2,6 +2,7 @@ import { loadDescription } from "./description.js";
 import {displayBoneImages, showPlaceholder} from "./imageDisplay.js";
 import {clearAnnotations} from "./annotationOverlay.js";
 import {fetchBoneData} from "./api.js";
+import { imageAnnotationToDropdownMap } from "./imageAnnotationToDropdownMap.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   showPlaceholder();
@@ -17,6 +18,12 @@ const API_BASE = "http://127.0.0.1:8000";
 /** Helper: fetch images for a bone/sub-bone and render them */
 async function loadBoneImages(boneId, options = {}) {
   const stage = getImageStage();
+
+  if (stage) { 
+      clearAnnotations(stage); 
+      stage.classList.remove("with-annotations"); 
+  }
+
   if (!boneId) {
     showPlaceholder();
     if (stage) { clearAnnotations(stage); stage.classList.remove("with-annotations"); }
@@ -85,9 +92,9 @@ bonesetSelect.addEventListener("change", (e) => {
   boneSelect.disabled = relatedBones.length === 0;
 
   if (!selectedBonesetId || relatedBones.length === 0) {
-    showPlaceholder();
     const stage = getImageStage();
     if (stage) { clearAnnotations(stage); stage.classList.remove("with-annotations"); }
+    showPlaceholder();
     return;
   }
 
@@ -136,9 +143,9 @@ boneSelect.addEventListener("change", (e) => {
     
     loadBoneImages(selectedBoneId, opts);
   } else {
-    showPlaceholder();
     const stage = getImageStage();
     if (stage) { clearAnnotations(stage); stage.classList.remove("with-annotations"); }
+    showPlaceholder();
   }
 });
 
@@ -165,4 +172,66 @@ subboneSelect.addEventListener("change", (e) => {
     showPlaceholder();
   }
 });
+
+  document.addEventListener("checkAnnotationLink", (e) => {
+    let checkText = e.detail.text;
+    if (!checkText) return;
+
+    checkText = checkText.replace(/\s+/g, " ").trim().toLowerCase();
+    const currentBone = boneSelect.value;
+
+    if (currentBone && imageAnnotationToDropdownMap[currentBone] && imageAnnotationToDropdownMap[currentBone][checkText]) {
+        checkText = imageAnnotationToDropdownMap[currentBone][checkText];
+    }
+
+    const isValidSubbone = combinedData.subbones.some(sb => sb.name?.toLowerCase() === checkText);
+    const isValidBone = combinedData.bones.some(b => b.name?.toLowerCase() === checkText);
+
+    if (isValidSubbone || isValidBone) {
+        e.detail.isValid = true; 
+    }
+  });
+
+  // Image annotation clicked
+  document.addEventListener("annotationSelected", (e) => {
+    let clickedText = e.detail.text;
+    if (!clickedText) return;
+
+    clickedText = clickedText.replace(/\s+/g, " ").trim().toLowerCase();
+
+    const currentBone = boneSelect.value;
+
+    // Mapping the image annotation to dropdown option
+    // If the currently viewed bone has a dictionary, and the clicked text is in it, translate it.
+    if (currentBone && imageAnnotationToDropdownMap[currentBone] && imageAnnotationToDropdownMap[currentBone][clickedText]) {
+        clickedText = imageAnnotationToDropdownMap[currentBone][clickedText];
+    }
+
+    // Check Sub-bones
+    const matchedSubbone = combinedData.subbones.find(
+      sb => sb.name?.toLowerCase() === clickedText
+    );
+
+    if (matchedSubbone) {
+      if (boneSelect.value !== matchedSubbone.bone) {
+         boneSelect.value = matchedSubbone.bone;
+         boneSelect.dispatchEvent(new Event("change")); 
+      }
+      subboneSelect.value = matchedSubbone.id;
+      subboneSelect.dispatchEvent(new Event("change"));
+      return;
+    }
+
+    // Check Bones
+    const matchedBone = combinedData.bones.find(
+      b => b.name?.toLowerCase() === clickedText
+    );
+
+    if (matchedBone) {
+      boneSelect.value = matchedBone.id;
+      boneSelect.dispatchEvent(new Event("change"));
+      return;
+    }
+
+  });
 }

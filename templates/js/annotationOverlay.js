@@ -15,7 +15,12 @@ function ensureStage(container) {
 export function clearAnnotations(container) {
   if (!container) return;
   const stage = container.querySelector(".annotation-stage");
-  if (stage) stage.remove();
+  if (stage) {
+      if (stage.__resizeObs) {
+          stage.__resizeObs.disconnect();
+      }
+      stage.remove();
+  }
 }
 
 /**
@@ -114,7 +119,31 @@ export function drawAnnotations(container, annotationsJson) {
       justifyContent: "center",
       whiteSpace: "pre-line",   // show newlines
       textAlign: "center",      // center both lines
+      zIndex: "100",
+      pointerEvents: "auto"
     });
+
+    const validateEvent = new CustomEvent("checkAnnotationLink", {
+        detail: { text: a.text_content, isValid: false }
+    });
+    document.dispatchEvent(validateEvent);
+
+    if (validateEvent.detail.isValid) {
+        el.classList.add("valid-link");
+        
+        el.addEventListener("click", () => {
+            const clickEvent = new CustomEvent("annotationSelected", {
+                detail: { text: a.text_content, annotationData: a },
+                bubbles: true
+            });
+            container.dispatchEvent(clickEvent);
+        });
+    } else {
+        if (!a.hasLoggedWarning) {
+            console.warn(`Broken link detected: "${a.text_content}" does not map to a known bone.`);
+            a.hasLoggedWarning = true;
+        }
+    }
 
     labels.appendChild(el);
 
