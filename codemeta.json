@@ -1,0 +1,275 @@
+{
+  "name": "Digital Bone Box",
+  "@context": "https://w3id.org/codemeta/3.0",
+  "author": [
+    {
+      "affiliation": {
+        "name": "Saint Louis University",
+        "type": "Organization"
+      },
+      "familyName": "Kolla",
+      "id": "https://github.com/DeviPriya-Kolla",
+      "givenName": "Devi Priya",
+      "type": "Person"
+    },
+    {
+      "affiliation": {
+        "name": "Saint Louis University",
+        "type": "Organization"
+      },
+      "familyName": "Iragavarapu",
+      "id": "https://github.com/jacksayshi",
+      "givenName": "Santosh",
+      "type": "Person"
+    },
+    {
+      "affiliation": {
+        "name": "Saint Louis University",
+        "type": "Organization"
+      },
+      "familyName": "Khan",
+      "id": "https://github.com/Balijah",
+      "givenName": "Burhan",
+      "type": "Person"
+    },
+    {
+      "affiliation": {
+        "name": "Saint Louis University",
+        "type": "Organization"
+      },
+      "familyName": "Tomlinson",
+      "id": "https://github.com/tluke900",
+      "givenName": "Luke",
+      "type": "Person"
+    },
+    {
+      "affiliation": {
+        "name": "Saint Louis University",
+        "type": "Organization"
+      },
+      "familyName": "Budzynski",
+      "id": "https://github.com/JoshBudzynski",
+      "givenName": "Josh",
+      "type": "Person"
+    },
+    {
+      "affiliation": {
+        "name": "Saint Louis University",
+        "type": "Organization"
+      },
+      "familyName": "Trejo-Arciles",
+      "id": "https://github.com/strejoarciles",
+      "givenName": "Sasha",
+      "type": "Person"
+    },
+    {
+      "affiliation": {
+        "name": "Saint Louis University",
+        "type": "Organization"
+      },
+      "familyName": "Aktar",
+      "id": "https://github.com/Taktar",
+      "givenName": "Taslima",
+      "type": "Person"
+    },
+    {
+      "affiliation": {
+        "name": "Saint Louis University",
+        "type": "Organization"
+      },
+      "familyName": "Onwuagana",
+      "id": "https://github.com/UcheWendy",
+      "givenName": "Wendy",
+      "type": "Person"
+    },
+    {
+      "affiliation": {
+        "name": "Saint Louis University",
+        "type": "Organization"
+      },
+      "familyName": "Oishee",
+      "id": "https://github.com/Joishee05",
+      "givenName": "Jennifer",
+      "type": "Person"
+    },
+    {
+      "affiliation": {
+        "name": "Saint Louis University",
+        "type": "Organization"
+      },
+      "familyName": "Naidu",
+      "id": "https://github.com/Brehana-Naidu",
+      "givenName": "Brehana",
+      "type": "Person"
+    },
+    {
+      "affiliation": {
+        "name": "Saint Louis University",
+        "type": "Organization"
+      },
+      "familyName": "Martin",
+      "id": "https://github.com/leandrumartin",
+      "givenName": "Leandru",
+      "type": "Person"
+    },
+    {
+      "affiliation": {
+        "name": "Saint Louis University",
+        "type": "Organization"
+      },
+      "familyName": "Holdener",
+      "id": "https://github.com/kate-holdener",
+      "givenName": "Kate",
+      "type": "Person"
+    },
+    {
+      "affiliation": {
+        "name": "Saint Louis University",
+        "type": "Organization"
+      },
+      "familyName": "Shown",
+      "id": "https://github.com/kungfuchicken",
+      "givenName": "Daniel",
+      "type": "Person"
+    },
+    {
+      "roleName": "Tech Lead",
+      "schema:author": "https://github.com/DeviPriya-Kolla",
+      "type": "Role"
+    },
+    {
+      "roleName": "Tech Lead",
+      "schema:author": "https://github.com/jacksayshi",
+      "type": "Role"
+    },
+    {
+      "roleName": "Developer",
+      "schema:author": "https://github.com/Balijah",
+      "type": "Role"
+    },
+    {
+      "roleName": "Developer",
+      "schema:author": "https://github.com/tluke900",
+      "type": "Role"
+    },
+    {
+      "roleName": "Developer",
+      "schema:author": "https://github.com/JoshBudzynski",
+      "type": "Role"
+    },
+    {
+      "roleName": "Developer",
+      "schema:author": "https://github.com/strejoarciles",
+      "type": "Role"
+    },
+    {
+      "roleName": "Developer",
+      "schema:author": "https://github.com/Taktar",
+      "type": "Role"
+    },
+    {
+      "roleName": "Tech Lead",
+      "schema:author": "https://github.com/UcheWendy",
+      "type": "Role"
+    },
+    {
+      "roleName": "Developer",
+      "schema:author": "https://github.com/Joishee05",
+      "type": "Role"
+    },
+    {
+      "roleName": "Developer",
+      "schema:author": "https://github.com/Brehana-Naidu",
+      "type": "Role"
+    },
+    {
+      "roleName": "Tech Lead",
+      "schema:author": "https://github.com/leandrumartin",
+      "type": "Role"
+    }
+  ],
+  "contributor": [
+    {
+      "familyName": "Nandala",
+      "id": "https://github.com/vnandala",
+      "givenName": "Vamshi",
+      "type": "Person"
+    },
+    {
+      "affiliation": {
+        "name": "Saint Louis University",
+        "type": "Organization"
+      },
+      "familyName": "Oluwategbe",
+      "id": "https://github.com/pelumitegbe",
+      "givenName": "Pelumi",
+      "type": "Person"
+    },
+    {
+      "familyName": "Volkmann",
+      "id": "https://github.com/mvolkmann",
+      "givenName": "Mark",
+      "type": "Person"
+    },
+    {
+      "affiliation": {
+        "name": "Saint Louis University",
+        "type": "Organization"
+      },
+      "familyName": "Antony",
+      "id": "https://github.com/Mehulantony",
+      "givenName": "Mehul",
+      "type": "Person"
+    },
+    {
+      "affiliation": {
+        "name": "Saint Louis University",
+        "type": "Organization"
+      },
+      "familyName": "Kann",
+      "id": "https://github.com/dracpak",
+      "givenName": "Samuel",
+      "type": "Person"
+    },
+    {
+      "familyName": "Etschel",
+      "id": "https://github.com/tschambonofive",
+      "givenName": "Jan",
+      "type": "Person"
+    },
+    {
+      "id": "https://github.com/johns70",
+      "givenName": "John",
+      "type": "Person"
+    },
+    {
+      "familyName": "Roseira Machado",
+      "id": "https://github.com/rafaroseira",
+      "givenName": "Rafael",
+      "type": "Person"
+    }
+  ],
+  "codeRepository": "https://github.com/oss-slu/DigitalBoneBox",
+  "dateCreated": "2024-08-23",
+  "description": " A project aiming to convert an existing PowerPoint-based educational tool into an interactive, mobile-friendly web application for anatomy students. ",
+  "developmentStatus": "wip",
+  "issueTracker": "https://github.com/oss-slu/DigitalBoneBox/issues",
+  "keywords": [
+    "nodejs",
+    "javascript",
+    "python",
+    "webapp",
+    "anatomy-learning"
+  ],
+  "license": "https://spdx.org/licenses/MIT",
+  "programmingLanguage": [
+    "JavaScript"
+  ],
+  "relatedLink": [
+    "https://oss-slu.github.io/projects/digital_bone_box/about"
+  ],
+  "softwareRequirements": [
+    "Node.js"
+  ],
+  "type": "SoftwareSourceCode"
+}
