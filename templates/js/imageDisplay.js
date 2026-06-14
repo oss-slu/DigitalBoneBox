@@ -89,7 +89,7 @@ export function displayBoneImages(images, options = {}) {
   }
 
   if (images.length === 1) {
-    displaySingleImage(images[0], container, options);
+    displaySingleImage(images[0], container);
   } else if (images.length === 2) {
     displayTwoImages(images, container, options);
   } else {
@@ -109,16 +109,11 @@ export function displayBoneImages(images, options = {}) {
         }
       })
       .catch(err => console.warn("Failed to load annotations:", err));
-  } else if (options.annotationsUrl) {
-    // Fallback for direct URL (backward compatibility)
-    loadAndDrawAnnotations(container, options.annotationsUrl).catch(err =>
-      console.warn("Failed to load annotations:", err)
-    );
   }
 }
 
 /* Single image */
-function displaySingleImage(image, container, options = {}) {
+function displaySingleImage(image, container) {
   const captions = getCaptionsForBone(currentBoneId);
 
   container.className = "single-image";
@@ -165,12 +160,6 @@ function displaySingleImage(image, container, options = {}) {
       if (currentBoneId) {
         displayColoredRegions(img, currentBoneId, 0).catch(err => {
           console.warn(`Could not display colored regions for ${currentBoneId}:`, err);
-        });
-      }
-      if (options.annotationsUrl) {
-        // Fallback for direct URL (backward compatibility)
-        loadAndDrawAnnotations(container, options.annotationsUrl).catch(err => {
-          console.warn("Failed to load text annotations:", err);
         });
       }
     };
