@@ -90,7 +90,7 @@ export function displayBoneImages(images, options = {}) {
   if (images.length === 1) {
     displaySingleImage(images[0], container, options);
   } else if (images.length === 2) {
-    displayTwoImages(images, container, options);
+    displayTwoImages(images, container);
   } else {
     displayMultipleImages(images, container);
   }
@@ -178,7 +178,7 @@ function displaySingleImage(image, container, options = {}) {
   }
 }
 
-function displayTwoImages(images, container, options = {}) {
+function displayTwoImages(images, container) {
   const captions = getCaptionsForBone(currentBoneId);
 
   container.className = "two-images";
