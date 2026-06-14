@@ -12,16 +12,13 @@ function getImageStage() {
   return (document.getElementById("bone-image-container"));
 }
 
-// Backend API base (runs on 8000)
-const API_BASE = "http://127.0.0.1:8000";
-
 /** Helper: fetch images for a bone/sub-bone and render them */
 async function loadBoneImages(boneId, options = {}) {
   const stage = getImageStage();
 
-  if (stage) { 
-      clearAnnotations(stage); 
-      stage.classList.remove("with-annotations"); 
+  if (stage) {
+      clearAnnotations(stage);
+      stage.classList.remove("with-annotations");
   }
 
   if (!boneId) {
@@ -103,19 +100,18 @@ bonesetSelect.addEventListener("change", (e) => {
 
   let targetId = selectedBonesetId; // Use the Boneset ID (e.g., 'bony_pelvis')
 
-  // Set annotation URL using the Boneset ID.
-  const opts = (bonesetName === "bony pelvis")
-    ? { 
-        annotationsUrl: `${API_BASE}/api/annotations/${targetId}`,
-        isBonesetSelection: true // Flag to indicate boneset selection
-      }
-    : {};
+  // Pass boneId and boneset selection flag to the image loader
+  const opts = {
+    boneId: targetId,
+    isBonesetSelection: bonesetName === "bony pelvis"
+  };
 
   // Load the Boneset description (which shows the overall Boneset text)
   loadDescription(targetId);
 
   // Load the boneset image using the Boneset ID (e.g., 'bony_pelvis')
-  loadBoneImages(targetId, opts); 
+  loadBoneImages(targetId, opts);
+
 });
 
 
@@ -137,9 +133,7 @@ boneSelect.addEventListener("change", (e) => {
   if (selectedBoneId) {
     loadDescription(selectedBoneId);
 
-    const opts = { 
-      annotationsUrl: `${API_BASE}/api/annotations/${selectedBoneId}` 
-    };    
+    const opts = { boneId: selectedBoneId };
     
     loadBoneImages(selectedBoneId, opts);
   } else {
@@ -164,7 +158,7 @@ subboneSelect.addEventListener("change", (e) => {
     loadDescription(selectedSubboneId);
 
     const opts = {
-      annotationsUrl: `${API_BASE}/api/annotations/${selectedSubboneId}`,
+      boneId: selectedSubboneId,
     };
 
     loadBoneImages(selectedSubboneId, opts);
@@ -188,7 +182,7 @@ subboneSelect.addEventListener("change", (e) => {
     const isValidBone = combinedData.bones.some(b => b.name?.toLowerCase() === checkText);
 
     if (isValidSubbone || isValidBone) {
-        e.detail.isValid = true; 
+        e.detail.isValid = true;
     }
   });
 
@@ -215,7 +209,7 @@ subboneSelect.addEventListener("change", (e) => {
     if (matchedSubbone) {
       if (boneSelect.value !== matchedSubbone.bone) {
          boneSelect.value = matchedSubbone.bone;
-         boneSelect.dispatchEvent(new Event("change")); 
+         boneSelect.dispatchEvent(new Event("change"));
       }
       subboneSelect.value = matchedSubbone.id;
       subboneSelect.dispatchEvent(new Event("change"));

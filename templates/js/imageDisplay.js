@@ -1,6 +1,7 @@
-import { clearAnnotations, loadAndDrawAnnotations } from "./annotationOverlay.js";
+import {clearAnnotations, drawAnnotations, attachAutoscale} from "./annotationOverlay.js";
 import { displayColoredRegions, clearAllColoredRegions } from "./coloredRegionsOverlay.js";
 import { imageCaptions } from "./imageCaptions.js";
+import { fetchAnnotations } from "./api.js";
 
 let currentBoneId = null;
 let currentIsBonesetSelection = false; // Track if this is a boneset selection
@@ -88,7 +89,7 @@ export function displayBoneImages(images, options = {}) {
   }
 
   if (images.length === 1) {
-    displaySingleImage(images[0], container, options);
+    displaySingleImage(images[0], container);
   } else if (images.length === 2) {
     displayTwoImages(images, container);
   } else {
@@ -98,15 +99,21 @@ export function displayBoneImages(images, options = {}) {
   const imagesContent = document.querySelector(".images-content");
   if (imagesContent) imagesContent.classList.add("has-images");
 
-  if (options.annotationsUrl) {
-    loadAndDrawAnnotations(container, options.annotationsUrl).catch(err =>
-      console.warn("Failed to load annotations:", err)
-    );
+  // Load and draw annotations based on boneId (fire and forget)
+  if (options.boneId) {
+    fetchAnnotations(options.boneId)
+      .then(annotationData => {
+        if (annotationData) {
+          drawAnnotations(container, annotationData);
+          attachAutoscale(container); // keep aligned on resize
+        }
+      })
+      .catch(err => console.warn("Failed to load annotations:", err));
   }
 }
 
 /* Single image */
-function displaySingleImage(image, container, options = {}) {
+function displaySingleImage(image, container) {
   const captions = getCaptionsForBone(currentBoneId);
 
   container.className = "single-image";
@@ -153,12 +160,6 @@ function displaySingleImage(image, container, options = {}) {
       if (currentBoneId) {
         displayColoredRegions(img, currentBoneId, 0).catch(err => {
           console.warn(`Could not display colored regions for ${currentBoneId}:`, err);
-        });
-      }
-      // Load text annotations if provided
-      if (options.annotationsUrl) {
-        loadAndDrawAnnotations(container, options.annotationsUrl).catch(err => {
-          console.warn("Failed to load text annotations:", err);
         });
       }
     };

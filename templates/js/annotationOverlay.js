@@ -179,7 +179,7 @@ export async function loadAndDrawAnnotations(container, jsonUrl) {
 }
 
 /** Re-draw on container resize using the last JSON used. */
-function attachAutoscale(container) {
+export function attachAutoscale(container) {
   const stage = ensureStage(container);
   if (stage.__resizeObs) return; // already attached
 
