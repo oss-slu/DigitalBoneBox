@@ -4,7 +4,6 @@ import { imageCaptions } from "./imageCaptions.js";
 import { fetchAnnotations } from "./api.js";
 
 let currentBoneId = null;
-let currentIsBonesetSelection = false; // Track if this is a boneset selection
 
 function getImageContainer() {
   return (
@@ -60,7 +59,6 @@ export function clearImages() {
   clearCaptionContainer();
 
   currentBoneId = null;
-  currentIsBonesetSelection = false; // Reset the flag
 
   // Remove black background class when clearing images
   const imagesContent = document.querySelector(".images-content");
@@ -81,7 +79,6 @@ export function displayBoneImages(images, options = {}) {
 
   // Store boneId for colored regions AFTER clearing (so it doesn't get reset to null)
   currentBoneId = options.boneId || null;
-  currentIsBonesetSelection = options.isBonesetSelection || false; // Store boneset flag
 
   if (!Array.isArray(images) || images.length === 0) {
     showPlaceholder();
@@ -195,7 +192,7 @@ function displayTwoImages(images, container) {
       img.classList.add("loaded");
       // Display colored regions for this image
       if (currentBoneId) {
-        displayColoredRegions(img, currentBoneId, index, currentIsBonesetSelection).catch(err => {
+        displayColoredRegions(img, currentBoneId, index).catch(err => {
           console.error(`[ImageDisplay] Could not display colored regions for ${currentBoneId} image ${index}:`, err);
         });
       } else {

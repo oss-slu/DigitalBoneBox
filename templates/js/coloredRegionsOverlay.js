@@ -76,20 +76,19 @@ const OVERLAY_ADJUSTMENTS = {
 /**
  * Fetch colored region data for a specific bone from the API server
  * @param {string} boneId - The bone identifier (e.g., "pubis", "ilium")
- * @param {boolean} isBonesetSelection - Whether this is a boneset selection (not individual bone)
  * @returns {Object|null} - The colored region data or null if not available
  */
-async function fetchColoredRegionData(boneId, isBonesetSelection = false) {
+async function fetchColoredRegionData(boneId) {
     if (!boneId) {
         console.error("[ColoredRegions] No boneId provided for colored regions");
         return null;
     }
 
-    console.log(`[ColoredRegions] Fetching colored region data for boneId: "${boneId}", isBonesetSelection: ${isBonesetSelection}`);
+    console.log(`[ColoredRegions] Fetching colored region data for boneId: "${boneId}"`);
     
     // Map ilium to bony_pelvis for boneset selections
     let mappedBoneId = boneId;
-    if (boneId === "ilium" && isBonesetSelection) {
+    if (boneId === "ilium") {
         console.debug("[ColoredRegions] Mapping \"ilium\" to \"bony_pelvis\" for boneset selection");
         mappedBoneId = "bony_pelvis";
     }
@@ -366,11 +365,10 @@ function createColoredRegionsSVG(coloredRegions, imageWidth, imageHeight, imageD
  * @param {HTMLImageElement} imageElement - The bone image element
  * @param {string} boneId - The bone identifier
  * @param {number} imageIndex - The index of the image (0 for left, 1 for right, etc.)
- * @param {boolean} isBonesetSelection - Whether this is a boneset selection (not individual bone)
  * @returns {Promise<void>}
  */
-export async function displayColoredRegions(imageElement, boneId, imageIndex = 0, isBonesetSelection = false) {
-    console.debug(`[ColoredRegions] boneId: ${boneId}, imageIndex: ${imageIndex}, isBonesetSelection: ${isBonesetSelection}`);
+export async function displayColoredRegions(imageElement, boneId, imageIndex = 0) {
+    console.debug(`[ColoredRegions] boneId: ${boneId}, imageIndex: ${imageIndex}`);
     console.debug("[ColoredRegions] imageElement:", imageElement);
     
     if (!imageElement || !boneId) {
@@ -380,13 +378,13 @@ export async function displayColoredRegions(imageElement, boneId, imageIndex = 0
 
     // Map ilium to bony_pelvis for positioning lookups (same as in fetchColoredRegionData)
     let mappedBoneId = boneId;
-    if (boneId === "ilium" && isBonesetSelection) {
+    if (boneId === "ilium") {
         mappedBoneId = "bony_pelvis";
         console.debug("[ColoredRegions] Using mapped bone ID \"bony_pelvis\" for positioning adjustments");
     }
 
     // Fetch colored region data
-    const regionData = await fetchColoredRegionData(boneId, isBonesetSelection);
+    const regionData = await fetchColoredRegionData(boneId);
     console.log("[ColoredRegions] Fetched regionData:", regionData);
     
     // Return early if no colored region data exists

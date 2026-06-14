@@ -95,15 +95,11 @@ bonesetSelect.addEventListener("change", (e) => {
     return;
   }
 
-  const bonesetName =
-    (bonesetSelect.options[bonesetSelect.selectedIndex]?.text || "").trim().toLowerCase();
-
   let targetId = selectedBonesetId; // Use the Boneset ID (e.g., 'bony_pelvis')
 
   // Pass boneId and boneset selection flag to the image loader
   const opts = {
     boneId: targetId,
-    isBonesetSelection: bonesetName === "bony pelvis"
   };
 
   // Load the Boneset description (which shows the overall Boneset text)
