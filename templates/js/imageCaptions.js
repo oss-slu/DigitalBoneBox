@@ -1,4 +1,3 @@
-// js/imageCaptions.js
 // Image captions for bone images, extracted from PowerPoint slides
 
 export const imageCaptions = {

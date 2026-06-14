@@ -136,6 +136,8 @@ function searchItems(query, limit = 20) {
     
     // First pass: prefix matches (higher priority)
     for (const item of searchCache) {
+        if (!item.name) continue;
+        
         if (item.name.toLowerCase().startsWith(q)) {
             results.push({ ...item, priority: 1 });
         }
@@ -143,6 +145,8 @@ function searchItems(query, limit = 20) {
     
     // Second pass: substring matches (lower priority)
     for (const item of searchCache) {
+        if (!item.name) continue;
+        
         if (!item.name.toLowerCase().startsWith(q) && item.name.toLowerCase().includes(q)) {
             results.push({ ...item, priority: 2 });
         }
@@ -370,14 +374,10 @@ app.get("/api/annotations/:boneId", searchLimiter, async (req, res) => {
             });
         }
 
-        // Define Full Slide Dimensions for Normalization
-        // Use standard PPT slide dimensions if 'full_slide_dimensions' is missing from the template.
-        const fullDimensions = templateData.full_slide_dimensions || { 
-            width: 9144000, 
-            height: 5143500 
-        };
-        const slideWidth = fullDimensions.width;
-        const slideHeight = fullDimensions.height;
+        // Define Full Slide Dimensions for Normalization. We normalize the text annotation dimentions to the slide
+        //  widths so that the values used by the frontend are decoupled from the slide dimensions.
+        const slideWidth = 9144000;
+        const slideHeight = 5143500;
         
         // Combine required data for the frontend
         let normalizedGeometry = templateData.normalized_geometry
@@ -496,10 +496,8 @@ app.get("/api/search", searchLimiter, (req, res) => {
     }
 });
 
-//  CORRECTED SERVER STARTUP LOGIC 
-// 1. Initialize cache first. 2. Start server only if run directly (for testability).
 async function startServer() {
-    await initializeSearchCache(); // Wait for the cache to be built
+    await initializeSearchCache();
     
     // Start the server only if this file is run directly (not imported)
     if (require.main == module) {
@@ -509,7 +507,7 @@ async function startServer() {
     }
 }
 
-startServer(); // Call the async function to begin startup
+startServer();
 
 // Export for tests or other modules if needed
 module.exports = {

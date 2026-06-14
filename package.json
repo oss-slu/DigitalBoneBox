@@ -18,23 +18,23 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "axios": "^1.15.0",
-    "body-parser": "^1.20.3",
+    "axios": "^1.16.0",
+    "body-parser": "^1.20.5",
     "cors": "^2.8.5",
-    "express": "^4.21.2",
-    "simple-git": "^3.32.3"
+    "express": "^4.22.2",
+    "simple-git": "^3.36.0"
   },
   "devDependencies": {
     "@babel/core": "^7.28.5",
     "@babel/preset-env": "^7.28.5",
     "babel-jest": "^29.7.0",
-    "concurrently": "^9.2.1",
+    "concurrently": "^10.0.3",
     "eslint": "^9.24.0",
     "http-server": "^14.1.1",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^30.2.0"
   },
   "directories": {
-    "test": "tests"
+    "test": "templates/tests"
   }
 }

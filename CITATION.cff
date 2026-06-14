@@ -1,0 +1,55 @@
+title: Digital Bone Box
+authors:
+  - given-names: Devi Priya
+    family-names: Kolla
+    affiliation: Saint Louis University
+  - given-names: Santosh
+    family-names: Iragavarapu
+    affiliation: Saint Louis University
+  - given-names: Burhan
+    family-names: Khan
+    affiliation: Saint Louis University
+  - given-names: Luke
+    family-names: Tomlinson
+    affiliation: Saint Louis University
+  - given-names: Josh
+    family-names: Budzynski
+    affiliation: Saint Louis University
+  - given-names: Sasha
+    family-names: Trejo-Arciles
+    affiliation: Saint Louis University
+  - given-names: Taslima
+    family-names: Aktar
+    affiliation: Saint Louis University
+  - given-names: Wendy
+    family-names: Onwuagana
+    affiliation: Saint Louis University
+  - given-names: Jennifer
+    family-names: Oishee
+    affiliation: Saint Louis University
+  - given-names: Brehana
+    family-names: Naidu
+    affiliation: Saint Louis University
+  - given-names: Leandru
+    family-names: Martin
+    affiliation: Saint Louis University
+  - given-names: Kate
+    family-names: Holdener
+    affiliation: Saint Louis University
+  - given-names: Daniel
+    family-names: Shown
+    affiliation: Saint Louis University
+cff-version: 1.2.0
+message: If you use this software, please cite it using the metadata from this file.
+type: software
+abstract: " A project aiming to convert an existing PowerPoint-based educational
+  tool into an interactive, mobile-friendly web application for anatomy
+  students. "
+keywords:
+  - nodejs
+  - javascript
+  - python
+  - webapp
+  - anatomy-learning
+license: MIT
+repository-code: https://github.com/oss-slu/DigitalBoneBox

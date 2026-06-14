@@ -2,9 +2,11 @@ import { fetchSearch } from "./api.js";
 
 let selectedIndex = -1;
 let searchTimeout;
+let isInitialized = false;
 
 // Handle search result clicks and keyboard navigation
 export function initializeSearch() {
+    if (isInitialized) return;
     const searchBar = document.getElementById("search-bar");
     const searchResultsContainer = document.getElementById("search-results");
     const searchLoading = document.getElementById("search-loading");
@@ -15,7 +17,8 @@ export function initializeSearch() {
     }
 
     console.log("Search initialized");
-
+    isInitialized = true;
+    
     // Handle typing in search bar
     searchBar.addEventListener("input", (e) => {
         clearTimeout(searchTimeout);
@@ -81,7 +84,6 @@ async function performSearch(query) {
         searchLoading.style.display = "none";
         selectedIndex = -1;
         
-        // Attach click handlers to new results
         attachClickHandlers();
         
     } catch (error) {
@@ -180,5 +182,4 @@ function clearSearchResults() {
     selectedIndex = -1;
 }
 
-// Initialize when DOM is loaded
 document.addEventListener("DOMContentLoaded", initializeSearch);
