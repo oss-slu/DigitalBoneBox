@@ -1,4 +1,4 @@
-import {clearAnnotations, loadAndDrawAnnotations, drawAnnotations, attachAutoscale} from "./annotationOverlay.js";
+import {clearAnnotations, drawAnnotations, attachAutoscale} from "./annotationOverlay.js";
 import { displayColoredRegions, clearAllColoredRegions } from "./coloredRegionsOverlay.js";
 import { imageCaptions } from "./imageCaptions.js";
 import { fetchAnnotations } from "./api.js";

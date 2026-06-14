@@ -65,7 +65,10 @@ export async function fetchColoredRegionsData(boneId) {
             }
         });
 
-        if (!response.ok && response.status !== 404) {
+        if (response.status === 404) {
+            return null;
+        }
+        if (!response.ok) {
             console.warn(`[ColoredRegions] API returned status ${response.status}: ${response.statusText}`);
             return null;
         }
