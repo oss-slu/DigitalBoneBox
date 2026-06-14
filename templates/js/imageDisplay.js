@@ -176,6 +176,7 @@ function displaySingleImage(image, container, options = {}) {
           })
           .catch(err => console.warn("Failed to load text annotations:", err));
       } else if (options.annotationsUrl) {
+        // Fallback for direct URL (backward compatibility)
         loadAndDrawAnnotations(container, options.annotationsUrl).catch(err => {
           console.warn("Failed to load text annotations:", err);
         });

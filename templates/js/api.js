@@ -65,7 +65,7 @@ export async function fetchColoredRegionsData(boneId) {
             }
         });
 
-        if (!response.ok) {
+        if (!response.ok && response.status !== 404) {
             console.warn(`[ColoredRegions] API returned status ${response.status}: ${response.statusText}`);
             return null;
         }
@@ -104,10 +104,6 @@ export async function fetchAnnotations(boneId) {
  * @returns {string} - HTML content with search results or error message
  */
 export async function fetchSearch(query) {
-    if (!query || query.trim().length < 2) {
-        return "<li class='search-placeholder'>Enter at least 2 characters to search</li>";
-    }
-
     const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SEARCH}?q=${encodeURIComponent(query)}`;
     try {
         const response = await fetch(url);
