@@ -1,4 +1,4 @@
-import { clearAnnotations, loadAndDrawAnnotations, drawAnnotations } from "./annotationOverlay.js";
+import {clearAnnotations, loadAndDrawAnnotations, drawAnnotations, attachAutoscale} from "./annotationOverlay.js";
 import { displayColoredRegions, clearAllColoredRegions } from "./coloredRegionsOverlay.js";
 import { imageCaptions } from "./imageCaptions.js";
 import { fetchAnnotations } from "./api.js";
@@ -105,6 +105,7 @@ export function displayBoneImages(images, options = {}) {
       .then(annotationData => {
         if (annotationData) {
           drawAnnotations(container, annotationData);
+          attachAutoscale(container); // keep aligned on resize
         }
       })
       .catch(err => console.warn("Failed to load annotations:", err));
@@ -166,16 +167,7 @@ function displaySingleImage(image, container, options = {}) {
           console.warn(`Could not display colored regions for ${currentBoneId}:`, err);
         });
       }
-      // Load text annotations if provided
-      if (options.boneId) {
-        fetchAnnotations(options.boneId)
-          .then(annotationData => {
-            if (annotationData) {
-              drawAnnotations(container, annotationData);
-            }
-          })
-          .catch(err => console.warn("Failed to load text annotations:", err));
-      } else if (options.annotationsUrl) {
+      if (options.annotationsUrl) {
         // Fallback for direct URL (backward compatibility)
         loadAndDrawAnnotations(container, options.annotationsUrl).catch(err => {
           console.warn("Failed to load text annotations:", err);
