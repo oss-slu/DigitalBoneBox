@@ -62,6 +62,8 @@ function isValidBoneId(boneId) {
 }
 
 async function readJSON(filePath) {
+    const resolvedPath = path.resolve(filePath);
+
     let dataRootPath;
     try {
         dataRootPath = await fs.realpath(LOCAL_DATA_DIR);
@@ -69,29 +71,11 @@ async function readJSON(filePath) {
         dataRootPath = path.resolve(LOCAL_DATA_DIR);
     }
 
-    const rootRelativePath = path.relative(dataRootPath, filePath);
-    const resolvedPath = path.resolve(dataRootPath, rootRelativePath);
-
     let canonicalPath;
     try {
         canonicalPath = await fs.realpath(resolvedPath);
     } catch (error) {
-        if (error.code === "ENOENT") {
-            const relativeToDataDir = path.relative(dataRootPath, resolvedPath);
-            const isWithinDataDir =
-                !relativeToDataDir.startsWith("..") &&
-                !path.isAbsolute(relativeToDataDir);
-
-            if (!isWithinDataDir) {
-                console.error(`Blocked file access outside data directory: ${filePath}`);
-                return { data: null, status: 403 };
-            }
-
-            return { data: null, status: 404 };
-        }
-
-        console.error(`Failed to resolve JSON path ${resolvedPath}:`, error.message);
-        return { data: null, status: 500 };
+        canonicalPath = resolvedPath;
     }
 
     const relativeToDataDir = path.relative(dataRootPath, canonicalPath);
