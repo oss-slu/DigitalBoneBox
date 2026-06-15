@@ -1,0 +1,98 @@
+{
+  "slide_number": 2,
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Anterior view",
+      "text_content": "Anterior view",
+      "text_box": {
+        "x": 3779892.0,
+        "y": 3429000.0,
+        "width": 685800.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "108"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId16",
+        "target": "/ppt/slides/slide3.xml",
+        "target_slide": 3
+      },
+      "pointer_lines": [],
+      "target_regions": []
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Superior view(cranial cavity)",
+      "text_content": "Superior view(cranial cavity)",
+      "text_box": {
+        "x": 7086600.0,
+        "y": 5955787.0,
+        "width": 685800.0,
+        "height": 338554.0,
+        "rotation_emu": 0.0,
+        "shape_id": "109"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId17",
+        "target": "/ppt/slides/slide19.xml",
+        "target_slide": 19
+      },
+      "pointer_lines": [],
+      "target_regions": []
+    },
+    {
+      "annotation_id": "annot_3",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Inferior view (cranial base)",
+      "text_content": "Inferior view (cranial base)",
+      "text_box": {
+        "x": 3795482.0,
+        "y": 5938580.0,
+        "width": 685800.0,
+        "height": 338554.0,
+        "rotation_emu": 0.0,
+        "shape_id": "110"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId18",
+        "target": "/ppt/slides/slide19.xml",
+        "target_slide": 19
+      },
+      "pointer_lines": [],
+      "target_regions": []
+    },
+    {
+      "annotation_id": "annot_4",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Lateral view",
+      "text_content": "Lateral view",
+      "text_box": {
+        "x": 7058463.0,
+        "y": 3407646.0,
+        "width": 685800.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "111"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId19",
+        "target": "/ppt/slides/slide11.xml",
+        "target_slide": 11
+      },
+      "pointer_lines": [],
+      "target_regions": []
+    }
+  ],
+  "total_text_annotations": 4,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

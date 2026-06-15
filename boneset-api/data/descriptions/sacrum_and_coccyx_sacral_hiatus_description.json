@@ -1,0 +1,10 @@
+{
+    "name": "Sacral hiatus",
+    "id": "sacrum_and_coccyx_sacral_hiatus",
+    "description": [
+        "The sacral vertebral foramina becomes the sacral canal.",
+        "The canal contains the cauda equina and the filum terminale as well as the spinal meninges.",
+        "The sacral canal terminates at the inferior part of the sacrum as the sacral hiatus."
+    ],
+    "images": ["sacrum_and_coccyx_(posterior_aspect)_image.png"]
+}

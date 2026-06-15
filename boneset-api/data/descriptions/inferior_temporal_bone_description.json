@@ -1,0 +1,18 @@
+{
+  "name": "Temporal Bones",
+  "id": "Temporal_bones",
+  "description": [
+    "Temporal bone",
+    "Petrotympanic fissure",
+    "A fissure between the mandibular fossa and the tympanic part of the temporal bone. Transmits the chorda tympani branch of the facial nerve (CN VII).",
+    "Carotid canal",
+    "A small opening in the petrous part medial to the styloid process. Transmits the internal carotid artery and the carotid autonomic plexus.",
+    "Styloid process",
+    "A sharp protrusion that extends inferiorly and anteriorly from the petrous part. Three muscles take origin here, they are: styloglossus, stylohyoid, and stylopharyngeus.",
+    "Stylomastoid foramen",
+    "An opening between the styloid and mastoid processes. Transmits the facial nerve (CN VII).",
+    "Mastoid process",
+    "A rounded protrusion that extends inferiorly from the lateral part of the temporal bone just behind the external acoustic meatus. Serves as an attachment for splenius and longissimus capitus, posterior belly of the digastric, and the sternocleidomastoid muscles."
+  ],
+  "images": ["inferior_temporal_bone_image.jpg"]
+}

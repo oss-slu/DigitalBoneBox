@@ -1,0 +1,14 @@
+{
+    "name": "Articular surfaces",
+    "id": "atlas_articular_surfaces",
+    "description": [
+        "Superior articular surface",
+        "Articulates with the condyles of the occipital bone of the skull.",
+        "Supports the weight of the head.",
+        "Mostly ovoid in shape, and can be partially subdivided into two separate surfaces.",
+        "Inferior articular surface",
+        "Mostly circular in shape.",
+        "Articulates with the superior articular surface of CV2 (Axis)."
+    ],
+    "images": ["atlas_(superior_aspect)_image.png", "atlas_(inferior_aspect)_image.png"]
+}

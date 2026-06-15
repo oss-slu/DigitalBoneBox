@@ -1,0 +1,81 @@
+{
+  "slide_number": 12,
+  "images": [
+    {
+      "index": 0,
+      "name": "pelvis_lat_blk.psd",
+      "width": 2236557,
+      "height": 3535362,
+      "colored_regions": [
+        {
+          "anatomical_name": "Ischial Tuberosity (Lateral View)",
+          "color": "008000",
+          "path_data": [
+            {
+              "path_width": 701319,
+              "path_height": 827730,
+              "commands": [
+                {"type": "moveTo", "x": 448591, "y": 644492},
+                {"type": "lineTo", "x": 404364, "y": 435980},
+                {"type": "lineTo", "x": 404364, "y": 360157},
+                {"type": "lineTo", "x": 391727, "y": 227468},
+                {"type": "lineTo", "x": 315909, "y": 94778},
+                {"type": "lineTo", "x": 221136, "y": 31593},
+                {"type": "lineTo", "x": 63181, "y": 0},
+                {"type": "lineTo", "x": 44227, "y": 75823},
+                {"type": "lineTo", "x": 18954, "y": 170601},
+                {"type": "lineTo", "x": 0, "y": 202194},
+                {"type": "lineTo", "x": 6318, "y": 353839},
+                {"type": "lineTo", "x": 50545, "y": 467573},
+                {"type": "lineTo", "x": 145318, "y": 593944},
+                {"type": "lineTo", "x": 227454, "y": 695041},
+                {"type": "lineTo", "x": 417000, "y": 783501},
+                {"type": "lineTo", "x": 568637, "y": 827730},
+                {"type": "lineTo", "x": 701319, "y": 751908},
+                {"type": "lineTo", "x": 581273, "y": 713996},
+                {"type": "lineTo", "x": 448591, "y": 644492},
+                {"type": "close"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "pelvis_med_blk.psd",
+      "width": 2554738,
+      "height": 3429000,
+      "colored_regions": [
+        {
+          "anatomical_name": "Ischial Tuberosity (Medial View)",
+          "color": "008000",
+          "path_data": [
+            {
+              "path_width": 949959,
+              "path_height": 664092,
+              "commands": [
+                {"type": "moveTo", "x": 899414, "y": 0},
+                {"type": "lineTo", "x": 886778, "y": 139008},
+                {"type": "lineTo", "x": 810959, "y": 290654},
+                {"type": "lineTo", "x": 684595, "y": 423343},
+                {"type": "lineTo", "x": 498296, "y": 543396},
+                {"type": "cubicBezTo", "x1": 423176, "y1": 570675, "x2": 311832, "y2": 578011, "x": 233874, "y": 587017},
+                {"type": "lineTo", "x": 0, "y": 614035},
+                {"type": "lineTo", "x": 35797, "y": 664092},
+                {"type": "lineTo", "x": 501368, "y": 650811},
+                {"type": "lineTo", "x": 684595, "y": 568670},
+                {"type": "lineTo", "x": 823596, "y": 454936},
+                {"type": "lineTo", "x": 880459, "y": 334884},
+                {"type": "lineTo", "x": 931005, "y": 183238},
+                {"type": "lineTo", "x": 949959, "y": 120053},
+                {"type": "lineTo", "x": 899414, "y": 0},
+                {"type": "close"}
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

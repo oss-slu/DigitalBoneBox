@@ -1,0 +1,8 @@
+{
+    "name": "Pedicle",
+    "id": "axis_pedicle",
+    "description": [
+        "A small piece that connects the transverse process to the body."
+    ],
+    "images": ["axis_(superior_aspect)_image.png", "axis_(inferior_aspect)_image.png"]
+}

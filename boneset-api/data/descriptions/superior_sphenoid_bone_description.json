@@ -1,0 +1,22 @@
+{
+  "name": "Sphenoid bone",
+  "id": "sphenoid_bone",
+  "description": [
+    "Sphenoid bone",
+    "Sella turcica",
+    "A depression that contains the pituitary gland and part of the cavernous sinus.",
+    "Optic canal",
+    "An opening that projects anteriorly to the orbit.",
+    "Transmits the optic nerve (CN II) and the ophthalmic artery.",
+    "Foramen rotundum",
+    "An opening in the medial part of the greater wing.",
+    "Transmits the maxillary nerve (V2).",
+    "Foramen ovale",
+    "An opening posterior to the foramen rotundum.",
+    "Transmits the mandibular nerve (V3), the accessory meningeal artery, and the lesser petrosal nerve.",
+    "Foramen spinosum",
+    "A small opening just posterior to the foramen ovale.",
+    "Transmits the middle meningeal artery and the meningeal branch of the mandibular nerve."
+  ],
+  "images": ["superior_sphenoid_bone_image.jpg"]
+}

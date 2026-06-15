@@ -1,0 +1,154 @@
+{
+  "slide_number": 33,
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Foramen magnum",
+      "text_content": "Foramen magnum",
+      "text_box": {
+        "x": 2816104.0,
+        "y": 5050529.0,
+        "width": 838200.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "1238"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_1",
+          "kind": "connector",
+          "start_point": {
+            "x": 3959104.0,
+            "y": 5158251.0
+          },
+          "end_point": {
+            "x": 3654304.0,
+            "y": 5158251.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1239",
+          "bbox": {
+            "x": 3654304.0,
+            "y": 5158251.0,
+            "width": 304800.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 3960000.0,
+          "y": 5160000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Jugular foramen",
+      "text_content": "Jugular foramen",
+      "text_box": {
+        "x": 2813494.0,
+        "y": 4738739.0,
+        "width": 765296.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "1241"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_2",
+          "kind": "connector",
+          "start_point": {
+            "x": 3810090.0,
+            "y": 4846461.0
+          },
+          "end_point": {
+            "x": 3578790.0,
+            "y": 4846461.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1240",
+          "bbox": {
+            "x": 3578790.0,
+            "y": 4846461.0,
+            "width": 231300.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 3808000.0,
+          "y": 4848000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_3",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Hypoglossal canal",
+      "text_content": "Hypoglossal canal",
+      "text_box": {
+        "x": 2813494.0,
+        "y": 5372077.0,
+        "width": 838200.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "1244"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_3",
+          "kind": "connector",
+          "start_point": {
+            "x": 4099294.0,
+            "y": 5479799.0
+          },
+          "end_point": {
+            "x": 3651694.0,
+            "y": 5479799.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1245",
+          "bbox": {
+            "x": 3651694.0,
+            "y": 5479799.0,
+            "width": 447600.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4096000.0,
+          "y": 5480000.0
+        }
+      ]
+    }
+  ],
+  "total_text_annotations": 3,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

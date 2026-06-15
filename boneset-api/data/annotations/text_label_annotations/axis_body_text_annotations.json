@@ -1,0 +1,245 @@
+{
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Axis (CV2): superior aspect",
+      "text_content": "Axis (CV2): superior aspect",
+      "text_box": {
+        "x": 3485252.0,
+        "y": 5257800.0,
+        "width": 1408772.0,
+        "height": 230832.0,
+        "rotation_emu": 0.0,
+        "shape_id": "505"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [],
+      "target_regions": []
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Axis (CV2): lateral aspect",
+      "text_content": "Axis (CV2): lateral aspect",
+      "text_box": {
+        "x": 6553201.0,
+        "y": 5257800.0,
+        "width": 1390539.0,
+        "height": 230832.0,
+        "rotation_emu": 0.0,
+        "shape_id": "506"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [],
+      "target_regions": []
+    },
+    {
+      "annotation_id": "annot_3",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Dens",
+      "text_content": "Dens",
+      "text_box": {
+        "x": 5681896.0,
+        "y": 2330677.0,
+        "width": 301159.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "508"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_1",
+          "kind": "connector",
+          "start_point": {
+            "x": 6629255.0,
+            "y": 2438399.0
+          },
+          "end_point": {
+            "x": 5983055.0,
+            "y": 2438399.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "509",
+          "bbox": {
+            "x": 5983055.0,
+            "y": 2438399.0,
+            "width": 646200.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        },
+        {
+          "line_id": "line_2",
+          "kind": "connector",
+          "start_point": {
+            "x": 5029096.0,
+            "y": 2438399.0
+          },
+          "end_point": {
+            "x": 5681896.0,
+            "y": 2438399.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "511",
+          "bbox": {
+            "x": 5029096.0,
+            "y": 2438399.0,
+            "width": 652800.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        },
+        {
+          "line_id": "line_5",
+          "kind": "connector",
+          "start_point": {
+            "x": 7943740.0,
+            "y": 3003323.0
+          },
+          "end_point": {
+            "x": 6629401.0,
+            "y": 2438400.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "517",
+          "bbox": {
+            "x": 6629401.0,
+            "y": 2438400.0,
+            "width": 1314339.0,
+            "height": 564923.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 5032000.0,
+          "y": 2440000.0
+        },
+        {
+          "x": 7944000.0,
+          "y": 3000000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_4",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Body",
+      "text_content": "Body",
+      "text_box": {
+        "x": 5681896.0,
+        "y": 3003322.0,
+        "width": 301159.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "510"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_3",
+          "kind": "connector",
+          "start_point": {
+            "x": 6400655.0,
+            "y": 3111044.0
+          },
+          "end_point": {
+            "x": 5983055.0,
+            "y": 3111044.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "513",
+          "bbox": {
+            "x": 5983055.0,
+            "y": 3111044.0,
+            "width": 417600.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        },
+        {
+          "line_id": "line_4",
+          "kind": "connector",
+          "start_point": {
+            "x": 5681896.0,
+            "y": 3111044.0
+          },
+          "end_point": {
+            "x": 4267096.0,
+            "y": 3111044.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "516",
+          "bbox": {
+            "x": 4267096.0,
+            "y": 3111044.0,
+            "width": 1414800.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        },
+        {
+          "line_id": "line_7",
+          "kind": "connector",
+          "start_point": {
+            "x": 8116654.0,
+            "y": 4343400.0
+          },
+          "end_point": {
+            "x": 6400800.0,
+            "y": 3111044.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "519",
+          "bbox": {
+            "x": 6400800.0,
+            "y": 3111044.0,
+            "width": 1715854.0,
+            "height": 1232356.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4264000.0,
+          "y": 3112000.0
+        },
+        {
+          "x": 8120000.0,
+          "y": 4344000.0
+        }
+      ]
+    }
+  ],
+  "total_text_annotations": 4,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

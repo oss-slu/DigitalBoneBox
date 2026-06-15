@@ -1,0 +1,57 @@
+{
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Fovea",
+      "text_content": "Fovea",
+      "text_box": {
+        "x": 5752842.0,
+        "y": 1905000.0,
+        "width": 432430.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "27"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_1",
+          "kind": "connector",
+          "start_point": {
+            "x": 6185273.0,
+            "y": 2012722.0
+          },
+          "end_point": {
+            "x": 6432878.0,
+            "y": 2012722.0
+          },
+          "style": {
+            "width": 0,
+            "arrow_head": "none"
+          },
+          "shape_id": "29",
+          "bbox": {
+            "x": 6185273.0,
+            "y": 2012722.0,
+            "width": 247605.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 6432000.0,
+          "y": 2016000.0
+        }
+      ]
+    }
+  ],
+  "total_text_annotations": 1,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

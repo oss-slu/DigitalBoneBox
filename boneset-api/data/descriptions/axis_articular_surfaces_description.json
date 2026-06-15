@@ -1,0 +1,10 @@
+{
+    "name": "Articular surfaces",
+    "id": "axis_articular_surfaces",
+    "description": [
+        "The superior surface articulates with the inferior articular surface of the Atlas (CV1).",
+        "The inferior surface articulates with the superior articular surface of CV3.",
+        "Both are closely oriented in the horizontal plane."
+    ],
+    "images": ["axis_(superior_aspect)_image.png", "axis_(inferior_aspect)_image.png", "axis_(lateral_aspect)_image.png"]
+}

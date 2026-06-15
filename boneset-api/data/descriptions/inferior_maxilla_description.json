@@ -1,0 +1,16 @@
+{
+  "name": "Maxilla",
+  "id": "maxilla",
+  "description": [
+    "Palatine process",
+    "The inferior portion of each maxilla that makes up the anterior part of the hard palate.",
+    "Median palatine suture",
+    "The joint between the palatine processes on each side.",
+    "Transverse palatine suture",
+    "The joint between the palatine processes of the maxilla and the horizontal plates of the palatine bones.",
+    "Incisive foramen",
+    "An opening in the midline of the anterior part of the hard palate.",
+    "Transmits the nasopalatine nerve and the sphenopalatine vessels."
+  ],
+  "images": ["inferior_maxilla_image.jpg"]
+}

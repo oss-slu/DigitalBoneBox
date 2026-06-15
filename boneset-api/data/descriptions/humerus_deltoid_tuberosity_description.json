@@ -1,0 +1,9 @@
+{
+    "name": "Deltoid tuberosity",
+    "id": "deltoid_tuberosity",
+    "description": [
+        "A roughened process on the lateral surface.",
+        "Provides insertion for the deltoid muscle."
+    ],
+    "images": ["humerus_deltoid_tuberosity_left_image.jpg", "humerus_deltoid_tuberosity_right_image.jpg"]
+}

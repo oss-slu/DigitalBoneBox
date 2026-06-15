@@ -1,0 +1,8 @@
+{
+    "name": "Lamina",
+    "id": "cervical_lamina",
+    "description": [
+        "Connects the transverse process to the spinous process."
+    ],
+    "images": ["cervical_(superior_aspect)_image.png", "cervical_(inferior_aspect)_image.png", "cervical_(right_lateral_aspect)_image.png"]
+}

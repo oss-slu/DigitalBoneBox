@@ -1,0 +1,203 @@
+{
+  "slide_number": 8,
+  "image_dimensions": {
+    "width": 12192000,
+    "height": 6858000
+  },
+  "colored_regions": [
+    {
+      "anatomical_name": "Pubis_and_Obturator_foramen",
+      "color": "008000",
+      "color_name": "green_variant",
+      "shape_id": "336",
+      "path_data": [
+        {
+          "path_width": 1047750,
+          "path_height": 460375,
+          "commands": [
+            {
+              "type": "moveTo",
+              "x": 7483475,
+              "y": 3184526
+            },
+            {
+              "type": "lineTo",
+              "x": 7385050,
+              "y": 3155951
+            },
+            {
+              "type": "lineTo",
+              "x": 7242175,
+              "y": 3079751
+            },
+            {
+              "type": "lineTo",
+              "x": 7086600,
+              "y": 2974976
+            },
+            {
+              "type": "lineTo",
+              "x": 6950075,
+              "y": 2914651
+            },
+            {
+              "type": "lineTo",
+              "x": 6845300,
+              "y": 2860676
+            },
+            {
+              "type": "lineTo",
+              "x": 6737350,
+              "y": 2847976
+            },
+            {
+              "type": "lineTo",
+              "x": 6588125,
+              "y": 2857501
+            },
+            {
+              "type": "lineTo",
+              "x": 6511925,
+              "y": 2876551
+            },
+            {
+              "type": "lineTo",
+              "x": 6454775,
+              "y": 2813051
+            },
+            {
+              "type": "lineTo",
+              "x": 6435725,
+              "y": 2784476
+            },
+            {
+              "type": "lineTo",
+              "x": 6518275,
+              "y": 2746376
+            },
+            {
+              "type": "lineTo",
+              "x": 6661150,
+              "y": 2724151
+            },
+            {
+              "type": "lineTo",
+              "x": 6832600,
+              "y": 2736851
+            },
+            {
+              "type": "lineTo",
+              "x": 7010400,
+              "y": 2797176
+            },
+            {
+              "type": "lineTo",
+              "x": 7156450,
+              "y": 2873376
+            },
+            {
+              "type": "lineTo",
+              "x": 7286625,
+              "y": 2978151
+            },
+            {
+              "type": "lineTo",
+              "x": 7429500,
+              "y": 3022601
+            },
+            {
+              "type": "lineTo",
+              "x": 7483475,
+              "y": 3184526
+            },
+            {
+              "type": "close"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "anatomical_name": "Pubis_and_Obturator_foramen",
+      "color": "008000",
+      "color_name": "green_variant",
+      "shape_id": "337",
+      "path_data": [
+        {
+          "path_width": 708025,
+          "path_height": 104775,
+          "commands": [
+            {
+              "type": "moveTo",
+              "x": 4721226,
+              "y": 3009901
+            },
+            {
+              "type": "lineTo",
+              "x": 4686301,
+              "y": 3089276
+            },
+            {
+              "type": "lineTo",
+              "x": 4524376,
+              "y": 3076576
+            },
+            {
+              "type": "lineTo",
+              "x": 4356101,
+              "y": 3070226
+            },
+            {
+              "type": "lineTo",
+              "x": 4219576,
+              "y": 3070226
+            },
+            {
+              "type": "lineTo",
+              "x": 4013201,
+              "y": 3082926
+            },
+            {
+              "type": "lineTo",
+              "x": 4048126,
+              "y": 3032126
+            },
+            {
+              "type": "lineTo",
+              "x": 4060826,
+              "y": 3006726
+            },
+            {
+              "type": "lineTo",
+              "x": 4079876,
+              "y": 2990851
+            },
+            {
+              "type": "lineTo",
+              "x": 4248151,
+              "y": 2984501
+            },
+            {
+              "type": "lineTo",
+              "x": 4416426,
+              "y": 2984501
+            },
+            {
+              "type": "lineTo",
+              "x": 4591051,
+              "y": 2984501
+            },
+            {
+              "type": "lineTo",
+              "x": 4721226,
+              "y": 3009901
+            },
+            {
+              "type": "close"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

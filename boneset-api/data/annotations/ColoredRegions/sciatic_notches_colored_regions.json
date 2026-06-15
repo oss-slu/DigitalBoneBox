@@ -1,0 +1,112 @@
+{
+  "slide_number": 14,
+  "images": [
+    {
+      "index": 0,
+      "name": "pelvis_lat_blk.psd",
+      "width": 2236557,
+      "height": 3535362,
+      "colored_regions": [
+        {
+          "anatomical_name": "Greater Sciatic Notch (Lateral)",
+          "color": "#FF6600",
+          "stroke": true,
+          "stroke_width": 38100,
+          "offset_x": 209886,
+          "offset_y": 1795523,
+          "path_data": {
+            "path_width": 518092,
+            "path_height": 657130,
+            "commands": [
+              {"type": "moveTo", "x": 473865, "y": 657130},
+              {"type": "lineTo", "x": 499137, "y": 423343},
+              {"type": "lineTo", "x": 518092, "y": 240105},
+              {"type": "lineTo", "x": 518092, "y": 126371},
+              {"type": "lineTo", "x": 511774, "y": 25274},
+              {"type": "lineTo", "x": 435956, "y": 0},
+              {"type": "lineTo", "x": 372774, "y": 0},
+              {"type": "lineTo", "x": 284319, "y": 25274},
+              {"type": "lineTo", "x": 157955, "y": 63186},
+              {"type": "lineTo", "x": 75819, "y": 101097},
+              {"type": "lineTo", "x": 0, "y": 101097},
+              {"type": "lineTo", "x": 0, "y": 101097}
+            ]
+          }
+        },
+        {
+          "anatomical_name": "Lesser Sciatic Notch (Lateral)",
+          "color": "#FF00E6",
+          "stroke": true,
+          "stroke_width": 38100,
+          "offset_x": 623618,
+          "offset_y": 2623255,
+          "path_data": {
+            "path_width": 94844,
+            "path_height": 300272,
+            "commands": [
+              {"type": "moveTo", "x": 0, "y": 0},
+              {"type": "lineTo", "x": 75945, "y": 34579},
+              {"type": "cubicBezTo", "x1": 72619, "y1": 51766, "x2": 97868, "y2": 110229, "x": 94542, "y": 127416},
+              {"type": "lineTo", "x": 79152, "y": 230800},
+              {"type": "cubicBezTo", "x1": 70706, "y1": 244432, "x2": 61213, "y2": 260118, "x": 53815, "y": 271697},
+              {"type": "cubicBezTo", "x1": 46417, "y1": 283276, "x2": 41115, "y2": 290747, "x": 34765, "y": 300272}
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "pelvis_med_blk.psd",
+      "width": 2554738,
+      "height": 3429000,
+      "colored_regions": [
+        {
+          "anatomical_name": "Greater Sciatic Notch (Medial)",
+          "color": "#FF6600",
+          "stroke": true,
+          "stroke_width": 38100,
+          "offset_x": 1596081,
+          "offset_y": 1646405,
+          "path_data": {
+            "path_width": 511773,
+            "path_height": 669767,
+            "commands": [
+              {"type": "moveTo", "x": 189546, "y": 669767},
+              {"type": "lineTo", "x": 132682, "y": 537077},
+              {"type": "lineTo", "x": 82136, "y": 404388},
+              {"type": "lineTo", "x": 44227, "y": 259061},
+              {"type": "lineTo", "x": 12636, "y": 183238},
+              {"type": "lineTo", "x": 0, "y": 101097},
+              {"type": "cubicBezTo", "x1": 19365, "y1": 83747, "x2": 19680, "y2": 53696, "x": 39045, "y": 36346},
+              {"type": "lineTo", "x": 120046, "y": 6319},
+              {"type": "lineTo", "x": 233773, "y": 0},
+              {"type": "lineTo", "x": 379091, "y": 6319},
+              {"type": "lineTo", "x": 492819, "y": 31593},
+              {"type": "lineTo", "x": 511773, "y": 37912}
+            ]
+          }
+        },
+        {
+          "anatomical_name": "Lesser Sciatic Notch (Medial)",
+          "color": "#FF00E6",
+          "stroke": true,
+          "stroke_width": 38100,
+          "offset_x": 1841500,
+          "offset_y": 2474136,
+          "path_data": {
+            "path_width": 67378,
+            "path_height": 237087,
+            "commands": [
+              {"type": "moveTo", "x": 45217, "y": 0},
+              {"type": "cubicBezTo", "x1": 37553, "y1": 14547, "x2": 7664, "y2": 22743, "x": 0, "y": 37290},
+              {"type": "cubicBezTo", "x1": 330, "y1": 56453, "x2": 659, "y2": 75615, "x": 989, "y": 94778},
+              {"type": "cubicBezTo", "x1": 5951, "y1": 109482, "x2": 10914, "y2": 149586, "x": 15876, "y": 164290},
+              {"type": "lineTo", "x": 67378, "y": 237087}
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

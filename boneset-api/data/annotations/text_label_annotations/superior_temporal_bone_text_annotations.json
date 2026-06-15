@@ -1,0 +1,322 @@
+{
+  "slide_number": 32,
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Squamous part",
+      "text_content": "Squamous part",
+      "text_box": {
+        "x": 2743200.0,
+        "y": 1871265.0,
+        "width": 762000.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "1200"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_1",
+          "kind": "connector",
+          "start_point": {
+            "x": 3733800.0,
+            "y": 1978987.0
+          },
+          "end_point": {
+            "x": 3505200.0,
+            "y": 1978987.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1201",
+          "bbox": {
+            "x": 3505200.0,
+            "y": 1978987.0,
+            "width": 228600.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        },
+        {
+          "line_id": "line_2",
+          "kind": "connector",
+          "start_point": {
+            "x": 4038600.0,
+            "y": 3048000.0
+          },
+          "end_point": {
+            "x": 3733800.0,
+            "y": 1978988.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1202",
+          "bbox": {
+            "x": 3733800.0,
+            "y": 1978988.0,
+            "width": 304800.0,
+            "height": 1069012.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4040000.0,
+          "y": 3048000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Petrous part",
+      "text_content": "Petrous part",
+      "text_box": {
+        "x": 2819400.0,
+        "y": 1653411.0,
+        "width": 609600.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "1203"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_3",
+          "kind": "connector",
+          "start_point": {
+            "x": 4038600.0,
+            "y": 1761133.0
+          },
+          "end_point": {
+            "x": 3429000.0,
+            "y": 1761133.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1204",
+          "bbox": {
+            "x": 3429000.0,
+            "y": 1761133.0,
+            "width": 609600.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        },
+        {
+          "line_id": "line_5",
+          "kind": "connector",
+          "start_point": {
+            "x": 4038602.0,
+            "y": 1763544.0
+          },
+          "end_point": {
+            "x": 4572001.0,
+            "y": 3886200.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1207",
+          "bbox": {
+            "x": 4038602.0,
+            "y": 1763544.0,
+            "width": 533399.0,
+            "height": 2122656.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4576000.0,
+          "y": 3888000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_3",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Internal acoustic meatus",
+      "text_content": "Internal acoustic meatus",
+      "text_box": {
+        "x": 7469951.0,
+        "y": 1653411.0,
+        "width": 1143000.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "1206"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_6",
+          "kind": "connector",
+          "start_point": {
+            "x": 7469951.0,
+            "y": 1761133.0
+          },
+          "end_point": {
+            "x": 7238951.0,
+            "y": 1761133.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1208",
+          "bbox": {
+            "x": 7238951.0,
+            "y": 1761133.0,
+            "width": 231000.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 7240000.0,
+          "y": 1760000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_4",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Arcuate eminence",
+      "text_content": "Arcuate eminence",
+      "text_box": {
+        "x": 7772400.0,
+        "y": 1913533.0,
+        "width": 840551.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "1209"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_7",
+          "kind": "connector",
+          "start_point": {
+            "x": 7772400.0,
+            "y": 2021255.0
+          },
+          "end_point": {
+            "x": 7470000.0,
+            "y": 2021255.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1210",
+          "bbox": {
+            "x": 7470000.0,
+            "y": 2021255.0,
+            "width": 302400.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 7472000.0,
+          "y": 2024000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_5",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Petrous ridge",
+      "text_content": "Petrous ridge",
+      "text_box": {
+        "x": 7598416.0,
+        "y": 5715000.0,
+        "width": 840551.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "1213"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_9",
+          "kind": "connector",
+          "start_point": {
+            "x": 7598416.0,
+            "y": 5822722.0
+          },
+          "end_point": {
+            "x": 7296016.0,
+            "y": 5822722.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1214",
+          "bbox": {
+            "x": 7296016.0,
+            "y": 5822722.0,
+            "width": 302400.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        },
+        {
+          "line_id": "line_10",
+          "kind": "connector",
+          "start_point": {
+            "x": 7295968.0,
+            "y": 5822723.0
+          },
+          "end_point": {
+            "x": 6836417.0,
+            "y": 4114802.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1215",
+          "bbox": {
+            "x": 6836417.0,
+            "y": 4114802.0,
+            "width": 459551.0,
+            "height": 1707921.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 6840000.0,
+          "y": 4112000.0
+        }
+      ]
+    }
+  ],
+  "total_text_annotations": 5,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

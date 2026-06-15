@@ -1,0 +1,17 @@
+{
+    "name": "Neck",
+    "id": "femur_neck",
+    "description": [
+        "Connects the head to the shaft",
+        "Anterior surface is flat, intracapsular,  and joins the shaft at the intertrochanteric line",
+        "Posterior surface is concave in its long axis, partially intracapsular, and joins the shaft at the intertrochanteric crest",
+        "Trochanteric fossa:",
+        "A depression that lies between the medial surface of the greater trochanter and the neck",
+        "Receives the tendon for obturator externus muscle"
+    ],
+    "images": [
+        "femur_top_image2.png",
+        "femur_top_image4.png",
+        "femur_top_image3.png"
+    ]
+}

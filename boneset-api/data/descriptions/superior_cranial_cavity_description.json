@@ -1,0 +1,14 @@
+{
+  "name": "Cranial cavity",
+  "id": "Cranial_cavity",
+  "description": [
+    "Cranial cavity",
+    "The cranial cavity can be viewed by removing the top of the skull (calvaria).",
+    "The cranial cavity contains the brain, the meninges, the cranial nerves, and the cranial vessels.",
+    "It can be divided into three separate fossae.",
+    "The anterior fossa is separated from the middle fossa by the lesser wing of the sphenoid bone.",
+    "The middle fossa is separated by the posterior fossa by the petrous ridge of the temporal bone.",
+    "Each fossa contains several foramina, all of which are important to remember as well as the nerves or vessels that pass through them."
+  ],
+  "images": ["superior_cranial_cavity_image.jpg"]
+}

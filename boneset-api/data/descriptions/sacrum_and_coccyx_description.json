@@ -1,0 +1,14 @@
+{
+    "name": "Sacrum and coccyx",
+    "id": "sacrum_and_coccyx",
+    "description": [
+        "A large, triangular bone that is formed by the fusion of five sacral vertebrae.",
+        "It forms the posterior and superior borders of the pelvic cavity.",
+        "Superiorly, it articulates with the fifth lumbar vertebra.",
+        "Laterally, it articulates with an ilium on each side.",
+        "Inferiorly, it articulates with the coccyx.",
+        "The coccyx may be fused to the sacrum.",
+        "The pelvic surface is concave, while the dorsal surface is convex."
+    ],
+    "images": ["sacrum_and_coccyx_(anterior_aspect)_image.png", "sacrum_and_coccyx_(posterior_aspect)_image.png"]
+}

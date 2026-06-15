@@ -1,0 +1,179 @@
+{
+  "slides": [
+    {
+      "slide": 4,
+      "bone_set": "Bony Pelvis",
+      "left_media": "rId12",
+      "right_media": "rId13",
+      "subbone": null,
+      "sub_subbone": null,
+      "left_media_target": "../media/image1.jpg",
+      "right_media_target": "../media/image3.jpg",
+      "left_media_path": "data_extraction/fixtures/media/image1.jpg",
+      "right_media_path": "data_extraction/fixtures/media/image3.jpg"
+    },
+    {
+      "slide": 5,
+      "bone_set": "Bony Pelvis",
+      "left_media": "rId10",
+      "right_media": "rId11",
+      "subbone": null,
+      "sub_subbone": null,
+      "left_media_target": "../media/image1.jpg",
+      "right_media_target": "../media/image3.jpg",
+      "left_media_path": "data_extraction/fixtures/media/image1.jpg",
+      "right_media_path": "data_extraction/fixtures/media/image3.jpg"
+    },
+    {
+      "slide": 6,
+      "bone_set": "Bony Pelvis",
+      "left_media": "rId10",
+      "right_media": "rId11",
+      "subbone": null,
+      "sub_subbone": null,
+      "left_media_target": "../media/image1.jpg",
+      "right_media_target": "../media/image3.jpg",
+      "left_media_path": "data_extraction/fixtures/media/image1.jpg",
+      "right_media_path": "data_extraction/fixtures/media/image3.jpg"
+    },
+    {
+      "slide": 7,
+      "bone_set": "Bony Pelvis",
+      "left_media": "rId10",
+      "right_media": "rId11",
+      "subbone": null,
+      "sub_subbone": null,
+      "left_media_target": "../media/image1.jpg",
+      "right_media_target": "../media/image3.jpg",
+      "left_media_path": "data_extraction/fixtures/media/image1.jpg",
+      "right_media_path": "data_extraction/fixtures/media/image3.jpg"
+    },
+    {
+      "slide": 9,
+      "bone_set": "Bony Pelvis",
+      "left_media": "rId7",
+      "right_media": "rId8",
+      "subbone": null,
+      "sub_subbone": null,
+      "left_media_target": "../media/image1.jpg",
+      "right_media_target": "../media/image3.jpg",
+      "left_media_path": "data_extraction/fixtures/media/image1.jpg",
+      "right_media_path": "data_extraction/fixtures/media/image3.jpg"
+    },
+    {
+      "slide": 10,
+      "bone_set": "Bony Pelvis",
+      "left_media": "rId7",
+      "right_media": "rId8",
+      "subbone": null,
+      "sub_subbone": null,
+      "left_media_target": "../media/image1.jpg",
+      "right_media_target": "../media/image3.jpg",
+      "left_media_path": "data_extraction/fixtures/media/image1.jpg",
+      "right_media_path": "data_extraction/fixtures/media/image3.jpg"
+    },
+    {
+      "slide": 11,
+      "bone_set": "Bony Pelvis",
+      "left_media": "rId7",
+      "right_media": "rId8",
+      "subbone": null,
+      "sub_subbone": null,
+      "left_media_target": "../media/image1.jpg",
+      "right_media_target": "../media/image3.jpg",
+      "left_media_path": "data_extraction/fixtures/media/image1.jpg",
+      "right_media_path": "data_extraction/fixtures/media/image3.jpg"
+    },
+    {
+      "slide": 12,
+      "bone_set": "Bony Pelvis",
+      "left_media": "rId7",
+      "right_media": "rId8",
+      "subbone": null,
+      "sub_subbone": null,
+      "left_media_target": "../media/image1.jpg",
+      "right_media_target": "../media/image3.jpg",
+      "left_media_path": "data_extraction/fixtures/media/image1.jpg",
+      "right_media_path": "data_extraction/fixtures/media/image3.jpg"
+    },
+    {
+      "slide": 13,
+      "bone_set": "Bony Pelvis",
+      "left_media": "rId7",
+      "right_media": "rId8",
+      "subbone": null,
+      "sub_subbone": null,
+      "left_media_target": "../media/image1.jpg",
+      "right_media_target": "../media/image3.jpg",
+      "left_media_path": "data_extraction/fixtures/media/image1.jpg",
+      "right_media_path": "data_extraction/fixtures/media/image3.jpg"
+    },
+    {
+      "slide": 14,
+      "bone_set": "Bony Pelvis",
+      "left_media": "rId7",
+      "right_media": "rId8",
+      "subbone": null,
+      "sub_subbone": null,
+      "left_media_target": "../media/image1.jpg",
+      "right_media_target": "../media/image3.jpg",
+      "left_media_path": "data_extraction/fixtures/media/image1.jpg",
+      "right_media_path": "data_extraction/fixtures/media/image3.jpg"
+    },
+    {
+      "slide": 15,
+      "bone_set": "Bony Pelvis",
+      "left_media": "rId11",
+      "right_media": "rId12",
+      "subbone": null,
+      "sub_subbone": null,
+      "left_media_target": "../media/image1.jpg",
+      "right_media_target": "../media/image3.jpg",
+      "left_media_path": "data_extraction/fixtures/media/image1.jpg",
+      "right_media_path": "data_extraction/fixtures/media/image3.jpg"
+    },
+    {
+      "slide": 16,
+      "bone_set": "Bony Pelvis",
+      "left_media": "rId13",
+      "right_media": "rId7",
+      "subbone": null,
+      "sub_subbone": null,
+      "left_media_target": "../media/image1.jpg",
+      "right_media_target": "../media/image3.jpg",
+      "left_media_path": "data_extraction/fixtures/media/image1.jpg",
+      "right_media_path": "data_extraction/fixtures/media/image3.jpg"
+    },
+    {
+      "slide": 17,
+      "bone_set": "Bony Pelvis",
+      "left_media": "rId7",
+      "right_media": "rId8",
+      "subbone": null,
+      "sub_subbone": null,
+      "left_media_target": "../media/image1.jpg",
+      "right_media_target": "../media/image3.jpg",
+      "left_media_path": "data_extraction/fixtures/media/image1.jpg",
+      "right_media_path": "data_extraction/fixtures/media/image3.jpg"
+    }
+  ],
+  "audit": {
+    "tolerance": 0.05,
+    "verified_slides": [
+      4,
+      5,
+      6,
+      7,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17
+    ],
+    "failed_slides": []
+  }
+}

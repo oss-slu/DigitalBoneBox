@@ -1,0 +1,33 @@
+{
+  "slide": 25,
+  "name": "Scapula Body",
+  "id": "scapula_body",
+  "description": [
+    "The body of the scapula contains 3 borders.",
+    "The ",
+    "axillary border ",
+    "is lateral and provides proximal attachment for the teres minor and part of the teres major muscles.",
+    "The ",
+    "vertebral border ",
+    "is medial and provides distal attachment for the rhomboideus major (below the spine), rhomboideus minor (at the spine), and levator scapulae (above the spine), and serratus anterior muscles.",
+    "The ",
+    "superior border ",
+    "provides  proximal attachment for the inferior belly of the omohyoid muscle.",
+    "The superior border also contains the ",
+    "suprascapular notch",
+    ".",
+    "The notch is bridged by the superior transverse scapular ligament.",
+    "The ligament and notch create a foramen that transmits the suprascapular nerve.",
+    "The body also contains 3 angles.",
+    "The ",
+    "inferior angle ",
+    "provides proximal attachment for part of the teres major and latissumus dorsi muscles.",
+    "The ",
+    "superior angle ",
+    "is between the superior and vertebral borders.",
+    "The ",
+    "lateral angle ",
+    "presents the glenoid fossa."
+  ],
+  "images": ["Scapula_Right_Image.jpg"]
+}

@@ -1,0 +1,10 @@
+{
+    "name": "Trapezium",
+    "id": "trapezium",
+    "description": [
+        "The most lateral carpal bone of the distal row.",
+        "Forms a saddle joint with the first metacarpal bone (thumb).",
+        "Palmar surface has a tubercle that attaches to the flexor retinaculum."
+    ],
+    "images": ["hand_left_image.jpg", "hand_right_image.jpg"]
+}

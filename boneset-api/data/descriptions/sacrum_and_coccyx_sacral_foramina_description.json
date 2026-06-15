@@ -1,0 +1,10 @@
+{
+    "name": "Sacral foramina",
+    "id": "sacrum_and_coccyx_sacral_foramina",
+    "description": [
+        "Similar to the intervertebral foramina.",
+        "Four pairs on each surface.",
+        "Allow the ventral and dorsal primary rami to exit the anterior and posterior sacral foramina, respectively."
+    ],
+    "images": ["sacrum_and_coccyx_(anterior_aspect)_image.png", "sacrum_and_coccyx_(posterior_aspect)_image.png"]
+}

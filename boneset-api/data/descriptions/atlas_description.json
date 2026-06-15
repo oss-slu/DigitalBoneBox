@@ -1,0 +1,11 @@
+{
+    "name": "Atlas",
+    "id": "atlas",
+    "description": [
+        "First cervical vertebra.",
+        "Named for Atlas of Greek mythology because it supports the \u201cglobe\u201d of the head.",
+        "It supports the occipital condyles of the skull.",
+        "It has no body and spinous process."
+    ],
+    "images": ["atlas_(superior_aspect)_image.png", "atlas_(inferior_aspect)_image.png"]
+}

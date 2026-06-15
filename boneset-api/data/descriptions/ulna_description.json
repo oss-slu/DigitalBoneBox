@@ -1,0 +1,13 @@
+{
+    "name": "Ulna",
+    "id": "ulna",
+    "description": [
+        "Bone on medial side of forearm.",
+        "Articulates with radius at proximal and distal ends.",
+        "Articulates with",
+        "trochlea",
+        "of humerus at proximal end.",
+        "Articulates with carpal bones of hand at distal end through the articular disc."
+        ],
+    "images": ["ulna_left_image.jpg", "ulna_right_image.jpg"]
+}

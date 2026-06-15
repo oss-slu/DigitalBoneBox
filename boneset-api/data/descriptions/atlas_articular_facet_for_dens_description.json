@@ -1,0 +1,9 @@
+{
+    "name": "Articular facet for dens",
+    "id": "atlas_articular_facet_for_dens",
+    "description": [
+        "A smooth, disc-like surface on the posterior aspect of the anterior arch.",
+        "Articulates with the anterior surface of the dens of CV2 (Axis)."
+    ],
+    "images": ["atlas_(posterosuperior_aspect)_image.png"]
+}

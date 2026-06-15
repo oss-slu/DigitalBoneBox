@@ -1,0 +1,15 @@
+{
+    "name": "Linea aspera",
+    "id": "linea_aspera",
+    "description": [
+        "A rough line on posterior surface made up of medial and lateral ridges and an intermediate line",
+        "Intermuscular septum, vastus lateralis, adductor magnus, and short head of biceps femoris muscles attach to lateral ridge",
+        "Adductors brevis and longus muscles attach to the intermediate line",
+        "Vastus medialis muscle and the intermuscular septum attach to medial ridge",
+        "Adductor magnus muscle attaches to medial supracondylar line distally to adductor tubercle"
+    ],
+    "images": [
+        "femur_top_image2.png",
+        "femur_bottom_image.png"
+    ]
+}

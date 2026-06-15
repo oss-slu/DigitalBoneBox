@@ -1,0 +1,45 @@
+{
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Anterior",
+      "text_content": "Anterior",
+      "text_box": {
+        "x": 5507545.0,
+        "y": 5775552.0,
+        "width": 550092.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "334"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [],
+      "target_regions": []
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Posterior",
+      "text_content": "Posterior",
+      "text_box": {
+        "x": 5469938.0,
+        "y": 1388088.0,
+        "width": 550092.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "335"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [],
+      "target_regions": []
+    }
+  ],
+  "total_text_annotations": 2,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

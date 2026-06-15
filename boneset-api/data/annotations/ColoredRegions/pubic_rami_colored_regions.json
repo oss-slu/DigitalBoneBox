@@ -1,0 +1,128 @@
+{
+  "slide_number": 17,
+  "images": [
+    {
+      "image_name": "pelvis_lat_blk.psd",
+      "width": 2236557,
+      "height": 3535362,
+      "colored_regions": [
+        {
+          "region_name": "Superior Pubic Ramus Lateral",
+          "color": "#FF00E6",
+          "color_name": "magenta",
+          "path_data": [
+            {
+              "commands": [
+                {"type": "moveTo", "x": 74708, "y": 0},
+                {"type": "lineTo", "x": 65919, "y": 184564},
+                {"type": "lineTo", "x": 13184, "y": 290030},
+                {"type": "lineTo", "x": 0, "y": 338368},
+                {"type": "lineTo", "x": 35157, "y": 404284},
+                {"type": "lineTo", "x": 57130, "y": 496566},
+                {"type": "lineTo", "x": 61524, "y": 527327},
+                {"type": "lineTo", "x": 193361, "y": 522933},
+                {"type": "lineTo", "x": 329593, "y": 457017},
+                {"type": "lineTo", "x": 483403, "y": 351551},
+                {"type": "lineTo", "x": 483403, "y": 351551},
+                {"type": "lineTo", "x": 404301, "y": 303213},
+                {"type": "lineTo", "x": 320804, "y": 250480},
+                {"type": "lineTo", "x": 254885, "y": 193353},
+                {"type": "lineTo", "x": 180178, "y": 140621},
+                {"type": "lineTo", "x": 74708, "y": 0}
+              ]
+            }
+          ],
+          "offset_x": 1700438,
+          "offset_y": 2151893
+        },
+        {
+          "region_name": "Inferior Pubic Ramus Lateral",
+          "color": "#FF6600",
+          "color_name": "orange",
+          "path_data": [
+            {
+              "commands": [
+                {"type": "moveTo", "x": 0, "y": 166987},
+                {"type": "lineTo", "x": 96680, "y": 312002},
+                {"type": "lineTo", "x": 166993, "y": 250481},
+                {"type": "lineTo", "x": 276857, "y": 202142},
+                {"type": "lineTo", "x": 369143, "y": 162593},
+                {"type": "lineTo", "x": 246096, "y": 74705},
+                {"type": "lineTo", "x": 118653, "y": 0},
+                {"type": "lineTo", "x": 70313, "y": 43944},
+                {"type": "lineTo", "x": 26367, "y": 101071},
+                {"type": "lineTo", "x": 0, "y": 166987}
+              ]
+            }
+          ],
+          "offset_x": 1634520,
+          "offset_y": 2793473
+        }
+      ]
+    },
+    {
+      "image_name": "pelvis_med_blk.psd",
+      "width": 2554738,
+      "height": 3429000,
+      "colored_regions": [
+        {
+          "region_name": "Superior Pubic Ramus Medial",
+          "color": "#FF00E6",
+          "color_name": "magenta",
+          "path_data": [
+            {
+              "commands": [
+                {"type": "moveTo", "x": 527348, "y": 149410},
+                {"type": "lineTo", "x": 452641, "y": 228509},
+                {"type": "lineTo", "x": 435063, "y": 312002},
+                {"type": "lineTo", "x": 377933, "y": 408679},
+                {"type": "lineTo", "x": 360355, "y": 514144},
+                {"type": "lineTo", "x": 355960, "y": 580060},
+                {"type": "lineTo", "x": 325198, "y": 610821},
+                {"type": "lineTo", "x": 158205, "y": 580060},
+                {"type": "lineTo", "x": 0, "y": 465806},
+                {"type": "lineTo", "x": 96681, "y": 360341},
+                {"type": "lineTo", "x": 210940, "y": 246086},
+                {"type": "lineTo", "x": 276858, "y": 131832},
+                {"type": "lineTo", "x": 307620, "y": 48339},
+                {"type": "lineTo", "x": 325198, "y": 0},
+                {"type": "lineTo", "x": 395511, "y": 0},
+                {"type": "lineTo", "x": 479008, "y": 21972},
+                {"type": "lineTo", "x": 531743, "y": 92283},
+                {"type": "lineTo", "x": 527348, "y": 149410}
+              ]
+            }
+          ],
+          "offset_x": 424185,
+          "offset_y": 2231620
+        },
+        {
+          "region_name": "Inferior Pubic Ramus Medial",
+          "color": "#FF6600",
+          "color_name": "orange",
+          "path_data": [
+            {
+              "commands": [
+                {"type": "moveTo", "x": 316409, "y": 74705},
+                {"type": "lineTo", "x": 202150, "y": 83494},
+                {"type": "lineTo", "x": 123048, "y": 52733},
+                {"type": "lineTo", "x": 48340, "y": 0},
+                {"type": "lineTo", "x": 21973, "y": 70310},
+                {"type": "lineTo", "x": 0, "y": 175776},
+                {"type": "lineTo", "x": 30762, "y": 263664},
+                {"type": "lineTo", "x": 39551, "y": 298819},
+                {"type": "lineTo", "x": 171388, "y": 276847},
+                {"type": "lineTo", "x": 246096, "y": 276847},
+                {"type": "lineTo", "x": 281252, "y": 241692},
+                {"type": "lineTo", "x": 351566, "y": 145015},
+                {"type": "lineTo", "x": 316409, "y": 74705}
+              ]
+            }
+          ],
+          "offset_x": 793328,
+          "offset_y": 3022611
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,346 @@
+{
+  "slide_number": 18,
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Head of condylar     process",
+      "text_content": "Head of condylar     process",
+      "text_box": {
+        "x": 2743200.0,
+        "y": 3087654.0,
+        "width": 825638.0,
+        "height": 338554.0,
+        "rotation_emu": 0.0,
+        "shape_id": "618"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_1",
+          "kind": "connector",
+          "start_point": {
+            "x": 4191038.0,
+            "y": 3256931.0
+          },
+          "end_point": {
+            "x": 3568838.0,
+            "y": 3256931.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "622",
+          "bbox": {
+            "x": 3568838.0,
+            "y": 3256931.0,
+            "width": 622200.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4192000.0,
+          "y": 3256000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Coronoid process",
+      "text_content": "Coronoid process",
+      "text_box": {
+        "x": 3359082.0,
+        "y": 3810000.0,
+        "width": 831919.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "619"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_2",
+          "kind": "connector",
+          "start_point": {
+            "x": 5638801.0,
+            "y": 3917722.0
+          },
+          "end_point": {
+            "x": 4191001.0,
+            "y": 3917722.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "623",
+          "bbox": {
+            "x": 4191001.0,
+            "y": 3917722.0,
+            "width": 1447800.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 5640000.0,
+          "y": 3920000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_3",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Body",
+      "text_content": "Body",
+      "text_box": {
+        "x": 3782473.0,
+        "y": 4979312.0,
+        "width": 304799.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "620"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_3",
+          "kind": "connector",
+          "start_point": {
+            "x": 6449472.0,
+            "y": 5087034.0
+          },
+          "end_point": {
+            "x": 4087272.0,
+            "y": 5087034.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "624",
+          "bbox": {
+            "x": 4087272.0,
+            "y": 5087034.0,
+            "width": 2362200.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 6448000.0,
+          "y": 5088000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_4",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Mental foramen",
+      "text_content": "Mental foramen",
+      "text_box": {
+        "x": 7946862.0,
+        "y": 5410200.0,
+        "width": 755719.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "621"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_4",
+          "kind": "connector",
+          "start_point": {
+            "x": 7238862.0,
+            "y": 5194822.0
+          },
+          "end_point": {
+            "x": 7946862.0,
+            "y": 5517922.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "625",
+          "bbox": {
+            "x": 7238862.0,
+            "y": 5194822.0,
+            "width": 708000.0,
+            "height": 323100.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 7240000.0,
+          "y": 5192000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_5",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Mandibular notch",
+      "text_content": "Mandibular notch",
+      "text_box": {
+        "x": 2996202.0,
+        "y": 3594556.0,
+        "width": 831919.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "628"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_6",
+          "kind": "connector",
+          "start_point": {
+            "x": 5170921.0,
+            "y": 3702278.0
+          },
+          "end_point": {
+            "x": 3828121.0,
+            "y": 3702278.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "629",
+          "bbox": {
+            "x": 3828121.0,
+            "y": 3702278.0,
+            "width": 1342800.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 5168000.0,
+          "y": 3704000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_6",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Ramus",
+      "text_content": "Ramus",
+      "text_box": {
+        "x": 3144205.0,
+        "y": 4406444.0,
+        "width": 381000.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "627"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_5",
+          "kind": "connector",
+          "start_point": {
+            "x": 5232805.0,
+            "y": 4514166.0
+          },
+          "end_point": {
+            "x": 3525205.0,
+            "y": 4514166.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "626",
+          "bbox": {
+            "x": 3525205.0,
+            "y": 4514166.0,
+            "width": 1707600.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 5232000.0,
+          "y": 4512000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_7",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Angle",
+      "text_content": "Angle",
+      "text_box": {
+        "x": 3630074.0,
+        "y": 5302478.0,
+        "width": 304799.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "630"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_7",
+          "kind": "connector",
+          "start_point": {
+            "x": 4876873.0,
+            "y": 5410200.0
+          },
+          "end_point": {
+            "x": 3934873.0,
+            "y": 5410200.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "631",
+          "bbox": {
+            "x": 3934873.0,
+            "y": 5410200.0,
+            "width": 942000.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4880000.0,
+          "y": 5408000.0
+        }
+      ]
+    }
+  ],
+  "total_text_annotations": 7,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

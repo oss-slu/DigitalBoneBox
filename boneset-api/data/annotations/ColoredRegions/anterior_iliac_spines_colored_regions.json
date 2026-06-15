@@ -1,0 +1,269 @@
+{
+  "slide_number": 6,
+  "images": [
+    {
+      "index": 0,
+      "name": "pelvis_lat_blk.psd",
+      "width": 2236557,
+      "height": 3535362,
+      "colored_regions": [
+        {
+          "anatomical_name": "Anterior Superior Iliac Spine",
+          "color": "008000",
+          "offset_x": 1580934,
+          "offset_y": 639228,
+          "path_data": [
+            {
+              "path_width": 290636,
+              "path_height": 524440,
+              "commands": [
+                {
+                  "type": "moveTo",
+                  "x": 145318,
+                  "y": 0
+                },
+                {
+                  "type": "lineTo",
+                  "x": 56863,
+                  "y": 126371
+                },
+                {
+                  "type": "lineTo",
+                  "x": 18954,
+                  "y": 278016
+                },
+                {
+                  "type": "lineTo",
+                  "x": 0,
+                  "y": 417024
+                },
+                {
+                  "type": "lineTo",
+                  "x": 69500,
+                  "y": 524440
+                },
+                {
+                  "type": "lineTo",
+                  "x": 202182,
+                  "y": 454936
+                },
+                {
+                  "type": "lineTo",
+                  "x": 290636,
+                  "y": 398069
+                },
+                {
+                  "type": "lineTo",
+                  "x": 290636,
+                  "y": 278016
+                },
+                {
+                  "type": "lineTo",
+                  "x": 271682,
+                  "y": 164282
+                },
+                {
+                  "type": "lineTo",
+                  "x": 176909,
+                  "y": 82141
+                },
+                {
+                  "type": "lineTo",
+                  "x": 145318,
+                  "y": 0
+                },
+                {
+                  "type": "close"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "anatomical_name": "Anterior Inferior Iliac Spine",
+          "color": "FF00E6",
+          "offset_x": 1568297,
+          "offset_y": 1296357,
+          "path_data": [
+            {
+              "path_width": 113728,
+              "path_height": 246424,
+              "commands": [
+                {
+                  "type": "moveTo",
+                  "x": 44228,
+                  "y": 0
+                },
+                {
+                  "type": "lineTo",
+                  "x": 6318,
+                  "y": 88460
+                },
+                {
+                  "type": "lineTo",
+                  "x": 0,
+                  "y": 164283
+                },
+                {
+                  "type": "lineTo",
+                  "x": 44228,
+                  "y": 227468
+                },
+                {
+                  "type": "lineTo",
+                  "x": 101091,
+                  "y": 246424
+                },
+                {
+                  "type": "lineTo",
+                  "x": 113728,
+                  "y": 151646
+                },
+                {
+                  "type": "lineTo",
+                  "x": 113728,
+                  "y": 88460
+                },
+                {
+                  "type": "lineTo",
+                  "x": 44228,
+                  "y": 0
+                },
+                {
+                  "type": "close"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "pelvis_med_blk.psd",
+      "width": 2554738,
+      "height": 3429000,
+      "colored_regions": [
+        {
+          "anatomical_name": "Anterior Superior Iliac Spine",
+          "color": "008000",
+          "offset_x": 576040,
+          "offset_y": 1071417,
+          "path_data": [
+            {
+              "path_width": 259045,
+              "path_height": 417025,
+              "commands": [
+                {
+                  "type": "moveTo",
+                  "x": 69500,
+                  "y": 0
+                },
+                {
+                  "type": "lineTo",
+                  "x": 18954,
+                  "y": 120053
+                },
+                {
+                  "type": "lineTo",
+                  "x": 0,
+                  "y": 233787
+                },
+                {
+                  "type": "lineTo",
+                  "x": 25272,
+                  "y": 322246
+                },
+                {
+                  "type": "lineTo",
+                  "x": 88454,
+                  "y": 379113
+                },
+                {
+                  "type": "lineTo",
+                  "x": 189545,
+                  "y": 417025
+                },
+                {
+                  "type": "lineTo",
+                  "x": 259045,
+                  "y": 341202
+                },
+                {
+                  "type": "lineTo",
+                  "x": 233773,
+                  "y": 189557
+                },
+                {
+                  "type": "lineTo",
+                  "x": 164273,
+                  "y": 94778
+                },
+                {
+                  "type": "lineTo",
+                  "x": 69500,
+                  "y": 0
+                },
+                {
+                  "type": "close"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "anatomical_name": "Anterior Inferior Iliac Spine",
+          "color": "FF00E6",
+          "offset_x": 752949,
+          "offset_y": 1551626,
+          "path_data": [
+            {
+              "path_width": 107409,
+              "path_height": 208512,
+              "commands": [
+                {
+                  "type": "moveTo",
+                  "x": 31591,
+                  "y": 0
+                },
+                {
+                  "type": "lineTo",
+                  "x": 0,
+                  "y": 94778
+                },
+                {
+                  "type": "lineTo",
+                  "x": 18954,
+                  "y": 189557
+                },
+                {
+                  "type": "lineTo",
+                  "x": 56864,
+                  "y": 208512
+                },
+                {
+                  "type": "lineTo",
+                  "x": 107409,
+                  "y": 176920
+                },
+                {
+                  "type": "lineTo",
+                  "x": 107409,
+                  "y": 37911
+                },
+                {
+                  "type": "lineTo",
+                  "x": 31591,
+                  "y": 0
+                },
+                {
+                  "type": "close"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

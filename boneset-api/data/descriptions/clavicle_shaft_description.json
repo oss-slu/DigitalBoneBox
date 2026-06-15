@@ -1,0 +1,21 @@
+{
+  "slide": 10,
+  "name": "Shaft",
+  "id": "shaft",
+  "description": [
+    "Mostly cylindrical in shape.",
+    "Provides proximal attachment for the pectoralis major muscle on its anterior surface.",
+    "The subclavius muscle originates on and lies in a groove on the posterior surface.",
+    "The",
+    "trapezoid line",
+    "provides attachment for the trapezoid part of the coracoclavicular ligament*.",
+    "The",
+    "conoid tubercle",
+    "provides attachment for the conoid part of the coracoclavicular ligament*.",
+    "The",
+    "costoclavicular ligament",
+    "connects the clavicle to the upper surface of the first rib and its cartilage.",
+    "* The coracoclavicular ligament connects the clavicle to the coracoid process of the scapula."
+  ],
+  "images": ["Clavicle_Top_Image.jpg", "Clavicle_Bottom_Image.jpg"]
+}

@@ -1,0 +1,16 @@
+{
+    "name": "Proximal end",
+    "id": "proximal_end",
+    "description": [
+        "Proximal surface articulates with the femur",
+        "Consists of medial and lateral condyles separated by an intercondylar area",
+        "Lateral condyle is more prominent",
+        "Both condyles have articular facets on the superior surface",
+        "Inferior aspect of lateral condyle articulates with the head of the fibula",
+        "Semimembranosus muscle attaches to posterior aspect of inferomedial portion of medial condyle"
+    ],
+    "images": [
+        "tibia_image.png",
+        "tibia_image2.png"
+    ]
+}

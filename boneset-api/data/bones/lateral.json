@@ -1,0 +1,12 @@
+{
+  "name": "Lateral",
+  "id": "lateral",
+  "subBones": [
+    "lateral_ethmoid_bone",
+    "lateral_lacrimal_bone",
+    "lateral_mandible",
+    "lateral_parietal_bone",
+    "lateral_sphenoid_bone",
+    "lateral_temporal_bone"
+  ]
+}

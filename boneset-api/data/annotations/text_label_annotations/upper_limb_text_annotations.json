@@ -1,0 +1,354 @@
+{
+  "slide_number": 2,
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Humerus",
+      "text_content": "Humerus",
+      "text_box": {
+        "x": 5428944.0,
+        "y": 2254478.0,
+        "width": 590857.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "21"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId4",
+        "target": "slide3.xml",
+        "target_slide": 3
+      },
+      "pointer_lines": [
+        {
+          "line_id": "line_1",
+          "kind": "connector",
+          "start_point": {
+            "x": 6019800.0,
+            "y": 2362201.0
+          },
+          "end_point": {
+            "x": 7010400.0,
+            "y": 2362202.0
+          },
+          "style": {
+            "width": 0,
+            "arrow_head": "none"
+          },
+          "shape_id": "23",
+          "bbox": {
+            "x": 6019800.0,
+            "y": 2362201.0,
+            "width": 990600.0,
+            "height": 1.0,
+            "rotation_emu": 0.0
+          }
+        },
+        {
+          "line_id": "line_2",
+          "kind": "connector",
+          "start_point": {
+            "x": 4416871.0,
+            "y": 2362200.0
+          },
+          "end_point": {
+            "x": 5428943.0,
+            "y": 2362200.0
+          },
+          "style": {
+            "width": 0,
+            "arrow_head": "none"
+          },
+          "shape_id": "25",
+          "bbox": {
+            "x": 4416871.0,
+            "y": 2362200.0,
+            "width": 1012072.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 7008000.0,
+          "y": 2360000.0
+        },
+        {
+          "x": 4416000.0,
+          "y": 2360000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Ulna",
+      "text_content": "Ulna",
+      "text_box": {
+        "x": 5511424.0,
+        "y": 4102857.0,
+        "width": 407152.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "31"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId5",
+        "target": "slide17.xml",
+        "target_slide": 17
+      },
+      "pointer_lines": [
+        {
+          "line_id": "line_7",
+          "kind": "connector",
+          "start_point": {
+            "x": 4544248.0,
+            "y": 4210579.0
+          },
+          "end_point": {
+            "x": 5511425.0,
+            "y": 4210579.0
+          },
+          "style": {
+            "width": 0,
+            "arrow_head": "none"
+          },
+          "shape_id": "44",
+          "bbox": {
+            "x": 4544248.0,
+            "y": 4210579.0,
+            "width": 967177.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        },
+        {
+          "line_id": "line_8",
+          "kind": "connector",
+          "start_point": {
+            "x": 5918576.0,
+            "y": 4210580.0
+          },
+          "end_point": {
+            "x": 6930648.0,
+            "y": 4210581.0
+          },
+          "style": {
+            "width": 0,
+            "arrow_head": "none"
+          },
+          "shape_id": "47",
+          "bbox": {
+            "x": 5918576.0,
+            "y": 4210580.0,
+            "width": 1012072.0,
+            "height": 1.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4544000.0,
+          "y": 4208000.0
+        },
+        {
+          "x": 6928000.0,
+          "y": 4208000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_3",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Radius",
+      "text_content": "Radius",
+      "text_box": {
+        "x": 7746248.0,
+        "y": 4189504.0,
+        "width": 483352.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "32"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId6",
+        "target": "slide25.xml",
+        "target_slide": 25
+      },
+      "pointer_lines": [
+        {
+          "line_id": "line_6",
+          "kind": "connector",
+          "start_point": {
+            "x": 7278986.0,
+            "y": 4297226.0
+          },
+          "end_point": {
+            "x": 7746248.0,
+            "y": 4297226.0
+          },
+          "style": {
+            "width": 0,
+            "arrow_head": "none"
+          },
+          "shape_id": "43",
+          "bbox": {
+            "x": 7278986.0,
+            "y": 4297226.0,
+            "width": 467262.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 7280000.0,
+          "y": 4296000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_4",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Radius",
+      "text_content": "Radius",
+      "text_box": {
+        "x": 3124200.0,
+        "y": 4189504.0,
+        "width": 483352.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "33"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId6",
+        "target": "slide25.xml",
+        "target_slide": 25
+      },
+      "pointer_lines": [
+        {
+          "line_id": "line_5",
+          "kind": "connector",
+          "start_point": {
+            "x": 3607552.0,
+            "y": 4297226.0
+          },
+          "end_point": {
+            "x": 4191000.0,
+            "y": 4297226.0
+          },
+          "style": {
+            "width": 0,
+            "arrow_head": "none"
+          },
+          "shape_id": "42",
+          "bbox": {
+            "x": 3607552.0,
+            "y": 4297226.0,
+            "width": 583448.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4192000.0,
+          "y": 4296000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_5",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Hand",
+      "text_content": "Hand",
+      "text_box": {
+        "x": 5536448.0,
+        "y": 5579064.0,
+        "width": 407152.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "39"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId7",
+        "target": "slide33.xml",
+        "target_slide": 33
+      },
+      "pointer_lines": [
+        {
+          "line_id": "line_3",
+          "kind": "connector",
+          "start_point": {
+            "x": 5943600.0,
+            "y": 5686787.0
+          },
+          "end_point": {
+            "x": 6955672.0,
+            "y": 5687724.0
+          },
+          "style": {
+            "width": 0,
+            "arrow_head": "none"
+          },
+          "shape_id": "40",
+          "bbox": {
+            "x": 5943600.0,
+            "y": 5686787.0,
+            "width": 1012072.0,
+            "height": 937.0,
+            "rotation_emu": 0.0
+          }
+        },
+        {
+          "line_id": "line_4",
+          "kind": "connector",
+          "start_point": {
+            "x": 4637426.0,
+            "y": 5686786.0
+          },
+          "end_point": {
+            "x": 5536449.0,
+            "y": 5686786.0
+          },
+          "style": {
+            "width": 0,
+            "arrow_head": "none"
+          },
+          "shape_id": "41",
+          "bbox": {
+            "x": 4637426.0,
+            "y": 5686786.0,
+            "width": 899023.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4640000.0,
+          "y": 5688000.0
+        },
+        {
+          "x": 6952000.0,
+          "y": 5688000.0
+        }
+      ]
+    }
+  ],
+  "total_text_annotations": 5,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

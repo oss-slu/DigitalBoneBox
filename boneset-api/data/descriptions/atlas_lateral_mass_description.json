@@ -1,0 +1,10 @@
+{
+    "name": "Lateral mass",
+    "id": "atlas_lateral_mass",
+    "description": [
+        "The largest and most solid part of the vertebra.",
+        "Connects the arches with the transverse processes.",
+        "Contains the superior and inferior articular surfaces."
+    ],
+    "images": ["atlas_(superior_aspect)_image.png", "atlas_(inferior_aspect)_image.png"]
+}

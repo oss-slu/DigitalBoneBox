@@ -1,0 +1,17 @@
+{
+    "name": "Shaft",
+    "id": "tibia_shaft",
+    "description": [
+        "Has three surfaces separated by three borders",
+        "Anterior",
+        "Medial",
+        "Interosseous (lateral)",
+        "Triangular in cross section",
+        "Narrowest at junction of middle and distal thirds",
+        "Expands gradually at both ends"
+    ],
+    "images": [
+        "tibia_image.png",
+        "tibia_image2.png"
+    ]
+}

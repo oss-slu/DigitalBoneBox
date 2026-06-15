@@ -1,0 +1,17 @@
+{
+  "name": "Sphenoid bone",
+  "id": "sphenoid_bone",
+  "description": [
+    "Anterior view",
+    "The front view of the skull showing multiple facial and cranial bones.",
+    "Sphenoid bone",
+    "Anteriorly, the sphenoid bone can be seen in the deep part of the orbit.",
+    "Superior orbital fissure",
+    "A gap formed by the lesser and greater wings of the sphenoid bone.",
+    "Transmits the oculomotor nerve (CN III), trochlear nerve (CN IV), branches of the ophthalmic nerve (CN V1), abducent nerve (CN VI), and the superior ophthalmic vein.",
+    "Optic canal",
+    "Located in the sphenoid bone.",
+    "Transmits the optic nerve and the ophthalmic artery."
+  ],
+  "images": ["anterior_sphenoid_bone_image.jpg"]
+}

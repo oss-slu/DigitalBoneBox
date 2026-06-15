@@ -1,0 +1,230 @@
+{
+  "slide_number": 5,
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Sternal angle",
+      "text_content": "Sternal angle",
+      "text_box": {
+        "x": 5101135.0,
+        "y": 2841228.0,
+        "width": 618131.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "202"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_1",
+          "kind": "connector",
+          "start_point": {
+            "x": 4190935.0,
+            "y": 2948950.0
+          },
+          "end_point": {
+            "x": 5101135.0,
+            "y": 2948950.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "203",
+          "bbox": {
+            "x": 4190935.0,
+            "y": 2948950.0,
+            "width": 910200.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4192000.0,
+          "y": 2952000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Jugular notch",
+      "text_content": "Jugular notch",
+      "text_box": {
+        "x": 6019996.0,
+        "y": 1566619.0,
+        "width": 694331.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "204"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_2",
+          "kind": "connector",
+          "start_point": {
+            "x": 6714327.0,
+            "y": 1668941.0
+          },
+          "end_point": {
+            "x": 7010727.0,
+            "y": 1674341.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "205",
+          "bbox": {
+            "x": 6714327.0,
+            "y": 1668941.0,
+            "width": 296400.0,
+            "height": 5400.0,
+            "rotation_emu": 0.0
+          }
+        },
+        {
+          "line_id": "line_3",
+          "kind": "connector",
+          "start_point": {
+            "x": 7315200.0,
+            "y": 1897425.0
+          },
+          "end_point": {
+            "x": 7010402.0,
+            "y": 1674341.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "206",
+          "bbox": {
+            "x": 7010402.0,
+            "y": 1674341.0,
+            "width": 304798.0,
+            "height": 223084.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 7312000.0,
+          "y": 1896000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_3",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Clavicular notches",
+      "text_content": "Clavicular notches",
+      "text_box": {
+        "x": 3733800.0,
+        "y": 1502844.0,
+        "width": 762000.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "209"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_4",
+          "kind": "connector",
+          "start_point": {
+            "x": 4648200.0,
+            "y": 1610566.0
+          },
+          "end_point": {
+            "x": 4495800.0,
+            "y": 1610566.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "210",
+          "bbox": {
+            "x": 4495800.0,
+            "y": 1610566.0,
+            "width": 152400.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        },
+        {
+          "line_id": "line_5",
+          "kind": "connector",
+          "start_point": {
+            "x": 3578773.0,
+            "y": 1600200.0
+          },
+          "end_point": {
+            "x": 3733801.0,
+            "y": 1600200.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "211",
+          "bbox": {
+            "x": 3578773.0,
+            "y": 1600200.0,
+            "width": 155028.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        },
+        {
+          "line_id": "line_6",
+          "kind": "connector",
+          "start_point": {
+            "x": 4724401.0,
+            "y": 1947710.0
+          },
+          "end_point": {
+            "x": 4648202.0,
+            "y": 1610566.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "212",
+          "bbox": {
+            "x": 4648202.0,
+            "y": 1610566.0,
+            "width": 76199.0,
+            "height": 337144.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 3576000.0,
+          "y": 1600000.0
+        },
+        {
+          "x": 4728000.0,
+          "y": 1944000.0
+        }
+      ]
+    }
+  ],
+  "total_text_annotations": 3,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

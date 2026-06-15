@@ -1,0 +1,10 @@
+{
+  "name": "Scapula",
+  "id": "scapula",
+  "subBones": [
+    "scapula_body",
+    "scapula_spine",
+    "scapula_acromion_and_coracoid_process",
+    "scapula_fossae"
+  ]
+}

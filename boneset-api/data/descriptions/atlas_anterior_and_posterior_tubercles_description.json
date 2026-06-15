@@ -1,0 +1,15 @@
+{
+    "name": "Labels",
+    "id": "labels",
+    "description": [
+        "Articular surfaces",
+        "Anterior and posterior tubercles",
+        "Anterior tubercle",
+        "A roughened protrusion on anterior arch.",
+        "Provides attachment for the anterior longitudinal ligament.",
+        "Posterior tubercle",
+        "A rudimentary spinous process.",
+        "A roughened attachment for the ligamentum nuchae."
+    ],
+    "images": ["atlas_(superior_aspect)_image.png", "atlas_(inferior_aspect)_image.png"]
+}

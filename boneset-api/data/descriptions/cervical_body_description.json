@@ -1,0 +1,11 @@
+{
+    "name": "Body",
+    "id": "cervical_body",
+    "description": [
+        "Smallest of all the vertebrae.",
+        "Ovoid in shape.",
+        "Discal surfaces contain a lip that overlaps the intervertebral disc to restrict both lateral and anterior/posterior gliding movements.",
+        "It has a concave superior surface and a convex inferior surface."
+    ],
+    "images": ["cervical_(superior_aspect)_image.png", "cervical_(inferior_aspect)_image.png", "cervical_(right_lateral_aspect)_image.png"]
+}

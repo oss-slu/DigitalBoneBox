@@ -1,0 +1,201 @@
+{
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Interosseous border",
+      "text_content": "Interosseous border",
+      "text_box": {
+        "x": 6103734.0,
+        "y": 3406258.0,
+        "width": 934589.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "18"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_1",
+          "kind": "connector",
+          "start_point": {
+            "x": 5663001.0,
+            "y": 3513980.0
+          },
+          "end_point": {
+            "x": 6103734.0,
+            "y": 3513980.0
+          },
+          "style": {
+            "width": 12700,
+            "arrow_head": "none"
+          },
+          "shape_id": "19",
+          "bbox": {
+            "x": 5663001.0,
+            "y": 3513980.0,
+            "width": 440733.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 5664000.0,
+          "y": 3512000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Medial border",
+      "text_content": "Medial border",
+      "text_box": {
+        "x": 4449384.0,
+        "y": 3960789.0,
+        "width": 658496.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "20"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_2",
+          "kind": "connector",
+          "start_point": {
+            "x": 5107880.0,
+            "y": 4068511.0
+          },
+          "end_point": {
+            "x": 5361304.0,
+            "y": 4068511.0
+          },
+          "style": {
+            "width": 12700,
+            "arrow_head": "none"
+          },
+          "shape_id": "21",
+          "bbox": {
+            "x": 5107880.0,
+            "y": 4068511.0,
+            "width": 253424.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 5360000.0,
+          "y": 4072000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_3",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Soleal line",
+      "text_content": "Soleal line",
+      "text_box": {
+        "x": 3428762.0,
+        "y": 3298536.0,
+        "width": 533400.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "32"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_3",
+          "kind": "connector",
+          "start_point": {
+            "x": 3962162.0,
+            "y": 3406258.0
+          },
+          "end_point": {
+            "x": 4343400.0,
+            "y": 3406258.0
+          },
+          "style": {
+            "width": 12700,
+            "arrow_head": "none"
+          },
+          "shape_id": "33",
+          "bbox": {
+            "x": 3962162.0,
+            "y": 3406258.0,
+            "width": 381238.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4344000.0,
+          "y": 3408000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_4",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Nutrient foramen",
+      "text_content": "Nutrient foramen",
+      "text_box": {
+        "x": 4800600.0,
+        "y": 4517483.0,
+        "width": 533400.0,
+        "height": 338554.0,
+        "rotation_emu": 0.0,
+        "shape_id": "37"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_4",
+          "kind": "connector",
+          "start_point": {
+            "x": 4572000.0,
+            "y": 4686760.0
+          },
+          "end_point": {
+            "x": 4800600.0,
+            "y": 4686760.0
+          },
+          "style": {
+            "width": 12700,
+            "arrow_head": "none"
+          },
+          "shape_id": "39",
+          "bbox": {
+            "x": 4572000.0,
+            "y": 4686760.0,
+            "width": 228600.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4576000.0,
+          "y": 4688000.0
+        }
+      ]
+    }
+  ],
+  "total_text_annotations": 4,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

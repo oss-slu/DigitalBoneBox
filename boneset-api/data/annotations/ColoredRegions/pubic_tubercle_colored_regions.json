@@ -1,0 +1,83 @@
+{
+  "slide_number": 20,
+  "images": [
+    {
+      "image_name": "pelvis_lat_blk.psd",
+      "width": 4166564,
+      "height": 4100124,
+      "colored_regions": [
+        {
+          "region_name": "Pubic tubercle",
+          "anatomical_name": "Pubic tubercle",
+          "color": "008000",
+          "color_name": "green",
+          "opacity": 0.29,
+          "fill": true,
+          "path_data": [
+            {
+              "path_width": 332787,
+              "path_height": 339589,
+              "commands": [
+                {
+                  "type": "moveTo",
+                  "x": 13583,
+                  "y": 0
+                },
+                {
+                  "type": "lineTo",
+                  "x": 142623,
+                  "y": 13583
+                },
+                {
+                  "type": "lineTo",
+                  "x": 251288,
+                  "y": 27167
+                },
+                {
+                  "type": "lineTo",
+                  "x": 312412,
+                  "y": 101877
+                },
+                {
+                  "type": "lineTo",
+                  "x": 332787,
+                  "y": 203753
+                },
+                {
+                  "type": "lineTo",
+                  "x": 292037,
+                  "y": 271671
+                },
+                {
+                  "type": "lineTo",
+                  "x": 210538,
+                  "y": 339589
+                },
+                {
+                  "type": "lineTo",
+                  "x": 101873,
+                  "y": 326005
+                },
+                {
+                  "type": "lineTo",
+                  "x": 0,
+                  "y": 176586
+                },
+                {
+                  "type": "lineTo",
+                  "x": 13583,
+                  "y": 0
+                },
+                {
+                  "type": "close"
+                }
+              ]
+            }
+          ],
+          "offset_x": 0,
+          "offset_y": 0
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "slide": 15,
+  "name": "Head and Neck",
+  "id": "head_and_neck",
+  "description": [
+    "The",
+    "head",
+    "is small and round and articulates with the body of the first thoracic vertebra.",
+    "The",
+    "neck",
+    "is a constricted portion situated between the head and the tubercle."
+  ],
+  "images": ["First_Rib_Top_Image.jpg", "First_Rib_Bottom_Image.jpg"]
+}

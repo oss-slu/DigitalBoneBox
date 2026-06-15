@@ -1,0 +1,12 @@
+{
+    "name": "Olecranon fossa",
+    "id": "olecranon_fossa",
+    "description": [
+        "A deep depression on posterior surface.",
+        "Lies just distal to the trochlea.",
+        "Accommodates the",
+        "olecranon process",
+        "of the ulna when the forearm is extended at the elbow."
+    ],
+    "images": ["humerus_olecranon_fossa_image.jpg"]
+}

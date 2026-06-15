@@ -1,0 +1,9 @@
+{
+    "name": "Ulnar notch",
+    "id": "ulnar_notch",
+    "description": [
+        "A concave depression on medial surface of the distal end.",
+        "Articulates with the head of the ulna."
+    ],
+    "images": ["radius_ulnar_notch_image.jpg"]
+}

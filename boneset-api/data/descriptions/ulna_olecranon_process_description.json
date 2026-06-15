@@ -1,0 +1,13 @@
+{
+    "name": "Olecranon process",
+    "id": "olecranon_process",
+    "description": [
+        "A projection at the proximal end of the ulna that curves anteriorly.",
+        "The anterior surface has a tip that is shaped like a beak and enters the",
+        "olecranon fossa",
+        "of humerus when forearm is extended at the elbow.",
+        "Posterior surface provides attachment for the insertions of triceps brachii and anconeus muscles.",
+        "Can be palpated as the \u201cpoint of the elbow\u201d on its proximal and posterior surface."
+    ],
+    "images": ["ulna_olecranon_process_left_image.jpg", "ulna_olecranon_process_right_image.jpg"]
+}

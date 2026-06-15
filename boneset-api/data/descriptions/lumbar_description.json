@@ -1,0 +1,10 @@
+{
+    "name": "Lumbar vertebrae",
+    "id": "lumbar",
+    "description": [
+        "Large in size.",
+        "They have no costal facets or transverse foramina.",
+        "Vertebral foramen is triangular in shape and larger than in the thoracic levels but not the cervical levels."
+    ],
+    "images": ["lumbar_(superior_aspect)_image.png", "lumbar_(inferior_aspect)_image.png", "lumbar_(lateral_aspect)_image.png"]
+}

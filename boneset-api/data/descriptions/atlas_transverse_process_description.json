@@ -1,0 +1,10 @@
+{
+    "name": "Transverse process",
+    "id": "atlas_transverse_process",
+    "description": [
+        "Lateral projections that serve as attachments for muscles.",
+        "Contain a transverse foramen that transmits the vertebral vessels.",
+        "Apex of process can be palpated between the mastoid process of thee temporal bone and ramus of the mandible."
+    ],
+    "images": ["atlas_(superior_aspect)_image.png", "atlas_(inferior_aspect)_image.png"]
+}

@@ -1,0 +1,120 @@
+{
+  "slide_number": 2,
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Scapula",
+      "text_content": "Scapula",
+      "text_box": {
+        "x": 6804369.0,
+        "y": 5295665.0,
+        "width": 520044.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "106"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId13",
+        "target": "/ppt/slides/slide23.xml",
+        "target_slide": 23
+      },
+      "pointer_lines": [],
+      "target_regions": []
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Sternum",
+      "text_content": "Sternum",
+      "text_box": {
+        "x": 2429324.0,
+        "y": 2133601.0,
+        "width": 647260.0,
+        "height": 247696.0,
+        "rotation_emu": 0.0,
+        "shape_id": "110"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId18",
+        "target": "/ppt/slides/slide3.xml",
+        "target_slide": 3
+      },
+      "pointer_lines": [],
+      "target_regions": []
+    },
+    {
+      "annotation_id": "annot_3",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Clavicle",
+      "text_content": "Clavicle",
+      "text_box": {
+        "x": 2288958.0,
+        "y": 3365299.0,
+        "width": 655196.0,
+        "height": 291539.0,
+        "rotation_emu": 0.0,
+        "shape_id": "114"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId23",
+        "target": "/ppt/slides/slide8.xml",
+        "target_slide": 8
+      },
+      "pointer_lines": [],
+      "target_regions": []
+    },
+    {
+      "annotation_id": "annot_4",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "First rib",
+      "text_content": "First rib",
+      "text_box": {
+        "x": 2408514.0,
+        "y": 4953000.0,
+        "width": 712153.0,
+        "height": 250154.0,
+        "rotation_emu": 0.0,
+        "shape_id": "118"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId28",
+        "target": "/ppt/slides/slide13.xml",
+        "target_slide": 13
+      },
+      "pointer_lines": [],
+      "target_regions": []
+    },
+    {
+      "annotation_id": "annot_5",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Typical rib",
+      "text_content": "Typical rib",
+      "text_box": {
+        "x": 5469722.0,
+        "y": 2165294.0,
+        "width": 708694.0,
+        "height": 235942.0,
+        "rotation_emu": 0.0,
+        "shape_id": "122"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId33",
+        "target": "/ppt/slides/slide18.xml",
+        "target_slide": 18
+      },
+      "pointer_lines": [],
+      "target_regions": []
+    }
+  ],
+  "total_text_annotations": 5,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

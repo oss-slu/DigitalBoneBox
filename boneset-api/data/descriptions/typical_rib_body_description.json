@@ -1,0 +1,13 @@
+{
+  "slide": 22,
+  "name": "Body",
+  "id": "body",
+  "description": [
+    "The body (shaft) is the main part of the rib.",
+    "The angle is an abrupt change in curvature that occurs laterally to the tubercle.",
+    "The costal groove is a shallow depression on the internal surface of the inferior border of the body.",
+    "It contains the neurovascular bundle for each intercostal space*.",
+    "*This is important to know when performing a chest tube procedure."
+  ],
+  "images": ["Typical_Rib_Left_Image.jpg", "Typical_Rib_Right_Image.jpg"]
+}

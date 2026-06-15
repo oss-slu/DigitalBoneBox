@@ -1,0 +1,18 @@
+{
+    "name": "Vertebral notch",
+    "id": "thoracic_vertebral_notch",
+    "description": [
+        "Superior notch",
+        "An indentation on superior border of the pedicle of each vertebrae.",
+        "Inferior notch",
+        "A larger indentation between the body and articular surface of each vertebrae.",
+        "When two vertebrae are opposed, the notches will create an intervertebral foramen.",
+        "The ",
+        "intervertebral foramen ",
+        "allows the spinal nerve to exit the vertebral column.",
+        "**Each spinal nerve is named for the vertebra above it.",
+        "Exception: the cervical spinal nerves are numbered for the vertebra below it except C8. ",
+        "C8 exits the column between CV7 and TV1."
+    ],
+    "images": ["thoracic_(lateral_aspect)_image.png"]
+}

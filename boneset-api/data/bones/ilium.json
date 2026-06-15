@@ -1,0 +1,5 @@
+{
+    "name": "Ilium",
+    "id": "ilium",
+    "subBones": ["iliac_crest", "anterior_iliac_spines", "posterior_iliac_spines", "auricular_surface"]
+}

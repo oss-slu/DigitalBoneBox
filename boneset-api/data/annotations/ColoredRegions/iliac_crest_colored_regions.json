@@ -1,0 +1,278 @@
+{
+  "slide_number": 5,
+  "images": [
+    {
+      "index": 0,
+      "name": "Google Shape;201;p5",
+      "description": "pelvis_lat_blk.psd - Right Pelvis (lateral aspect)",
+      "width": 2236557,
+      "height": 3535362,
+      "colored_regions": [
+        {
+          "anatomical_name": "Iliac Crest",
+          "color": "008000",
+          "image_name": "Google Shape;201;p5",
+          "path_data": [
+            {
+              "path_width": 1881736,
+              "path_height": 1196237,
+              "commands": [
+                {
+                  "type": "moveTo",
+                  "x": 1690459,
+                  "y": 619218
+                },
+                {
+                  "type": "lineTo",
+                  "x": 1526186,
+                  "y": 448618
+                },
+                {
+                  "type": "lineTo",
+                  "x": 1305050,
+                  "y": 309609
+                },
+                {
+                  "type": "lineTo",
+                  "x": 1058640,
+                  "y": 189557
+                },
+                {
+                  "type": "lineTo",
+                  "x": 850140,
+                  "y": 170601
+                },
+                {
+                  "type": "lineTo",
+                  "x": 603731,
+                  "y": 303291
+                },
+                {
+                  "type": "lineTo",
+                  "x": 496321,
+                  "y": 467573
+                },
+                {
+                  "type": "lineTo",
+                  "x": 376759,
+                  "y": 728352
+                },
+                {
+                  "type": "cubicBezTo",
+                  "x1": 330107,
+                  "y1": 780330,
+                  "x2": 131535,
+                  "y2": 1117901,
+                  "x": 84883,
+                  "y": 1169879
+                },
+                {
+                  "type": "lineTo",
+                  "x": 0,
+                  "y": 1196237
+                },
+                {
+                  "type": "lineTo",
+                  "x": 490003,
+                  "y": 360158
+                },
+                {
+                  "type": "lineTo",
+                  "x": 597412,
+                  "y": 202194
+                },
+                {
+                  "type": "lineTo",
+                  "x": 749049,
+                  "y": 69504
+                },
+                {
+                  "type": "lineTo",
+                  "x": 888049,
+                  "y": 6319
+                },
+                {
+                  "type": "lineTo",
+                  "x": 1083913,
+                  "y": 0
+                },
+                {
+                  "type": "lineTo",
+                  "x": 1292413,
+                  "y": 75823
+                },
+                {
+                  "type": "lineTo",
+                  "x": 1450368,
+                  "y": 189557
+                },
+                {
+                  "type": "lineTo",
+                  "x": 1646232,
+                  "y": 366476
+                },
+                {
+                  "type": "lineTo",
+                  "x": 1741005,
+                  "y": 524440
+                },
+                {
+                  "type": "lineTo",
+                  "x": 1881736,
+                  "y": 777205
+                },
+                {
+                  "type": "lineTo",
+                  "x": 1820244,
+                  "y": 797856
+                },
+                {
+                  "type": "lineTo",
+                  "x": 1690459,
+                  "y": 619218
+                },
+                {
+                  "type": "close"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "Google Shape;202;p5",
+      "description": "pelvis_med_blk.psd - Right Pelvis (medial aspect)",
+      "width": 2554738,
+      "height": 3429000,
+      "colored_regions": [
+        {
+          "anatomical_name": "Iliac Crest",
+          "color": "008000",
+          "image_name": "Google Shape;202;p5",
+          "path_data": [
+            {
+              "path_width": 1242510,
+              "path_height": 1264241,
+              "commands": [
+                {
+                  "type": "moveTo",
+                  "x": 1135100,
+                  "y": 347521
+                },
+                {
+                  "type": "lineTo",
+                  "x": 1015055,
+                  "y": 183238
+                },
+                {
+                  "type": "lineTo",
+                  "x": 895009,
+                  "y": 107416
+                },
+                {
+                  "type": "lineTo",
+                  "x": 749691,
+                  "y": 82141
+                },
+                {
+                  "type": "lineTo",
+                  "x": 591736,
+                  "y": 176920
+                },
+                {
+                  "type": "lineTo",
+                  "x": 446418,
+                  "y": 347521
+                },
+                {
+                  "type": "lineTo",
+                  "x": 269508,
+                  "y": 606581
+                },
+                {
+                  "type": "lineTo",
+                  "x": 174735,
+                  "y": 821412
+                },
+                {
+                  "type": "lineTo",
+                  "x": 63181,
+                  "y": 1147579
+                },
+                {
+                  "type": "lineTo",
+                  "x": 0,
+                  "y": 1264241
+                },
+                {
+                  "type": "cubicBezTo",
+                  "x1": 14133,
+                  "y1": 1201106,
+                  "x2": -8196,
+                  "y2": 1180505,
+                  "x": 5937,
+                  "y": 1117370
+                },
+                {
+                  "type": "lineTo",
+                  "x": 124190,
+                  "y": 764545
+                },
+                {
+                  "type": "lineTo",
+                  "x": 206326,
+                  "y": 587626
+                },
+                {
+                  "type": "lineTo",
+                  "x": 370599,
+                  "y": 334884
+                },
+                {
+                  "type": "lineTo",
+                  "x": 585418,
+                  "y": 101097
+                },
+                {
+                  "type": "lineTo",
+                  "x": 737054,
+                  "y": 0
+                },
+                {
+                  "type": "lineTo",
+                  "x": 964509,
+                  "y": 18956
+                },
+                {
+                  "type": "lineTo",
+                  "x": 1122464,
+                  "y": 75823
+                },
+                {
+                  "type": "lineTo",
+                  "x": 1223555,
+                  "y": 208513
+                },
+                {
+                  "type": "lineTo",
+                  "x": 1242510,
+                  "y": 341202
+                },
+                {
+                  "type": "lineTo",
+                  "x": 1135100,
+                  "y": 347521
+                },
+                {
+                  "type": "close"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

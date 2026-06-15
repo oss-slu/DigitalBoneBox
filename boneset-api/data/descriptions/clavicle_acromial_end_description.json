@@ -1,0 +1,11 @@
+{
+  "slide": 11,
+  "name": "Acromial end",
+  "id": "acromial_end",
+  "description": [
+    "The lateral end that articulates with the acromion process of the scapula.",
+    "Provides distal attachment for the trapezius muscle on the superior and posterior surface.",
+    "Provides proximal attachment for the deltoid muscle on the superior and anterior surface."
+  ],
+  "images": ["Clavicle_Top_Image.jpg", "Clavicle_Bottom_Image.jpg"]
+}

@@ -1,0 +1,10 @@
+{
+    "name": "Mammillary process",
+    "id": "lumbar_mammillary_process",
+    "description": [
+        "A short, thick protrusion that extends posteriorly from the superior articular process.",
+        "It is the attachment site for the multifidi and intertransversarii muscles of the back.",
+        "Also, it helps to stabilize the vertebral joints."
+    ],
+    "images": ["lumbar_(posterior_aspect)_image.png"]
+}

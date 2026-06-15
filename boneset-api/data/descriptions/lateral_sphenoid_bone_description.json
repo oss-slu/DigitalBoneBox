@@ -1,0 +1,9 @@
+{
+  "name": "Sphenoid bone",
+  "id": "sphenoid_bone",
+  "description": [
+    "The greater wing of the sphenoid bone can be seen from the lateral view.",
+    "The greater wing forms part of the medial wall of the temporal fossa and the roof of the infratemporal fossa."
+  ],
+  "images": ["lateral_sphenoid_bone_image.jpg"]
+}

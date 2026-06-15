@@ -1,0 +1,12 @@
+{
+    "name": "Lumbar",
+    "id": "lumbar",
+    "subBones": [
+        "lumbar_body",
+        "lumbar_transverse_process",
+        "lumbar_spinous_process",
+        "lumbar_accessory_process",
+        "lumbar_mammillary_process",
+        "lumbar_articular_surfaces"
+    ]
+}

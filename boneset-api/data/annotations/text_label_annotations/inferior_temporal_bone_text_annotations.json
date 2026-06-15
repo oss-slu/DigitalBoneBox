@@ -1,0 +1,466 @@
+{
+  "slide_number": 24,
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Zygomatic process",
+      "text_content": "Zygomatic process",
+      "text_box": {
+        "x": 2765492.0,
+        "y": 2434768.0,
+        "width": 843455.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "870"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_13",
+          "kind": "connector",
+          "start_point": {
+            "x": 3971347.0,
+            "y": 2548790.0
+          },
+          "end_point": {
+            "x": 3608947.0,
+            "y": 2542490.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "896",
+          "bbox": {
+            "x": 3608947.0,
+            "y": 2542490.0,
+            "width": 362400.0,
+            "height": 6300.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 3968000.0,
+          "y": 2552000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Carotid canal",
+      "text_content": "Carotid canal",
+      "text_box": {
+        "x": 2768239.0,
+        "y": 3056672.0,
+        "width": 614855.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "871"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_8",
+          "kind": "connector",
+          "start_point": {
+            "x": 3770394.0,
+            "y": 3164394.0
+          },
+          "end_point": {
+            "x": 3383094.0,
+            "y": 3164394.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "890",
+          "bbox": {
+            "x": 3383094.0,
+            "y": 3164394.0,
+            "width": 387300.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        },
+        {
+          "line_id": "line_10",
+          "kind": "connector",
+          "start_point": {
+            "x": 4886139.0,
+            "y": 3502186.0
+          },
+          "end_point": {
+            "x": 3770345.0,
+            "y": 3164395.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "892",
+          "bbox": {
+            "x": 3770345.0,
+            "y": 3164395.0,
+            "width": 1115794.0,
+            "height": 337791.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4888000.0,
+          "y": 3504000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_3",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Styloid process",
+      "text_content": "Styloid process",
+      "text_box": {
+        "x": 2762473.0,
+        "y": 3299924.0,
+        "width": 694772.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "872"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_6",
+          "kind": "connector",
+          "start_point": {
+            "x": 3770445.0,
+            "y": 3407646.0
+          },
+          "end_point": {
+            "x": 3457245.0,
+            "y": 3407646.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "883",
+          "bbox": {
+            "x": 3457245.0,
+            "y": 3407646.0,
+            "width": 313200.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        },
+        {
+          "line_id": "line_9",
+          "kind": "connector",
+          "start_point": {
+            "x": 4572000.0,
+            "y": 3619502.0
+          },
+          "end_point": {
+            "x": 3765830.0,
+            "y": 3407647.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "891",
+          "bbox": {
+            "x": 3765830.0,
+            "y": 3407647.0,
+            "width": 806170.0,
+            "height": 211855.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4576000.0,
+          "y": 3616000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_4",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Stylomastoid foramen",
+      "text_content": "Stylomastoid foramen",
+      "text_box": {
+        "x": 2762473.0,
+        "y": 3657600.0,
+        "width": 981628.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "873"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_7",
+          "kind": "connector",
+          "start_point": {
+            "x": 4483001.0,
+            "y": 3765322.0
+          },
+          "end_point": {
+            "x": 3744101.0,
+            "y": 3765322.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "884",
+          "bbox": {
+            "x": 3744101.0,
+            "y": 3765322.0,
+            "width": 738900.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4480000.0,
+          "y": 3768000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_5",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Mastoid process",
+      "text_content": "Mastoid process",
+      "text_box": {
+        "x": 2768239.0,
+        "y": 4005148.0,
+        "width": 744055.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "874"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_1",
+          "kind": "connector",
+          "start_point": {
+            "x": 3962294.0,
+            "y": 4112870.0
+          },
+          "end_point": {
+            "x": 3512294.0,
+            "y": 4112870.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "876",
+          "bbox": {
+            "x": 3512294.0,
+            "y": 4112870.0,
+            "width": 450000.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 3960000.0,
+          "y": 4112000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_6",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Mastoid air cells (exposed)",
+      "text_content": "Mastoid air cells (exposed)",
+      "text_box": {
+        "x": 2821867.0,
+        "y": 4343400.0,
+        "width": 744055.0,
+        "height": 338554.0,
+        "rotation_emu": 0.0,
+        "shape_id": "875"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_2",
+          "kind": "connector",
+          "start_point": {
+            "x": 7620122.0,
+            "y": 4512677.0
+          },
+          "end_point": {
+            "x": 3565922.0,
+            "y": 4512677.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "877",
+          "bbox": {
+            "x": 3565922.0,
+            "y": 4512677.0,
+            "width": 4054200.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        },
+        {
+          "line_id": "line_3",
+          "kind": "connector",
+          "start_point": {
+            "x": 7620002.0,
+            "y": 4220592.0
+          },
+          "end_point": {
+            "x": 8229601.0,
+            "y": 4512678.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "878",
+          "bbox": {
+            "x": 7620002.0,
+            "y": 4220592.0,
+            "width": 609599.0,
+            "height": 292086.0,
+            "rotation_emu": 0.0
+          }
+        },
+        {
+          "line_id": "line_5",
+          "kind": "connector",
+          "start_point": {
+            "x": 7620002.0,
+            "y": 4512678.0
+          },
+          "end_point": {
+            "x": 8229601.0,
+            "y": 4512679.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "880",
+          "bbox": {
+            "x": 7620002.0,
+            "y": 4512678.0,
+            "width": 609599.0,
+            "height": 1.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 7624000.0,
+          "y": 4224000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_7",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Petrotympanic fissure",
+      "text_content": "Petrotympanic fissure",
+      "text_box": {
+        "x": 2762474.0,
+        "y": 2769249.0,
+        "width": 1003357.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "893"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_11",
+          "kind": "connector",
+          "start_point": {
+            "x": 3946431.0,
+            "y": 2876971.0
+          },
+          "end_point": {
+            "x": 3765831.0,
+            "y": 2876971.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "894",
+          "bbox": {
+            "x": 3765831.0,
+            "y": 2876971.0,
+            "width": 180600.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        },
+        {
+          "line_id": "line_12",
+          "kind": "connector",
+          "start_point": {
+            "x": 4774139.0,
+            "y": 3362147.0
+          },
+          "end_point": {
+            "x": 3946439.0,
+            "y": 2877047.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "895",
+          "bbox": {
+            "x": 3946439.0,
+            "y": 2877047.0,
+            "width": 827700.0,
+            "height": 485100.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4776000.0,
+          "y": 3360000.0
+        }
+      ]
+    }
+  ],
+  "total_text_annotations": 7,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

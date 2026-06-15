@@ -1,0 +1,625 @@
+{
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Sacral promontory",
+      "text_content": "Sacral promontory",
+      "text_box": {
+        "x": 2760663.0,
+        "y": 1810406.0,
+        "width": 879475.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "1480"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId19",
+        "target": "/ppt/slides/slide48.xml",
+        "target_slide": 48
+      },
+      "pointer_lines": [
+        {
+          "line_id": "line_1",
+          "kind": "connector",
+          "start_point": {
+            "x": 3809938.0,
+            "y": 1918128.0
+          },
+          "end_point": {
+            "x": 3640138.0,
+            "y": 1918128.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1481",
+          "bbox": {
+            "x": 3640138.0,
+            "y": 1918128.0,
+            "width": 169800.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        },
+        {
+          "line_id": "line_2",
+          "kind": "connector",
+          "start_point": {
+            "x": 4038601.0,
+            "y": 2209801.0
+          },
+          "end_point": {
+            "x": 3810002.0,
+            "y": 1918130.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1482",
+          "bbox": {
+            "x": 3810002.0,
+            "y": 1918130.0,
+            "width": 228599.0,
+            "height": 291671.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4040000.0,
+          "y": 2208000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Superior articular process",
+      "text_content": "Superior articular process",
+      "text_box": {
+        "x": 7734527.0,
+        "y": 1673929.0,
+        "width": 838200.0,
+        "height": 338554.0,
+        "rotation_emu": 0.0,
+        "shape_id": "1483"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId20",
+        "target": "/ppt/slides/slide49.xml",
+        "target_slide": 49
+      },
+      "pointer_lines": [
+        {
+          "line_id": "line_3",
+          "kind": "connector",
+          "start_point": {
+            "x": 7734527.0,
+            "y": 1843206.0
+          },
+          "end_point": {
+            "x": 7467527.0,
+            "y": 1843206.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1484",
+          "bbox": {
+            "x": 7467527.0,
+            "y": 1843206.0,
+            "width": 267000.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 7464000.0,
+          "y": 1840000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_3",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Coccyx",
+      "text_content": "Coccyx",
+      "text_box": {
+        "x": 5524500.0,
+        "y": 5289322.0,
+        "width": 381000.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "1487"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId21",
+        "target": "/ppt/slides/slide54.xml",
+        "target_slide": 54
+      },
+      "pointer_lines": [
+        {
+          "line_id": "line_6",
+          "kind": "connector",
+          "start_point": {
+            "x": 5524500.0,
+            "y": 5397044.0
+          },
+          "end_point": {
+            "x": 4221300.0,
+            "y": 5397044.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1488",
+          "bbox": {
+            "x": 4221300.0,
+            "y": 5397044.0,
+            "width": 1303200.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        },
+        {
+          "line_id": "line_7",
+          "kind": "connector",
+          "start_point": {
+            "x": 7086600.0,
+            "y": 5397044.0
+          },
+          "end_point": {
+            "x": 5905500.0,
+            "y": 5397044.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1489",
+          "bbox": {
+            "x": 5905500.0,
+            "y": 5397044.0,
+            "width": 1181100.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 7088000.0,
+          "y": 5400000.0
+        },
+        {
+          "x": 4224000.0,
+          "y": 5400000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_4",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Anterior sacral foramen",
+      "text_content": "Anterior sacral foramen",
+      "text_box": {
+        "x": 4972050.0,
+        "y": 4648200.0,
+        "width": 1047750.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "1490"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId22",
+        "target": "/ppt/slides/slide50.xml",
+        "target_slide": 50
+      },
+      "pointer_lines": [
+        {
+          "line_id": "line_8",
+          "kind": "connector",
+          "start_point": {
+            "x": 4972050.0,
+            "y": 4755922.0
+          },
+          "end_point": {
+            "x": 4800750.0,
+            "y": 4755922.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1491",
+          "bbox": {
+            "x": 4800750.0,
+            "y": 4755922.0,
+            "width": 171300.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        },
+        {
+          "line_id": "line_9",
+          "kind": "connector",
+          "start_point": {
+            "x": 4572000.0,
+            "y": 4267200.0
+          },
+          "end_point": {
+            "x": 4800600.0,
+            "y": 4755924.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1492",
+          "bbox": {
+            "x": 4572000.0,
+            "y": 4267200.0,
+            "width": 228600.0,
+            "height": 488724.0,
+            "rotation_emu": 0.0
+          }
+        },
+        {
+          "line_id": "line_10",
+          "kind": "connector",
+          "start_point": {
+            "x": 4495800.0,
+            "y": 3886200.0
+          },
+          "end_point": {
+            "x": 4800600.0,
+            "y": 4755922.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1493",
+          "bbox": {
+            "x": 4495800.0,
+            "y": 3886200.0,
+            "width": 304800.0,
+            "height": 869722.0,
+            "rotation_emu": 0.0
+          }
+        },
+        {
+          "line_id": "line_11",
+          "kind": "connector",
+          "start_point": {
+            "x": 4572000.0,
+            "y": 3505200.0
+          },
+          "end_point": {
+            "x": 4800600.0,
+            "y": 4755922.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1494",
+          "bbox": {
+            "x": 4572000.0,
+            "y": 3505200.0,
+            "width": 228600.0,
+            "height": 1250722.0,
+            "rotation_emu": 0.0
+          }
+        },
+        {
+          "line_id": "line_12",
+          "kind": "connector",
+          "start_point": {
+            "x": 4623196.0,
+            "y": 3003322.0
+          },
+          "end_point": {
+            "x": 4800601.0,
+            "y": 4755922.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1495",
+          "bbox": {
+            "x": 4623196.0,
+            "y": 3003322.0,
+            "width": 177405.0,
+            "height": 1752600.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4576000.0,
+          "y": 4264000.0
+        },
+        {
+          "x": 4496000.0,
+          "y": 3888000.0
+        },
+        {
+          "x": 4576000.0,
+          "y": 3504000.0
+        },
+        {
+          "x": 4624000.0,
+          "y": 3000000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_5",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Posterior sacral foramen",
+      "text_content": "Posterior sacral foramen",
+      "text_box": {
+        "x": 5181601.0,
+        "y": 4343400.0,
+        "width": 1057275.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "1496"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId23",
+        "target": "/ppt/slides/slide50.xml",
+        "target_slide": 50
+      },
+      "pointer_lines": [
+        {
+          "line_id": "line_13",
+          "kind": "connector",
+          "start_point": {
+            "x": 6400876.0,
+            "y": 4451122.0
+          },
+          "end_point": {
+            "x": 6238876.0,
+            "y": 4451122.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1497",
+          "bbox": {
+            "x": 6238876.0,
+            "y": 4451122.0,
+            "width": 162000.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 6400000.0,
+          "y": 4448000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_6",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Sacral hiatus",
+      "text_content": "Sacral hiatus",
+      "text_box": {
+        "x": 7861860.0,
+        "y": 4565402.0,
+        "width": 635830.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "1502"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_18",
+          "kind": "connector",
+          "start_point": {
+            "x": 7861860.0,
+            "y": 4673124.0
+          },
+          "end_point": {
+            "x": 7315260.0,
+            "y": 4673124.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1503",
+          "bbox": {
+            "x": 7315260.0,
+            "y": 4673124.0,
+            "width": 546600.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        },
+        {
+          "line_id": "line_23",
+          "kind": "connector",
+          "start_point": {
+            "x": 7315200.0,
+            "y": 4673126.0
+          },
+          "end_point": {
+            "x": 7260992.0,
+            "y": 4146323.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1511",
+          "bbox": {
+            "x": 7260992.0,
+            "y": 4146323.0,
+            "width": 54208.0,
+            "height": 526803.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 7264000.0,
+          "y": 4144000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_7",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Articular surface for ilium",
+      "text_content": "Articular surface for ilium",
+      "text_box": {
+        "x": 4903251.0,
+        "y": 1779486.0,
+        "width": 800408.0,
+        "height": 338554.0,
+        "rotation_emu": 0.0,
+        "shape_id": "1504"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_19",
+          "kind": "connector",
+          "start_point": {
+            "x": 6024959.0,
+            "y": 1948763.0
+          },
+          "end_point": {
+            "x": 5703659.0,
+            "y": 1948763.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1505",
+          "bbox": {
+            "x": 5703659.0,
+            "y": 1948763.0,
+            "width": 321300.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 6024000.0,
+          "y": 1952000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_8",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Median sacral crest",
+      "text_content": "Median sacral crest",
+      "text_box": {
+        "x": 7772400.0,
+        "y": 4346679.0,
+        "width": 914400.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "1507"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId24",
+        "target": "/ppt/slides/slide51.xml",
+        "target_slide": 51
+      },
+      "pointer_lines": [
+        {
+          "line_id": "line_21",
+          "kind": "connector",
+          "start_point": {
+            "x": 7772400.0,
+            "y": 4454401.0
+          },
+          "end_point": {
+            "x": 7483800.0,
+            "y": 4454401.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1509",
+          "bbox": {
+            "x": 7483800.0,
+            "y": 4454401.0,
+            "width": 288600.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        },
+        {
+          "line_id": "line_22",
+          "kind": "connector",
+          "start_point": {
+            "x": 7483802.0,
+            "y": 4454402.0
+          },
+          "end_point": {
+            "x": 7260992.0,
+            "y": 3505201.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1510",
+          "bbox": {
+            "x": 7260992.0,
+            "y": 3505201.0,
+            "width": 222810.0,
+            "height": 949201.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 7264000.0,
+          "y": 3504000.0
+        }
+      ]
+    }
+  ],
+  "total_text_annotations": 8,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

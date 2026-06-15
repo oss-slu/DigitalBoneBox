@@ -1,0 +1,9 @@
+{
+  "name": "Typical Rib",
+  "id": "typical_rib",
+  "subbones": [
+    "typical_rib_head_and_neck",
+    "typical_rib_tubercle",
+    "typical_rib_body"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+    "name": "Patellar surface",
+    "id": "patellar_surface",
+    "description": [
+        "Extends anteriorly from both condyles, and more proximally on the lateral side",
+        "Continues posteriorly as the intercondylar fossa",
+        "It is transversely concave, vertically convex, and grooved to articulate with the posterior surface of the patella"
+    ],
+    "images": [
+        "femur_image.png",
+        "femur_bottom_image6.png"
+    ]
+}

@@ -1,0 +1,10 @@
+{
+  "slide": 13,
+  "name": "First Rib",
+  "id": "first_rib",
+  "description": [
+    "The first rib is the shortest, broadest and most curved.",
+    "It attaches to the manubrium of the sternum just inferior to the sternoclavicular joint."
+  ],
+  "images": ["First_Rib_Top_Image.jpg", "First_Rib_Bottom_Image.jpg"]
+}

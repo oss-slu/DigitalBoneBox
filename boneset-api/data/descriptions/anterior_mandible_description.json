@@ -1,0 +1,32 @@
+{
+  "name": "Mandible",
+  "id": "mandible",
+  "description": [
+    "Mandible",
+    "The single bone that forms the lower jaw and contains the lower teeth.",
+    "The only movable bone of the skull, articulating with the temporal bones via the temporomandibular joints.",
+    "Body",
+    "The horizontal part of the mandible that fuses from two separate bones during development.",
+    "Forms the inferior border of the lower face.",
+    "Contains the alveolar process with the lower teeth.",
+    "Ramus",
+    "The vertical or nearly vertical part of the mandible that extends superiorly from the posterior part of the body.",
+    "Provides attachment for muscles of mastication.",
+    "Articulates with the condylar process at the temporomandibular joint.",
+    "Mental foramen",
+    "An opening on the anterior surface of the mandibular body.",
+    "Located approximately below the first and second lower premolar teeth.",
+    "Lies in the same sagittal plane as the infraorbital and supraorbital foramina.",
+    "Transmits the mental nerve (division of CN V3) and mental vessels.",
+    "Serves as a landmark for regional anesthesia in dental procedures.",
+    "Mental protuberance",
+    "A projection on the median anterior surface of the mandible.",
+    "Forms the prominence of the chin.",
+    "More pronounced in humans compared to other primates.",
+    "Mental tubercle",
+    "The point of the mental protuberance that represents the fusion of the two mandibular bodies.",
+    "Slightly projects anteriorly from the mandible.",
+    "Represents the most anterior and inferior projection of the lower face."
+  ],
+  "images": ["anterior_mandible_image.jpg"]
+}

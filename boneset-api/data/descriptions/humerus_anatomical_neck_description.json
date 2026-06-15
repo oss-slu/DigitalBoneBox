@@ -1,0 +1,13 @@
+{
+    "name": "Anatomical neck",
+    "id": "anatomical_neck",
+    "description": [
+        "is constriction located just inferior and lateral to the head.",
+        "It indicates the line of circumference for capsule of shoulder joint.",
+        "Surgical neck",
+        "indicates the most proximal portion of the shaft.",
+        "Site of frequent fracture",
+        "Fractures here may damage the axillary nerve and the posterior circumflex humeral artery."
+    ],
+    "images": ["humerus_head_left_image.jpg","humerus_head_right_image.jpg"]
+}

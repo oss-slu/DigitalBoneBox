@@ -1,0 +1,12 @@
+{
+    "name": "Tarsal sinus",
+    "id": "tarsal_sinus",
+    "description": [
+        "Gap between talus and calcaneus on lateral aspect of foot",
+        "On surface anatomy, a palpable depression just anterior to lateral malleolus"
+    ],
+    "images": [
+        "foot_image.png",
+        "foot_image2.png"
+    ]
+}

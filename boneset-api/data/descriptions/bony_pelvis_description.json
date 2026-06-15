@@ -1,0 +1,11 @@
+{
+    "name": "Bony Pelvis",
+    "id": "bony_pelvis",
+    "description": [
+        "The bony pelvis is made up of tow hip bones, sacrum, and coccyx.",
+        "Hip bones - 3 fused bones : Ilium, Ischium, Pubis",
+        "The acetabulum is a cup shaped depression that articulates with the head of the femur to from the hip joint, a ball-and-socket type synovial joint.",
+        "The obturator foramen is an opening created by the inferior ramus and body of the ischium, and superior and inferior pubic rami. This foramen is partially covered by the obturator membrane.  The inner and outer surfaces of the obturator membrane provide the origin for the obturator internus and externus muscles, respectively."
+    ],
+    "images": ["bony_pelvis_image1.jpg", "bony_pelvis_image2.jpg"]
+}

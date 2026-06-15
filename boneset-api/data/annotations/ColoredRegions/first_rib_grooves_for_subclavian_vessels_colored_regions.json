@@ -1,0 +1,91 @@
+{
+  "slide_number": 17,
+  "image_dimensions": {
+    "width": 12192000,
+    "height": 6858000
+  },
+  "colored_regions": [
+    {
+      "anatomical_name": "Unknown_region",
+      "color": "FF0000",
+      "color_name": "red",
+      "shape_id": "532",
+      "path_data": [
+        {
+          "path_width": 587591,
+          "path_height": 322246,
+          "commands": [
+            {
+              "type": "moveTo",
+              "x": 4188453,
+              "y": 4050823
+            },
+            {
+              "type": "lineTo",
+              "x": 4298913,
+              "y": 4157831
+            },
+            {
+              "type": "lineTo",
+              "x": 4456714,
+              "y": 4282676
+            },
+            {
+              "type": "lineTo",
+              "x": 4551395,
+              "y": 4380768
+            },
+            {
+              "type": "lineTo",
+              "x": 4551395,
+              "y": 4452109
+            },
+            {
+              "type": "lineTo",
+              "x": 4425154,
+              "y": 4505614
+            },
+            {
+              "type": "lineTo",
+              "x": 4283133,
+              "y": 4478861
+            },
+            {
+              "type": "lineTo",
+              "x": 4109552,
+              "y": 4434274
+            },
+            {
+              "type": "lineTo",
+              "x": 3991201,
+              "y": 4336181
+            },
+            {
+              "type": "lineTo",
+              "x": 3928080,
+              "y": 4255925
+            },
+            {
+              "type": "lineTo",
+              "x": 3817621,
+              "y": 4104327
+            },
+            {
+              "type": "lineTo",
+              "x": 4014872,
+              "y": 4077574
+            },
+            {
+              "type": "lineTo",
+              "x": 4188453,
+              "y": 4050823
+            },
+            {
+              "type": "close"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

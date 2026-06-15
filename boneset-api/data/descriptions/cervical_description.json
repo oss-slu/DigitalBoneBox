@@ -1,0 +1,13 @@
+{
+    "name": "Typical cervical vertebrae (CV3-7)",
+    "id": "cervical",
+    "description": [
+        "Possess a small, broad body.",
+        "The transverse processes contain a foramen that transmit the vertebral vessels.",
+        "The vertebral artery passes through Cv1-6.",
+        "The vertebral vein passes through CV1-7.",
+        "The spinous processes can be bifid (split) at the apex.",
+        "CV7 has an extended spinous process known as the vertebra prominens."
+    ],
+    "images": ["cervical_(superior_aspect)_image.png", "cervical_(inferior_aspect)_image.png", "cervical_(right_lateral_aspect)_image.png"]
+}

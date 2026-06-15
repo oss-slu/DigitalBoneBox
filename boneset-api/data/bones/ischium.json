@@ -1,0 +1,5 @@
+{
+    "name": "Ischium",
+    "id": "ischium",
+    "subBones": ["ramus", "ischial_tuberosity", "ischial_spine", "sciatic_notches"]
+}

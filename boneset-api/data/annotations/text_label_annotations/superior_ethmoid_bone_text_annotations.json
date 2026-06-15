@@ -1,0 +1,202 @@
+{
+  "slide_number": 30,
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Cribiform plate",
+      "text_content": "Cribiform plate",
+      "text_box": {
+        "x": 2895601.0,
+        "y": 2438400.0,
+        "width": 694331.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "1120"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_1",
+          "kind": "connector",
+          "start_point": {
+            "x": 3962532.0,
+            "y": 2546122.0
+          },
+          "end_point": {
+            "x": 3589932.0,
+            "y": 2546122.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1121",
+          "bbox": {
+            "x": 3589932.0,
+            "y": 2546122.0,
+            "width": 372600.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        },
+        {
+          "line_id": "line_6",
+          "kind": "connector",
+          "start_point": {
+            "x": 5505451.0,
+            "y": 3562350.0
+          },
+          "end_point": {
+            "x": 3962551.0,
+            "y": 2546250.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1128",
+          "bbox": {
+            "x": 3962551.0,
+            "y": 2546250.0,
+            "width": 1542900.0,
+            "height": 1016100.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 5504000.0,
+          "y": 3560000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Foramen cecum",
+      "text_content": "Foramen cecum",
+      "text_box": {
+        "x": 3395166.0,
+        "y": 2025878.0,
+        "width": 719635.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "1122"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_2",
+          "kind": "connector",
+          "start_point": {
+            "x": 4343401.0,
+            "y": 2133600.0
+          },
+          "end_point": {
+            "x": 4114801.0,
+            "y": 2133600.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1123",
+          "bbox": {
+            "x": 4114801.0,
+            "y": 2133600.0,
+            "width": 228600.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        },
+        {
+          "line_id": "line_5",
+          "kind": "connector",
+          "start_point": {
+            "x": 5692775.0,
+            "y": 3114675.0
+          },
+          "end_point": {
+            "x": 4343375.0,
+            "y": 2133675.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1127",
+          "bbox": {
+            "x": 4343375.0,
+            "y": 2133675.0,
+            "width": 1349400.0,
+            "height": 981000.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 5696000.0,
+          "y": 3112000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_3",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Crista galli",
+      "text_content": "Crista galli",
+      "text_box": {
+        "x": 7239000.0,
+        "y": 1918156.0,
+        "width": 533400.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "1124"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_3",
+          "kind": "connector",
+          "start_point": {
+            "x": 7239000.0,
+            "y": 2025878.0
+          },
+          "end_point": {
+            "x": 6705600.0,
+            "y": 2025878.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1125",
+          "bbox": {
+            "x": 6705600.0,
+            "y": 2025878.0,
+            "width": 533400.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 6704000.0,
+          "y": 2024000.0
+        }
+      ]
+    }
+  ],
+  "total_text_annotations": 3,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

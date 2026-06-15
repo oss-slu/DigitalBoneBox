@@ -1,0 +1,10 @@
+{
+    "name": "Coccyx",
+    "id": "coccyx",
+    "description": [
+        "Sometimes called the \u201ctail bone.\u201d",
+        "Made up of three to five fused coccygeal vertebrae.",
+        "Superiorly, it articulates with the sacrum at the sacrococcygeal joint, but is usually fused to it."
+    ],
+    "images": ["coccyx_(anterior_aspect)_image.png", "coccyx_(posterior_aspect)_image.png"]
+}

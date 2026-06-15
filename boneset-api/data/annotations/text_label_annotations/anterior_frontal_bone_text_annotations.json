@@ -1,0 +1,274 @@
+{
+  "slide_number": 5,
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Glabella",
+      "text_content": "Glabella",
+      "text_box": {
+        "x": 7799990.0,
+        "y": 3538283.0,
+        "width": 381000.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "221"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_1",
+          "kind": "connector",
+          "start_point": {
+            "x": 7799990.0,
+            "y": 3646005.0
+          },
+          "end_point": {
+            "x": 5721290.0,
+            "y": 3646005.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "223",
+          "bbox": {
+            "x": 5721290.0,
+            "y": 3646005.0,
+            "width": 2078700.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 5720000.0,
+          "y": 3648000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Supraorbital foramen",
+      "text_content": "Supraorbital foramen",
+      "text_box": {
+        "x": 2750422.0,
+        "y": 2327600.0,
+        "width": 952500.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "222"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_2",
+          "kind": "connector",
+          "start_point": {
+            "x": 3702922.0,
+            "y": 2435322.0
+          },
+          "end_point": {
+            "x": 3883522.0,
+            "y": 2435322.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "224",
+          "bbox": {
+            "x": 3702922.0,
+            "y": 2435322.0,
+            "width": 180600.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 3880000.0,
+          "y": 2432000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_3",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Zygomatic process",
+      "text_content": "Zygomatic process",
+      "text_box": {
+        "x": 7772400.0,
+        "y": 3896818.0,
+        "width": 838200.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "228"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_3",
+          "kind": "connector",
+          "start_point": {
+            "x": 7772400.0,
+            "y": 4004540.0
+          },
+          "end_point": {
+            "x": 7391400.0,
+            "y": 4004540.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "229",
+          "bbox": {
+            "x": 7391400.0,
+            "y": 4004540.0,
+            "width": 381000.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 7392000.0,
+          "y": 4008000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_4",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Nasion",
+      "text_content": "Nasion",
+      "text_box": {
+        "x": 2895600.0,
+        "y": 3334768.0,
+        "width": 381000.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "230"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_4",
+          "kind": "connector",
+          "start_point": {
+            "x": 3276600.0,
+            "y": 3442490.0
+          },
+          "end_point": {
+            "x": 3429000.0,
+            "y": 3442490.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "231",
+          "bbox": {
+            "x": 3276600.0,
+            "y": 3442490.0,
+            "width": 152400.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        },
+        {
+          "line_id": "line_5",
+          "kind": "connector",
+          "start_point": {
+            "x": 3429000.0,
+            "y": 3442490.0
+          },
+          "end_point": {
+            "x": 5721300.0,
+            "y": 3872390.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "232",
+          "bbox": {
+            "x": 3429000.0,
+            "y": 3442490.0,
+            "width": 2292300.0,
+            "height": 429900.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 5720000.0,
+          "y": 3872000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_5",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Superciliary arches",
+      "text_content": "Superciliary arches",
+      "text_box": {
+        "x": 7375211.0,
+        "y": 1996834.0,
+        "width": 609600.0,
+        "height": 338554.0,
+        "rotation_emu": 0.0,
+        "shape_id": "234"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_7",
+          "kind": "connector",
+          "start_point": {
+            "x": 7375211.0,
+            "y": 2166111.0
+          },
+          "end_point": {
+            "x": 7089611.0,
+            "y": 2166111.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "235",
+          "bbox": {
+            "x": 7089611.0,
+            "y": 2166111.0,
+            "width": 285600.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 7088000.0,
+          "y": 2168000.0
+        }
+      ]
+    }
+  ],
+  "total_text_annotations": 5,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

@@ -1,0 +1,16 @@
+{
+    "name": "Intercondylar fossa",
+    "id": "intercondylar_fossa",
+    "description": [
+        "A depression that separates the two condyles distally and posteriorly",
+        "Anteriorly, it is continuous with the patellar surface",
+        "Separated from popliteal surface by a intercondylar line",
+        "Anterior cruciate ligament attaches to a flat impression on the lateral wall",
+        "Posterior cruciate ligament attaches to similar impression on the medial wall",
+        "The capsular ligament and the oblique popliteal ligament attach to the intercondylar line"
+    ],
+    "images": [
+        "femur_bottom_image5.png",
+        "femur_image2.png"
+    ]
+}

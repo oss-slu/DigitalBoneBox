@@ -1,0 +1,28 @@
+{
+  "slide_number": 16,
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "* sulcus for ulnar n.",
+      "text_content": "* sulcus for ulnar n.",
+      "text_box": {
+        "x": 5756470.0,
+        "y": 5727891.0,
+        "width": 838200.0,
+        "height": 200055.0,
+        "rotation_emu": 0.0,
+        "shape_id": "21"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [],
+      "target_regions": []
+    }
+  ],
+  "total_text_annotations": 1,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

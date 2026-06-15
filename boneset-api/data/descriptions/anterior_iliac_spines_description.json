@@ -1,0 +1,13 @@
+{
+    "name": "Anterior Iliac Spines",
+    "id": "anterior_iliac_spines",
+    "description": [
+        "Anterior Superior Iliac Spine",
+        "A bony projection at the anterior end of the iliac crest.",
+        "Provides attachment for the inguinal ligament and the origins of the sartorius and tensor fascia lata muscles.",
+        "Anterior Inferior Iliac Spine",
+        "Inferior to the anterior superior iliac spine, a bony eminence on the anterior border of the ilium.",
+        "Provides attachment for the straight head of the rectus femoris muscle and the iliofemoral ligament."
+    ],
+    "images": ["anterior_iliac_spines_image1.jpg", "anterior_iliac_spines_image2.jpg"]
+}

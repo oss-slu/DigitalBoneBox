@@ -1,0 +1,9 @@
+{
+    "name": "Transverse process",
+    "id": "axis_transverse_process",
+    "description": [
+        "Projects inferiorly and laterally.",
+        "Arises from the junction of the pedicle and lamina."
+    ],
+    "images": ["axis_(inferior_aspect)_image.png", "axis_(lateral_aspect)_image.png"]
+}

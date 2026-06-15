@@ -1,0 +1,106 @@
+{
+  "slide_number": 5,
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Internal lip",
+      "text_content": "Internal lip",
+      "text_box": {
+        "x": 7100000.0,
+        "y": 800000.0,
+        "width": 509000.0,
+        "height": 172000.0,
+        "rotation_emu": 0.0,
+        "shape_id": "206"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_1",
+          "kind": "connector",
+          "start_point": {
+            "x": 7650000.0,
+            "y": 886000.0
+          },
+          "end_point": {
+            "x": 7950000.0,
+            "y": 886000.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "207",
+          "bbox": {
+            "x": 7650000.0,
+            "y": 886000.0,
+            "width": 300000.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 8464000.0,
+          "y": 1982000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "External lip",
+      "text_content": "External lip",
+      "text_box": {
+        "x": 6300000.0,
+        "y":  800000.0,
+        "width": 750000.0,
+        "height": 172000.0,
+        "rotation_emu": 0.0,
+        "shape_id": "208"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_2",
+          "kind": "connector",
+          "start_point": {
+            "x": 6050000.0,
+            "y": 886000.0
+          },
+          "end_point": {
+            "x": 6350000.0,
+            "y": 886000.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "209",
+          "bbox": {
+            "x": 6050000.0,
+            "y": 886000.0,
+            "width": 300000.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 5904000.0,
+          "y": 1982000.0
+        }
+      ]
+    }
+  ],
+  "total_text_annotations": 2,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

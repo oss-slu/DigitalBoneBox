@@ -1,0 +1,433 @@
+{
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Femur",
+      "text_content": "Femur",
+      "text_box": {
+        "x": 5486401.0,
+        "y": 2254478.0,
+        "width": 454471.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "20"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId4",
+        "target": "slide3.xml",
+        "target_slide": 3
+      },
+      "pointer_lines": [
+        {
+          "line_id": "line_1",
+          "kind": "connector",
+          "start_point": {
+            "x": 5940872.0,
+            "y": 2362200.0
+          },
+          "end_point": {
+            "x": 7010401.0,
+            "y": 2362200.0
+          },
+          "style": {
+            "width": 0,
+            "arrow_head": "none"
+          },
+          "shape_id": "23",
+          "bbox": {
+            "x": 5940872.0,
+            "y": 2362200.0,
+            "width": 1069529.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        },
+        {
+          "line_id": "line_2",
+          "kind": "connector",
+          "start_point": {
+            "x": 4416872.0,
+            "y": 2362200.0
+          },
+          "end_point": {
+            "x": 5486401.0,
+            "y": 2362200.0
+          },
+          "style": {
+            "width": 0,
+            "arrow_head": "none"
+          },
+          "shape_id": "31",
+          "bbox": {
+            "x": 4416872.0,
+            "y": 2362200.0,
+            "width": 1069529.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 7008000.0,
+          "y": 2360000.0
+        },
+        {
+          "x": 4416000.0,
+          "y": 2360000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Patella",
+      "text_content": "Patella",
+      "text_box": {
+        "x": 5486400.0,
+        "y": 3639054.0,
+        "width": 468448.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "25"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId5",
+        "target": "slide18.xml",
+        "target_slide": 18
+      },
+      "pointer_lines": [
+        {
+          "line_id": "line_3",
+          "kind": "connector",
+          "start_point": {
+            "x": 5954848.0,
+            "y": 3743032.0
+          },
+          "end_point": {
+            "x": 6858000.0,
+            "y": 3746777.0
+          },
+          "style": {
+            "width": 0,
+            "arrow_head": "none"
+          },
+          "shape_id": "32",
+          "bbox": {
+            "x": 5954848.0,
+            "y": 3743032.0,
+            "width": 903152.0,
+            "height": 3745.0,
+            "rotation_emu": 0.0
+          }
+        },
+        {
+          "line_id": "line_4",
+          "kind": "connector",
+          "start_point": {
+            "x": 4572000.0,
+            "y": 3746776.0
+          },
+          "end_point": {
+            "x": 5486400.0,
+            "y": 3746776.0
+          },
+          "style": {
+            "width": 0,
+            "arrow_head": "none"
+          },
+          "shape_id": "33",
+          "bbox": {
+            "x": 4572000.0,
+            "y": 3746776.0,
+            "width": 914400.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 6856000.0,
+          "y": 3744000.0
+        },
+        {
+          "x": 4576000.0,
+          "y": 3744000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_3",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Tibia",
+      "text_content": "Tibia",
+      "text_box": {
+        "x": 5518962.0,
+        "y": 4487085.0,
+        "width": 389850.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "26"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId6",
+        "target": "slide22.xml",
+        "target_slide": 22
+      },
+      "pointer_lines": [
+        {
+          "line_id": "line_7",
+          "kind": "connector",
+          "start_point": {
+            "x": 5908812.0,
+            "y": 4594807.0
+          },
+          "end_point": {
+            "x": 7010400.0,
+            "y": 4594807.0
+          },
+          "style": {
+            "width": 0,
+            "arrow_head": "none"
+          },
+          "shape_id": "41",
+          "bbox": {
+            "x": 5908812.0,
+            "y": 4594807.0,
+            "width": 1101588.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        },
+        {
+          "line_id": "line_8",
+          "kind": "connector",
+          "start_point": {
+            "x": 4572000.0,
+            "y": 4594807.0
+          },
+          "end_point": {
+            "x": 5518962.0,
+            "y": 4594807.0
+          },
+          "style": {
+            "width": 0,
+            "arrow_head": "none"
+          },
+          "shape_id": "42",
+          "bbox": {
+            "x": 4572000.0,
+            "y": 4594807.0,
+            "width": 946962.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4576000.0,
+          "y": 4592000.0
+        },
+        {
+          "x": 7008000.0,
+          "y": 4592000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_4",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Fibula",
+      "text_content": "Fibula",
+      "text_box": {
+        "x": 7568401.0,
+        "y": 4515448.0,
+        "width": 441146.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "27"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId7",
+        "target": "slide32.xml",
+        "target_slide": 32
+      },
+      "pointer_lines": [
+        {
+          "line_id": "line_6",
+          "kind": "connector",
+          "start_point": {
+            "x": 7243811.0,
+            "y": 4623170.0
+          },
+          "end_point": {
+            "x": 7568401.0,
+            "y": 4623170.0
+          },
+          "style": {
+            "width": 0,
+            "arrow_head": "none"
+          },
+          "shape_id": "40",
+          "bbox": {
+            "x": 7243811.0,
+            "y": 4623170.0,
+            "width": 324590.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 7240000.0,
+          "y": 4624000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_5",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Fibula",
+      "text_content": "Fibula",
+      "text_box": {
+        "x": 3301413.0,
+        "y": 4569921.0,
+        "width": 441146.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "29"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId7",
+        "target": "slide32.xml",
+        "target_slide": 32
+      },
+      "pointer_lines": [
+        {
+          "line_id": "line_5",
+          "kind": "connector",
+          "start_point": {
+            "x": 3742559.0,
+            "y": 4677643.0
+          },
+          "end_point": {
+            "x": 4279335.0,
+            "y": 4677643.0
+          },
+          "style": {
+            "width": 0,
+            "arrow_head": "none"
+          },
+          "shape_id": "39",
+          "bbox": {
+            "x": 3742559.0,
+            "y": 4677643.0,
+            "width": 536776.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4280000.0,
+          "y": 4680000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_6",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Foot",
+      "text_content": "Foot",
+      "text_box": {
+        "x": 5531786.0,
+        "y": 5562600.0,
+        "width": 377026.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "30"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId8",
+        "target": "slide43.xml",
+        "target_slide": 43
+      },
+      "pointer_lines": [
+        {
+          "line_id": "line_9",
+          "kind": "connector",
+          "start_point": {
+            "x": 4498604.0,
+            "y": 5670323.0
+          },
+          "end_point": {
+            "x": 5531786.0,
+            "y": 5673970.0
+          },
+          "style": {
+            "width": 0,
+            "arrow_head": "none"
+          },
+          "shape_id": "43",
+          "bbox": {
+            "x": 4498604.0,
+            "y": 5670323.0,
+            "width": 1033182.0,
+            "height": 3647.0,
+            "rotation_emu": 0.0
+          }
+        },
+        {
+          "line_id": "line_10",
+          "kind": "connector",
+          "start_point": {
+            "x": 5908812.0,
+            "y": 5670322.0
+          },
+          "end_point": {
+            "x": 6858000.0,
+            "y": 5670322.0
+          },
+          "style": {
+            "width": 0,
+            "arrow_head": "none"
+          },
+          "shape_id": "44",
+          "bbox": {
+            "x": 5908812.0,
+            "y": 5670322.0,
+            "width": 949188.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 6856000.0,
+          "y": 5672000.0
+        },
+        {
+          "x": 4496000.0,
+          "y": 5672000.0
+        }
+      ]
+    }
+  ],
+  "total_text_annotations": 6,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

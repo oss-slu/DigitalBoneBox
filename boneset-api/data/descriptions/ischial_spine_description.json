@@ -1,0 +1,10 @@
+{
+    "name": "Ischial Spine",
+    "id": "ischial_spine",
+    "description": [
+        "A bony projection on the posterior surface of the body of the ischium.",
+        "It separates the greater and lesser sciatic notches.",
+        "Provides attachment for the sacrospinous ligament and superior gemellus muscle."
+    ], 
+    "images": ["ischial_spine_image1.jpg", "ischial_spine_image2.jpg"]
+}

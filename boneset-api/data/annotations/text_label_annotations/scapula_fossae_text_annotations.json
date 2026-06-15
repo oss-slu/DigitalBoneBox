@@ -1,0 +1,130 @@
+{
+  "slide_number": 27,
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Infraglenoid tubercle",
+      "text_content": "Infraglenoid tubercle",
+      "text_box": {
+        "x": 6265898.0,
+        "y": 5191126.0,
+        "width": 668303.0,
+        "height": 338554.0,
+        "rotation_emu": 0.0,
+        "shape_id": "835"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_1",
+          "kind": "connector",
+          "start_point": {
+            "x": 6934201.0,
+            "y": 5360403.0
+          },
+          "end_point": {
+            "x": 7239001.0,
+            "y": 5360403.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "836",
+          "bbox": {
+            "x": 6934201.0,
+            "y": 5360403.0,
+            "width": 304800.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 7240000.0,
+          "y": 5360000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Supraglenoid tubercle",
+      "text_content": "Supraglenoid tubercle",
+      "text_box": {
+        "x": 6904849.0,
+        "y": 3644972.0,
+        "width": 668303.0,
+        "height": 338554.0,
+        "rotation_emu": 0.0,
+        "shape_id": "838"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_3",
+          "kind": "connector",
+          "start_point": {
+            "x": 7573152.0,
+            "y": 3814249.0
+          },
+          "end_point": {
+            "x": 7772352.0,
+            "y": 3814249.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "839",
+          "bbox": {
+            "x": 7573152.0,
+            "y": 3814249.0,
+            "width": 199200.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        },
+        {
+          "line_id": "line_4",
+          "kind": "connector",
+          "start_point": {
+            "x": 7772400.0,
+            "y": 3814249.0
+          },
+          "end_point": {
+            "x": 7950300.0,
+            "y": 4441849.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "840",
+          "bbox": {
+            "x": 7772400.0,
+            "y": 3814249.0,
+            "width": 177900.0,
+            "height": 627600.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 7952000.0,
+          "y": 4440000.0
+        }
+      ]
+    }
+  ],
+  "total_text_annotations": 2,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

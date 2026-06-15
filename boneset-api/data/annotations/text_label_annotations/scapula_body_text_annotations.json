@@ -1,0 +1,346 @@
+{
+  "slide_number": 25,
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Vertebral (medial) border",
+      "text_content": "Vertebral (medial) border",
+      "text_box": {
+        "x": 3124200.0,
+        "y": 3530756.0,
+        "width": 838200.0,
+        "height": 338554.0,
+        "rotation_emu": 0.0,
+        "shape_id": "770"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_1",
+          "kind": "connector",
+          "start_point": {
+            "x": 3962400.0,
+            "y": 3700033.0
+          },
+          "end_point": {
+            "x": 4198800.0,
+            "y": 3700033.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "771",
+          "bbox": {
+            "x": 3962400.0,
+            "y": 3700033.0,
+            "width": 236400.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4200000.0,
+          "y": 3704000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Superior angle",
+      "text_content": "Superior angle",
+      "text_box": {
+        "x": 3208274.0,
+        "y": 1735723.0,
+        "width": 677926.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "772"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_2",
+          "kind": "connector",
+          "start_point": {
+            "x": 3886200.0,
+            "y": 1843445.0
+          },
+          "end_point": {
+            "x": 4046400.0,
+            "y": 1843445.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "773",
+          "bbox": {
+            "x": 3886200.0,
+            "y": 1843445.0,
+            "width": 160200.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        },
+        {
+          "line_id": "line_3",
+          "kind": "connector",
+          "start_point": {
+            "x": 4046474.0,
+            "y": 1843445.0
+          },
+          "end_point": {
+            "x": 4637208.0,
+            "y": 2127759.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "774",
+          "bbox": {
+            "x": 4046474.0,
+            "y": 1843445.0,
+            "width": 590734.0,
+            "height": 284314.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4640000.0,
+          "y": 2128000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_3",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Inferior angle",
+      "text_content": "Inferior angle",
+      "text_box": {
+        "x": 3208274.0,
+        "y": 5575918.0,
+        "width": 677926.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "775"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_4",
+          "kind": "connector",
+          "start_point": {
+            "x": 3886200.0,
+            "y": 5683640.0
+          },
+          "end_point": {
+            "x": 4046400.0,
+            "y": 5683640.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "776",
+          "bbox": {
+            "x": 3886200.0,
+            "y": 5683640.0,
+            "width": 160200.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4048000.0,
+          "y": 5680000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_4",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Axillary (lateral) border",
+      "text_content": "Axillary (lateral) border",
+      "text_box": {
+        "x": 6324600.0,
+        "y": 4190107.0,
+        "width": 838200.0,
+        "height": 338554.0,
+        "rotation_emu": 0.0,
+        "shape_id": "778"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_6",
+          "kind": "connector",
+          "start_point": {
+            "x": 6019800.0,
+            "y": 4359384.0
+          },
+          "end_point": {
+            "x": 6324600.0,
+            "y": 4359384.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "779",
+          "bbox": {
+            "x": 6019800.0,
+            "y": 4359384.0,
+            "width": 304800.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        },
+        {
+          "line_id": "line_7",
+          "kind": "connector",
+          "start_point": {
+            "x": 6019800.0,
+            "y": 4359385.0
+          },
+          "end_point": {
+            "x": 5715000.0,
+            "y": 4190108.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "780",
+          "bbox": {
+            "x": 5715000.0,
+            "y": 4190108.0,
+            "width": 304800.0,
+            "height": 169277.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 5712000.0,
+          "y": 4192000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_5",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Suprascapular notch",
+      "text_content": "Suprascapular notch",
+      "text_box": {
+        "x": 6019801.0,
+        "y": 1561074.0,
+        "width": 613223.0,
+        "height": 338554.0,
+        "rotation_emu": 0.0,
+        "shape_id": "781"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_8",
+          "kind": "connector",
+          "start_point": {
+            "x": 5791201.0,
+            "y": 1730351.0
+          },
+          "end_point": {
+            "x": 6019801.0,
+            "y": 1730351.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "782",
+          "bbox": {
+            "x": 5791201.0,
+            "y": 1730351.0,
+            "width": 228600.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 5792000.0,
+          "y": 1728000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_6",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Lateral angle",
+      "text_content": "Lateral angle",
+      "text_box": {
+        "x": 6989195.0,
+        "y": 3276600.0,
+        "width": 677926.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "784"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_10",
+          "kind": "connector",
+          "start_point": {
+            "x": 6651095.0,
+            "y": 3384322.0
+          },
+          "end_point": {
+            "x": 6989195.0,
+            "y": 3384322.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "785",
+          "bbox": {
+            "x": 6651095.0,
+            "y": 3384322.0,
+            "width": 338100.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 6648000.0,
+          "y": 3384000.0
+        }
+      ]
+    }
+  ],
+  "total_text_annotations": 6,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

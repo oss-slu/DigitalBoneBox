@@ -1,0 +1,16 @@
+{
+    "name": "Labels",
+    "id": "labels",
+    "description": [
+        "Arches",
+        "Anterior arch ",
+        "Is slightly convex anteriorly and contains the anterior tubercle.",
+        "It provides attachment for the anterior atlanto-occipital membrane and lateral parts of the anterior longitudinal ligament.",
+        "Posterior surface contains the articular facet for the dens of CV2 (Axis).",
+        "Posterior arch",
+        "The superior surface contains a groove for the vertebral artery.",
+        "The superior border provides attachment for the posterior atlanto-occipital membrane.",
+        "Contains the posterior tubercle."
+    ],
+    "images": ["atlas_(superior_aspect)_image.png", "atlas_(inferior_aspect)_image.png"]
+}

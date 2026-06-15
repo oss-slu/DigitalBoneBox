@@ -1,0 +1,15 @@
+[
+    {
+        "name": "Axis",
+        "id": "axis",
+        "subBones": [
+            "axis_body_(dens)",
+            "axis_transverse_process",
+            "axis_transverse_foramen",
+            "axis_pedicle",
+            "axis_lamina",
+            "axis_spinous_process",
+            "axis_articular_surfaces"
+        ]
+    }
+]

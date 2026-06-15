@@ -1,0 +1,13 @@
+{
+  "name": "Anterior view",
+  "id": "anterior_view",
+  "description": [
+    "The anterior view is generally ovoid in shape.",
+    "The forehead is superior to the orbit and is formed by the frontal bone.",
+    "The bones that make up the borders of the orbit are the frontal bone superiorly, medially, and laterally, the zygomatic bone laterally and inferiorly, and the maxilla inferior and medially.",
+    "The anterior nasal opening is formed by the nasal and maxilla bones.",
+    "The maxilla contributes to the upper jaw, while the lower jaw is formed by the mandible."
+
+  ],
+  "images": ["anterior_image.jpg"]
+}

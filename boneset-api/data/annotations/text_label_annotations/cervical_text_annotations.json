@@ -1,0 +1,699 @@
+{
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "CV3: inferior aspect",
+      "text_content": "CV3: inferior aspect",
+      "text_box": {
+        "x": 2731949.0,
+        "y": 3739375.0,
+        "width": 1219200.0,
+        "height": 230832.0,
+        "rotation_emu": 0.0,
+        "shape_id": "706"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [],
+      "target_regions": []
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "CV3: superior aspect",
+      "text_content": "CV3: superior aspect",
+      "text_box": {
+        "x": 2731949.0,
+        "y": 1330154.0,
+        "width": 1219200.0,
+        "height": 230832.0,
+        "rotation_emu": 0.0,
+        "shape_id": "707"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [],
+      "target_regions": []
+    },
+    {
+      "annotation_id": "annot_3",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "CV3: right lateral aspect",
+      "text_content": "CV3: right lateral aspect",
+      "text_box": {
+        "x": 7010400.0,
+        "y": 1868994.0,
+        "width": 1219200.0,
+        "height": 230832.0,
+        "rotation_emu": 0.0,
+        "shape_id": "708"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [],
+      "target_regions": []
+    },
+    {
+      "annotation_id": "annot_4",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Transverse process",
+      "text_content": "Transverse process",
+      "text_box": {
+        "x": 5577600.0,
+        "y": 5131561.0,
+        "width": 873125.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "709"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_1",
+          "kind": "connector",
+          "start_point": {
+            "x": 5577600.0,
+            "y": 5239283.0
+          },
+          "end_point": {
+            "x": 5120400.0,
+            "y": 5239283.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "710",
+          "bbox": {
+            "x": 5120400.0,
+            "y": 5239283.0,
+            "width": 457200.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 5120000.0,
+          "y": 5240000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_5",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Superior articular surface",
+      "text_content": "Superior articular surface",
+      "text_box": {
+        "x": 5655929.0,
+        "y": 2590800.0,
+        "width": 1172737.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "711"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_2",
+          "kind": "connector",
+          "start_point": {
+            "x": 5655929.0,
+            "y": 2698522.0
+          },
+          "end_point": {
+            "x": 5302829.0,
+            "y": 2698522.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "712",
+          "bbox": {
+            "x": 5302829.0,
+            "y": 2698522.0,
+            "width": 353100.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        },
+        {
+          "line_id": "line_9",
+          "kind": "connector",
+          "start_point": {
+            "x": 6828666.0,
+            "y": 2698522.0
+          },
+          "end_point": {
+            "x": 7467666.0,
+            "y": 3003322.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "724",
+          "bbox": {
+            "x": 6828666.0,
+            "y": 2698522.0,
+            "width": 639000.0,
+            "height": 304800.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 5304000.0,
+          "y": 2696000.0
+        },
+        {
+          "x": 7464000.0,
+          "y": 3000000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_6",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Inferior articular surface",
+      "text_content": "Inferior articular surface",
+      "text_box": {
+        "x": 5491217.0,
+        "y": 4633536.0,
+        "width": 1172737.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "713"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_3",
+          "kind": "connector",
+          "start_point": {
+            "x": 5491217.0,
+            "y": 4741258.0
+          },
+          "end_point": {
+            "x": 5257817.0,
+            "y": 4741258.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "714",
+          "bbox": {
+            "x": 5257817.0,
+            "y": 4741258.0,
+            "width": 233400.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        },
+        {
+          "line_id": "line_11",
+          "kind": "connector",
+          "start_point": {
+            "x": 6934254.0,
+            "y": 4741258.0
+          },
+          "end_point": {
+            "x": 6663954.0,
+            "y": 4741258.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "726",
+          "bbox": {
+            "x": 6663954.0,
+            "y": 4741258.0,
+            "width": 270300.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 5256000.0,
+          "y": 4744000.0
+        },
+        {
+          "x": 6936000.0,
+          "y": 4744000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_7",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Body",
+      "text_content": "Body",
+      "text_box": {
+        "x": 2778902.0,
+        "y": 3109388.0,
+        "width": 301159.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "715"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId20",
+        "target": "/ppt/slides/slide23.xml",
+        "target_slide": 23
+      },
+      "pointer_lines": [
+        {
+          "line_id": "line_4",
+          "kind": "connector",
+          "start_point": {
+            "x": 4267161.0,
+            "y": 3217110.0
+          },
+          "end_point": {
+            "x": 3080061.0,
+            "y": 3217110.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "716",
+          "bbox": {
+            "x": 3080061.0,
+            "y": 3217110.0,
+            "width": 1187100.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4264000.0,
+          "y": 3216000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_8",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Transverse foramen",
+      "text_content": "Transverse foramen",
+      "text_box": {
+        "x": 5577600.0,
+        "y": 5535954.0,
+        "width": 899401.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "717"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_5",
+          "kind": "connector",
+          "start_point": {
+            "x": 5370000.0,
+            "y": 5643676.0
+          },
+          "end_point": {
+            "x": 5577600.0,
+            "y": 5643676.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "718",
+          "bbox": {
+            "x": 5370000.0,
+            "y": 5643676.0,
+            "width": 207600.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        },
+        {
+          "line_id": "line_13",
+          "kind": "connector",
+          "start_point": {
+            "x": 5370088.0,
+            "y": 5643678.0
+          },
+          "end_point": {
+            "x": 4953001.0,
+            "y": 5486400.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "728",
+          "bbox": {
+            "x": 4953001.0,
+            "y": 5486400.0,
+            "width": 417087.0,
+            "height": 157278.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4952000.0,
+          "y": 5488000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_9",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Spinous process",
+      "text_content": "Spinous process",
+      "text_box": {
+        "x": 4777499.0,
+        "y": 3950702.0,
+        "width": 800100.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "719"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId21",
+        "target": "/ppt/slides/slide27.xml",
+        "target_slide": 27
+      },
+      "pointer_lines": [
+        {
+          "line_id": "line_6",
+          "kind": "connector",
+          "start_point": {
+            "x": 4777499.0,
+            "y": 4058424.0
+          },
+          "end_point": {
+            "x": 4284299.0,
+            "y": 4058424.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "720",
+          "bbox": {
+            "x": 4284299.0,
+            "y": 4058424.0,
+            "width": 493200.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        },
+        {
+          "line_id": "line_8",
+          "kind": "connector",
+          "start_point": {
+            "x": 5960099.0,
+            "y": 4058424.0
+          },
+          "end_point": {
+            "x": 5577599.0,
+            "y": 4058424.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "723",
+          "bbox": {
+            "x": 5577599.0,
+            "y": 4058424.0,
+            "width": 382500.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 5960000.0,
+          "y": 4056000.0
+        },
+        {
+          "x": 4288000.0,
+          "y": 4056000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_10",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Spinous process",
+      "text_content": "Spinous process",
+      "text_box": {
+        "x": 4855828.0,
+        "y": 1736725.0,
+        "width": 800100.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "721"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId22",
+        "target": "/ppt/slides/slide27.xml",
+        "target_slide": 27
+      },
+      "pointer_lines": [
+        {
+          "line_id": "line_7",
+          "kind": "connector",
+          "start_point": {
+            "x": 4855828.0,
+            "y": 1844447.0
+          },
+          "end_point": {
+            "x": 4362628.0,
+            "y": 1844447.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "722",
+          "bbox": {
+            "x": 4362628.0,
+            "y": 1844447.0,
+            "width": 493200.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4360000.0,
+          "y": 1848000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_11",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Lamina",
+      "text_content": "Lamina",
+      "text_box": {
+        "x": 3019471.0,
+        "y": 2099826.0,
+        "width": 361859.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "729"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId23",
+        "target": "/ppt/slides/slide26.xml",
+        "target_slide": 26
+      },
+      "pointer_lines": [
+        {
+          "line_id": "line_14",
+          "kind": "connector",
+          "start_point": {
+            "x": 4038630.0,
+            "y": 2209948.0
+          },
+          "end_point": {
+            "x": 3381330.0,
+            "y": 2207548.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "730",
+          "bbox": {
+            "x": 3381330.0,
+            "y": 2207548.0,
+            "width": 657300.0,
+            "height": 2400.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4040000.0,
+          "y": 2208000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_12",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Vertebral foramen",
+      "text_content": "Vertebral foramen",
+      "text_box": {
+        "x": 2731950.0,
+        "y": 4370043.0,
+        "width": 873125.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "731"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId24",
+        "target": "/ppt/slides/slide29.xml",
+        "target_slide": 29
+      },
+      "pointer_lines": [
+        {
+          "line_id": "line_15",
+          "kind": "connector",
+          "start_point": {
+            "x": 3798875.0,
+            "y": 4477765.0
+          },
+          "end_point": {
+            "x": 3605075.0,
+            "y": 4477765.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "732",
+          "bbox": {
+            "x": 3605075.0,
+            "y": 4477765.0,
+            "width": 193800.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        },
+        {
+          "line_id": "line_16",
+          "kind": "connector",
+          "start_point": {
+            "x": 3798750.0,
+            "y": 4477765.0
+          },
+          "end_point": {
+            "x": 4191001.0,
+            "y": 4895751.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "733",
+          "bbox": {
+            "x": 3798750.0,
+            "y": 4477765.0,
+            "width": 392251.0,
+            "height": 417986.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4192000.0,
+          "y": 4896000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_13",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Pedicle",
+      "text_content": "Pedicle",
+      "text_box": {
+        "x": 2895601.0,
+        "y": 5838292.0,
+        "width": 381000.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "734"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId25",
+        "target": "/ppt/slides/slide24.xml",
+        "target_slide": 24
+      },
+      "pointer_lines": [
+        {
+          "line_id": "line_17",
+          "kind": "connector",
+          "start_point": {
+            "x": 3429001.0,
+            "y": 5946014.0
+          },
+          "end_point": {
+            "x": 3276601.0,
+            "y": 5946014.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "735",
+          "bbox": {
+            "x": 3276601.0,
+            "y": 5946014.0,
+            "width": 152400.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 3432000.0,
+          "y": 5944000.0
+        }
+      ]
+    }
+  ],
+  "total_text_annotations": 13,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

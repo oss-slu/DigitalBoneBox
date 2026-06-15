@@ -1,0 +1,12 @@
+{
+    "name": "Sustentaculum tali",
+    "id": "sustentaculum_tali",
+    "description": [
+        "Concave depression on medial surface of calcaneus",
+        "Tendon of flexor hallucis longus muscle runs in groove on inferior surface"
+    ],
+    "images": [
+        "foot_image.png",
+        "foot_image2.png"
+    ]
+}

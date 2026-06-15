@@ -1,0 +1,9 @@
+{
+    "name": "Pubic tubercle",
+    "id": "pubic_tubercle",
+    "description": [
+        "A bony projection from the lateral end of the pubic crest which is a rounded crest on the superior surface of the body of the pubis. ",
+        "Provides attachment for the inguinal ligament."
+    ],
+    "images": ["pubic_tubercle_image.jpg"]
+}

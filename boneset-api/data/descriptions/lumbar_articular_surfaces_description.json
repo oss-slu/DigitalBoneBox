@@ -1,0 +1,8 @@
+{
+    "name": "Articular surfaces",
+    "id": "lumbar_articular_surfaces",
+    "description": [
+        "The articular processes of the lumbar vertebrae are closest to the sagittal plane."
+    ],
+    "images": ["lumbar_(superior_aspect)_image.png", "lumbar_(inferior_aspect)_image.png", "lumbar_(lateral_aspect)_image.png"]
+}

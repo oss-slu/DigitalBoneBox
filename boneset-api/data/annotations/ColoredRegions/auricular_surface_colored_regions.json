@@ -1,0 +1,52 @@
+{
+  "slide_number": 8,
+  "images": [
+    {
+      "index": 0,
+      "name": "pelvis_med_blk.psd",
+      "width": 3510118,
+      "height": 3828411,
+      "colored_regions": [
+        {
+          "anatomical_name": "Auricular Surface",
+          "color": "008000",
+          "stroke": false,
+          "fill": true,
+          "path_data": [
+            {
+              "path_width": 1604821,
+              "path_height": 1175251,
+              "commands": [
+                {"type": "moveTo", "x": 1541639, "y": 657129},
+                {"type": "lineTo", "x": 1421593, "y": 492847},
+                {"type": "lineTo", "x": 1219411, "y": 353839},
+                {"type": "lineTo", "x": 1143593, "y": 404387},
+                {"type": "lineTo", "x": 827683, "y": 385431},
+                {"type": "lineTo", "x": 751865, "y": 189556},
+                {"type": "lineTo", "x": 562319, "y": 0},
+                {"type": "lineTo", "x": 379092, "y": 0},
+                {"type": "lineTo", "x": 170591, "y": 94778},
+                {"type": "lineTo", "x": 37909, "y": 334883},
+                {"type": "lineTo", "x": 0, "y": 600262},
+                {"type": "lineTo", "x": 6319, "y": 840367},
+                {"type": "lineTo", "x": 164273, "y": 992013},
+                {"type": "lineTo", "x": 385410, "y": 1080472},
+                {"type": "lineTo", "x": 625501, "y": 1143658},
+                {"type": "lineTo", "x": 878229, "y": 1149976},
+                {"type": "lineTo", "x": 1061456, "y": 1175251},
+                {"type": "lineTo", "x": 1282593, "y": 1143658},
+                {"type": "lineTo", "x": 1396320, "y": 1048880},
+                {"type": "lineTo", "x": 1446866, "y": 922509},
+                {"type": "lineTo", "x": 1535320, "y": 979376},
+                {"type": "lineTo", "x": 1598502, "y": 871960},
+                {"type": "lineTo", "x": 1604821, "y": 758226},
+                {"type": "lineTo", "x": 1541639, "y": 657129},
+                {"type": "close"}
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

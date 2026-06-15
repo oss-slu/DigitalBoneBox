@@ -1,0 +1,18 @@
+{
+  "name": "Temporal Bone ",
+  "id": "temporal_bone",
+  "description": [
+    "Temporal bone",
+    "Squamous part",
+    "The flattened part of the temporal bone that makes up much of the floor (medial wall) of the temporal fossa.",
+    "Zygomatic process",
+    "Part of the bone that extends anteriorly to join with the temporal process of the zygomatic bone. Together, these form the zygomatic arch.",
+    "Mastoid process",
+    "An inferior projection where the insertion of the sternocleidomastoid muscle attaches.",
+    "External acoustic meatus",
+    "The external opening for the ear.",
+    "Mandibular fossa",
+    "A shallow depression that receives the head of the condylar process of the mandible to form the temporomandibular joint."
+  ],
+  "images": ["lateral_temporal_bone_image.jpg"]
+}

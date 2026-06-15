@@ -1,0 +1,11 @@
+{
+    "name": "Scaphoid",
+    "id": "scaphoid",
+    "description": [
+        "The largest bone in the proximal row.",
+        "It is the most frequently fractured carpal bone \u2013 usually as result of a fall onto an outstretched (hyperextended) hand.",
+        "Scaphoid means boat-shaped.",
+        "Has a prominent tubercle on its lateral palmar surface."
+    ],
+    "images": ["hand_left_image.jpg", "hand_right_image.jpg"]
+}

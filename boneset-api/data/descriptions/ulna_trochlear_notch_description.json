@@ -1,0 +1,11 @@
+{
+    "name": "Trochlear notch",
+    "id": "trochlear_notch",
+    "description": [
+        "A curved articular surface that lies between anterior part of olecranon process proximally and coronoid process distally.",
+        "Articulates with",
+        "trochlea",
+        "of humerus."
+    ],
+    "images": ["ulna_olecranon_process_left_image.jpg"]
+}

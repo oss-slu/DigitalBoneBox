@@ -1,0 +1,15 @@
+{
+    "name": "Posterior surface",
+    "id": "tibia_posterior_surface",
+    "description": [
+        "Lies between medial and interosseous borders",
+        "Soleus muscle attaches to soleal line",
+        "Popliteus muscle is attached to triangular area just proximal to soleal line",
+        "Tibialis posterior muscle attaches distal to soleal line along lateral border of shaft",
+        "Flexor digitorum longus muscle attaches distal to soleal line along medial border of shaft"
+    ],
+    "images": [
+        "tibia_top_image2.png",
+        "tibia_image2.png"
+    ]
+}

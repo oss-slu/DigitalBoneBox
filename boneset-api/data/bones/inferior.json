@@ -1,0 +1,12 @@
+{
+  "name": "Inferior",
+  "id": "inferior",
+  "subBones": [
+    "inferior_maxilla",
+    "inferior_occipital_bone",
+    "inferior_palatine_bone",
+    "inferior_sphenoid_bone",
+    "inferior_temporal_bone",
+    "inferior_vomer"
+  ]
+}

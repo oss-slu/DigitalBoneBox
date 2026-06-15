@@ -1,0 +1,249 @@
+{
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Interosseous border",
+      "text_content": "Interosseous border",
+      "text_box": {
+        "x": 2895601.0,
+        "y": 3301103.0,
+        "width": 934589.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "32"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_1",
+          "kind": "connector",
+          "start_point": {
+            "x": 3830189.0,
+            "y": 3408825.0
+          },
+          "end_point": {
+            "x": 4188539.0,
+            "y": 3408825.0
+          },
+          "style": {
+            "width": 12700,
+            "arrow_head": "none"
+          },
+          "shape_id": "33",
+          "bbox": {
+            "x": 3830189.0,
+            "y": 3408825.0,
+            "width": 358350.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4192000.0,
+          "y": 3408000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Interosseous border",
+      "text_content": "Interosseous border",
+      "text_box": {
+        "x": 7627735.0,
+        "y": 3406258.0,
+        "width": 934589.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "34"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_2",
+          "kind": "connector",
+          "start_point": {
+            "x": 7187002.0,
+            "y": 3513980.0
+          },
+          "end_point": {
+            "x": 7627735.0,
+            "y": 3513980.0
+          },
+          "style": {
+            "width": 12700,
+            "arrow_head": "none"
+          },
+          "shape_id": "35",
+          "bbox": {
+            "x": 7187002.0,
+            "y": 3513980.0,
+            "width": 440733.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 7184000.0,
+          "y": 3512000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_3",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Anterior border",
+      "text_content": "Anterior border",
+      "text_box": {
+        "x": 3168856.0,
+        "y": 3951630.0,
+        "width": 734696.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "36"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_3",
+          "kind": "connector",
+          "start_point": {
+            "x": 3903552.0,
+            "y": 4059352.0
+          },
+          "end_point": {
+            "x": 4235656.0,
+            "y": 4059352.0
+          },
+          "style": {
+            "width": 12700,
+            "arrow_head": "none"
+          },
+          "shape_id": "37",
+          "bbox": {
+            "x": 3903552.0,
+            "y": 4059352.0,
+            "width": 332104.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4232000.0,
+          "y": 4056000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_4",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Medial border",
+      "text_content": "Medial border",
+      "text_box": {
+        "x": 4675504.0,
+        "y": 3397478.0,
+        "width": 658496.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "39"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_4",
+          "kind": "connector",
+          "start_point": {
+            "x": 4495800.0,
+            "y": 3505200.0
+          },
+          "end_point": {
+            "x": 4675504.0,
+            "y": 3505200.0
+          },
+          "style": {
+            "width": 12700,
+            "arrow_head": "none"
+          },
+          "shape_id": "40",
+          "bbox": {
+            "x": 4495800.0,
+            "y": 3505200.0,
+            "width": 179704.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4496000.0,
+          "y": 3504000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_5",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Medial border",
+      "text_content": "Medial border",
+      "text_box": {
+        "x": 5973384.0,
+        "y": 3960789.0,
+        "width": 658496.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "42"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_5",
+          "kind": "connector",
+          "start_point": {
+            "x": 6631880.0,
+            "y": 4068511.0
+          },
+          "end_point": {
+            "x": 6885304.0,
+            "y": 4068511.0
+          },
+          "style": {
+            "width": 12700,
+            "arrow_head": "none"
+          },
+          "shape_id": "43",
+          "bbox": {
+            "x": 6631880.0,
+            "y": 4068511.0,
+            "width": 253424.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 6888000.0,
+          "y": 4072000.0
+        }
+      ]
+    }
+  ],
+  "total_text_annotations": 5,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

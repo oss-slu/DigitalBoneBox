@@ -1,0 +1,11 @@
+{
+    "name": "Symphyseal surface",
+    "id": "symphyseal_surface",
+    "description": [
+        "The joint surface on each pubis.",
+        "Articulation is by a cartilaginous joint called a symphysis.",
+        "Each surface is covered by hyaline cartilage, and then linked by the pubic symphysis which is a cartilaginous joint between the two pubic bones.",
+        "This joint becomes remodeled during pregnancy to allow the pelvic bones to become more flexible for delivery."
+    ], 
+    "images": ["symphyseal_surface_image.png"]
+}

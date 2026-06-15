@@ -1,0 +1,82 @@
+{
+  "slide_number": 25,
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Choanae",
+      "text_content": "Choanae",
+      "text_box": {
+        "x": 8153401.0,
+        "y": 3577040.0,
+        "width": 457199.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "917"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_1",
+          "kind": "connector",
+          "start_point": {
+            "x": 8153401.0,
+            "y": 3684762.0
+          },
+          "end_point": {
+            "x": 6324601.0,
+            "y": 3684762.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "918",
+          "bbox": {
+            "x": 6324601.0,
+            "y": 3684762.0,
+            "width": 1828800.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        },
+        {
+          "line_id": "line_2",
+          "kind": "connector",
+          "start_point": {
+            "x": 6324601.0,
+            "y": 3684764.0
+          },
+          "end_point": {
+            "x": 5105402.0,
+            "y": 3684762.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "919",
+          "bbox": {
+            "x": 5105402.0,
+            "y": 3684762.0,
+            "width": 1219199.0,
+            "height": 2.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 5104000.0,
+          "y": 3688000.0
+        }
+      ]
+    }
+  ],
+  "total_text_annotations": 1,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

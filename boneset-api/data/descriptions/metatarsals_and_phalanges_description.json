@@ -1,0 +1,13 @@
+{
+    "name": "Metatarsals and phalanges",
+    "id": "metatarsals_and_phalanges",
+    "description": [
+        "Numbered I through V from medial to lateral",
+        "Each has a base, shaft, and a head from proximal to distal",
+        "First toe only has a proximal and distal phalanx",
+        "Toes I-IV have proximal, middle, and distal phalanges"
+    ],
+    "images": [
+        "foot_image.png"
+    ]
+}

@@ -1,0 +1,47 @@
+{
+  "slide_number": 19,
+  "images": [
+    {
+      "image_name": "pelvis_med_blk.psd",
+      "width": 4498144,
+      "height": 3821069,
+      "colored_regions": [
+        {
+          "region_name": "Symphyseal surface",
+          "anatomical_name": "Symphyseal surface",
+          "color": "008000",
+          "color_name": "green",
+          "opacity": 0.35,
+          "fill": true,
+          "path_data": [
+            {
+              "path_width": 1027854,
+              "path_height": 821805,
+              "commands": [
+                {"type": "moveTo", "x": 1027854, "y": 808222},
+                {"type": "lineTo", "x": 878440, "y": 624843},
+                {"type": "lineTo", "x": 674693, "y": 461841},
+                {"type": "lineTo", "x": 457362, "y": 285254},
+                {"type": "lineTo", "x": 328323, "y": 183378},
+                {"type": "cubicBezTo", "x1": 289837, "y1": 151683, "x2": 258143, "y2": 65654, "x": 219657, "y": 33959},
+                {"type": "lineTo", "x": 124575, "y": 0},
+                {"type": "lineTo", "x": 0, "y": 28775},
+                {"type": "lineTo", "x": 7151, "y": 130651},
+                {"type": "lineTo", "x": 63451, "y": 251296},
+                {"type": "lineTo", "x": 124575, "y": 407506},
+                {"type": "lineTo", "x": 267198, "y": 489008},
+                {"type": "lineTo", "x": 423405, "y": 652011},
+                {"type": "lineTo", "x": 654318, "y": 781054},
+                {"type": "lineTo", "x": 824107, "y": 821805},
+                {"type": "lineTo", "x": 1027854, "y": 808222},
+                {"type": "close"}
+              ]
+            }
+          ],
+          "offset_x": 0,
+          "offset_y": 0
+        }
+      ]
+    }
+  ]
+}

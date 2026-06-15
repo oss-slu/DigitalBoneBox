@@ -1,0 +1,15 @@
+{
+    "name": "Lateral malleolus",
+    "id": "lateral_malleolus",
+    "description": [
+        "Distal portion of fibula",
+        "Projects distally and posteriorly",
+        "Posterior aspect has a broad groove for the fibular tendons",
+        "Medial aspect has an articular facet fro talus",
+        "Projects farther distally than medial malleolus"
+    ],
+    "images": [
+        "fibula_image.jpeg",
+        "fibula_image2.png"
+    ]
+}

@@ -1,0 +1,10 @@
+{
+    "name": "Transverse process",
+    "id": "lumbar_transverse_process",
+    "description": [
+        "Project posterolaterally.",
+        "Connected to the body by a thick pedicle.",
+        "Connected to the spinous process by a thick lamina."
+    ],
+    "images": ["lumbar_(superior_aspect)_image.png", "lumbar_(inferior_aspect)_image.png", "lumbar_(lateral_aspect)_image.png"]
+}

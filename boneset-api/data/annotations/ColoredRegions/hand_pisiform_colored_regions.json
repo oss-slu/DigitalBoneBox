@@ -1,0 +1,263 @@
+{
+  "slide_number": 38,
+  "image_dimensions": {
+    "width": 12192000,
+    "height": 6858000
+  },
+  "colored_regions": [
+    {
+      "anatomical_name": "Pubis_and_Obturator_foramen",
+      "color": "008000",
+      "color_name": "green_variant",
+      "shape_id": "5",
+      "path_data": [
+        {
+          "path_width": 234950,
+          "path_height": 228600,
+          "commands": [
+            {
+              "type": "moveTo",
+              "x": 6772275,
+              "y": 2165350
+            },
+            {
+              "type": "lineTo",
+              "x": 6724650,
+              "y": 2139950
+            },
+            {
+              "type": "lineTo",
+              "x": 6705600,
+              "y": 2139950
+            },
+            {
+              "type": "lineTo",
+              "x": 6680200,
+              "y": 2143125
+            },
+            {
+              "type": "lineTo",
+              "x": 6651625,
+              "y": 2159000
+            },
+            {
+              "type": "lineTo",
+              "x": 6632575,
+              "y": 2168525
+            },
+            {
+              "type": "lineTo",
+              "x": 6610350,
+              "y": 2174875
+            },
+            {
+              "type": "lineTo",
+              "x": 6597650,
+              "y": 2184400
+            },
+            {
+              "type": "lineTo",
+              "x": 6575425,
+              "y": 2197100
+            },
+            {
+              "type": "lineTo",
+              "x": 6565900,
+              "y": 2212975
+            },
+            {
+              "type": "lineTo",
+              "x": 6553200,
+              "y": 2225675
+            },
+            {
+              "type": "lineTo",
+              "x": 6537325,
+              "y": 2244725
+            },
+            {
+              "type": "lineTo",
+              "x": 6537325,
+              "y": 2263775
+            },
+            {
+              "type": "lineTo",
+              "x": 6543675,
+              "y": 2289175
+            },
+            {
+              "type": "lineTo",
+              "x": 6575425,
+              "y": 2308225
+            },
+            {
+              "type": "lineTo",
+              "x": 6604000,
+              "y": 2320925
+            },
+            {
+              "type": "lineTo",
+              "x": 6619875,
+              "y": 2339975
+            },
+            {
+              "type": "lineTo",
+              "x": 6635750,
+              "y": 2362200
+            },
+            {
+              "type": "lineTo",
+              "x": 6648450,
+              "y": 2368550
+            },
+            {
+              "type": "lineTo",
+              "x": 6651625,
+              "y": 2311400
+            },
+            {
+              "type": "lineTo",
+              "x": 6661150,
+              "y": 2276475
+            },
+            {
+              "type": "lineTo",
+              "x": 6680200,
+              "y": 2257425
+            },
+            {
+              "type": "lineTo",
+              "x": 6711950,
+              "y": 2222500
+            },
+            {
+              "type": "lineTo",
+              "x": 6772275,
+              "y": 2165350
+            },
+            {
+              "type": "close"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "anatomical_name": "Pubis_and_Obturator_foramen",
+      "color": "008000",
+      "color_name": "green_variant",
+      "shape_id": "7",
+      "path_data": [
+        {
+          "path_width": 333375,
+          "path_height": 285750,
+          "commands": [
+            {
+              "type": "moveTo",
+              "x": 4724401,
+              "y": 2279650
+            },
+            {
+              "type": "lineTo",
+              "x": 4689476,
+              "y": 2368550
+            },
+            {
+              "type": "lineTo",
+              "x": 4692651,
+              "y": 2422525
+            },
+            {
+              "type": "lineTo",
+              "x": 4733926,
+              "y": 2473325
+            },
+            {
+              "type": "lineTo",
+              "x": 4787901,
+              "y": 2486025
+            },
+            {
+              "type": "lineTo",
+              "x": 4860926,
+              "y": 2476500
+            },
+            {
+              "type": "lineTo",
+              "x": 4895851,
+              "y": 2441575
+            },
+            {
+              "type": "lineTo",
+              "x": 4940301,
+              "y": 2406650
+            },
+            {
+              "type": "lineTo",
+              "x": 4972051,
+              "y": 2381250
+            },
+            {
+              "type": "lineTo",
+              "x": 5010151,
+              "y": 2343150
+            },
+            {
+              "type": "lineTo",
+              "x": 5022851,
+              "y": 2308225
+            },
+            {
+              "type": "lineTo",
+              "x": 5013326,
+              "y": 2273300
+            },
+            {
+              "type": "lineTo",
+              "x": 4987926,
+              "y": 2244725
+            },
+            {
+              "type": "lineTo",
+              "x": 4953001,
+              "y": 2228850
+            },
+            {
+              "type": "lineTo",
+              "x": 4911726,
+              "y": 2212975
+            },
+            {
+              "type": "lineTo",
+              "x": 4879976,
+              "y": 2200275
+            },
+            {
+              "type": "lineTo",
+              "x": 4854576,
+              "y": 2200275
+            },
+            {
+              "type": "lineTo",
+              "x": 4797426,
+              "y": 2219325
+            },
+            {
+              "type": "lineTo",
+              "x": 4765676,
+              "y": 2238375
+            },
+            {
+              "type": "lineTo",
+              "x": 4724401,
+              "y": 2279650
+            },
+            {
+              "type": "close"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
