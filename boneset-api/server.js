@@ -134,12 +134,16 @@ function searchItems(query, limit = 20) {
     const results = [];
 
     for (const item of searchCache) {
+        if (!item.name) continue;
+
         if (item.name.toLowerCase().startsWith(q)) {
             results.push({ ...item, priority: 1 });
         }
     }
 
     for (const item of searchCache) {
+        if (!item.name) continue;
+
         if (!item.name.toLowerCase().startsWith(q) && item.name.toLowerCase().includes(q)) {
             results.push({ ...item, priority: 2 });
         }
@@ -318,9 +322,11 @@ app.get("/api/annotations/:boneId", searchLimiter, async (req, res) => {
 
     const annotationData = annotationResult.data;
     const templateData = templateResult.data;
-    const fullDimensions = templateData.full_slide_dimensions || { width: 9144000, height: 5143500 };
-    const slideWidth = fullDimensions.width;
-    const slideHeight = fullDimensions.height;
+
+    // Define Full Slide Dimensions for Normalization. We normalize the text annotation dimentions to the slide
+    //  widths so that the values used by the frontend are decoupled from the slide dimensions.
+    const slideWidth = 9144000;
+    const slideHeight = 5143500;
 
     let normalizedGeometry = templateData.normalized_geometry
         ? templateData.normalized_geometry[geometryView]
@@ -422,10 +428,8 @@ app.get("/api/search", searchLimiter, (req, res) => {
     }
 });
 
-//  CORRECTED SERVER STARTUP LOGIC 
-// 1. Initialize cache first. 2. Start server only if run directly (for testability).
 async function startServer() {
-    await initializeSearchCache(); // Wait for the cache to be built
+    await initializeSearchCache();
     
     // Start the server only if this file is run directly (not imported)
     if (require.main == module) {
@@ -435,7 +439,7 @@ async function startServer() {
     }
 }
 
-startServer(); // Call the async function to begin startup
+startServer();
 
 // Export for tests or other modules if needed
 module.exports = {

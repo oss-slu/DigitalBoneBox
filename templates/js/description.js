@@ -1,4 +1,3 @@
-// js/description.js
 import { fetchDescription } from "./api.js";
 
 export async function loadDescription(id) {

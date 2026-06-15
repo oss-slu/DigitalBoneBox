@@ -1,24 +1,26 @@
-// templates/js/dropdowns.js
 import { loadDescription } from "./description.js";
-import { displayBoneImages, clearImages, showPlaceholder } from "./imageDisplay.js";
-import { loadAndDrawAnnotations, clearAnnotations } from "./annotationOverlay.js";
+import {displayBoneImages, showPlaceholder} from "./imageDisplay.js";
+import {clearAnnotations} from "./annotationOverlay.js";
 import {fetchBoneData} from "./api.js";
+import { imageAnnotationToDropdownMap } from "./imageAnnotationToDropdownMap.js";
 
-// Show the placeholder ASAP
 document.addEventListener("DOMContentLoaded", () => {
   showPlaceholder();
 });
 
-// ---- Map/lookup and helpers -----------------
-let _boneById = {}; // filled in setupDropdownListeners
-
 function getImageStage() {
-  return /** @type {HTMLElement|null} */ (document.getElementById("bone-image-container"));
+  return (document.getElementById("bone-image-container"));
 }
 
 /** Helper: fetch images for a bone/sub-bone and render them */
 async function loadBoneImages(boneId, options = {}) {
   const stage = getImageStage();
+
+  if (stage) {
+      clearAnnotations(stage);
+      stage.classList.remove("with-annotations");
+  }
+
   if (!boneId) {
     showPlaceholder();
     if (stage) { clearAnnotations(stage); stage.classList.remove("with-annotations"); }
@@ -31,7 +33,7 @@ async function loadBoneImages(boneId, options = {}) {
       showPlaceholder();
       if (stage) { clearAnnotations(stage); stage.classList.remove("with-annotations"); }
     } else {
-      // Pass both boneId (for colored regions) and options (for annotations)
+      // Pass both boneId (for colored regions) and options (for text annotations)
       displayBoneImages(images, { ...options, boneId });
     }
   } catch (err) {
@@ -87,32 +89,25 @@ bonesetSelect.addEventListener("change", (e) => {
   boneSelect.disabled = relatedBones.length === 0;
 
   if (!selectedBonesetId || relatedBones.length === 0) {
-    showPlaceholder();
     const stage = getImageStage();
     if (stage) { clearAnnotations(stage); stage.classList.remove("with-annotations"); }
+    showPlaceholder();
     return;
   }
 
-  // --- START FIX for Boneset Selection (Loads Slide 2 for Bony Pelvis) ---
-  const bonesetName =
-    (bonesetSelect.options[bonesetSelect.selectedIndex]?.text || "").trim().toLowerCase();
-
   let targetId = selectedBonesetId; // Use the Boneset ID (e.g., 'bony_pelvis')
 
-  // Set options with boneId and isBonesetSelection flag
-  const opts = (bonesetName === "bony pelvis")
-    ? { 
-        boneId: targetId,
-        isBonesetSelection: true // Flag to indicate boneset selection
-      }
-    : { boneId: targetId };
+  // Pass boneId and boneset selection flag to the image loader
+  const opts = {
+    boneId: targetId,
+  };
 
   // Load the Boneset description (which shows the overall Boneset text)
   loadDescription(targetId);
 
   // Load the boneset image using the Boneset ID (e.g., 'bony_pelvis')
-  loadBoneImages(targetId, opts); 
-  // --- END FIX ---
+  loadBoneImages(targetId, opts);
+
 });
 
 
@@ -133,16 +128,14 @@ boneSelect.addEventListener("change", (e) => {
 
   if (selectedBoneId) {
     loadDescription(selectedBoneId);
-    
-    // --- FIX for Bone Selection (Ensures all Bone annotations load) ---
-    // Pass boneId in options for annotation loading
-    const opts = { boneId: selectedBoneId };    
+
+    const opts = { boneId: selectedBoneId };
     
     loadBoneImages(selectedBoneId, opts);
   } else {
-    showPlaceholder();
     const stage = getImageStage();
     if (stage) { clearAnnotations(stage); stage.classList.remove("with-annotations"); }
+    showPlaceholder();
   }
 });
 
@@ -152,28 +145,83 @@ subboneSelect.addEventListener("change", (e) => {
   const selectedSubboneId = e.target.value;
   const stage = getImageStage();
 
-  // Always clear any existing annotations from the bone-level view
   if (stage) {
     clearAnnotations(stage);
     stage.classList.remove("with-annotations");
   }
 
   if (selectedSubboneId) {
-    // Load the text description for this sub-bone
     loadDescription(selectedSubboneId);
 
-    // 🔑 IMPORTANT:
-    // For sub-bones, pass the boneId in options for annotation loading
     const opts = {
       boneId: selectedSubboneId,
     };
 
-    // This will draw the sub-bone image AND its own labels
-    // (or none, if that annotation file has an empty text_annotations array)
     loadBoneImages(selectedSubboneId, opts);
   } else {
-    // No sub-bone selected → show placeholder
     showPlaceholder();
   }
 });
+
+  document.addEventListener("checkAnnotationLink", (e) => {
+    let checkText = e.detail.text;
+    if (!checkText) return;
+
+    checkText = checkText.replace(/\s+/g, " ").trim().toLowerCase();
+    const currentBone = boneSelect.value;
+
+    if (currentBone && imageAnnotationToDropdownMap[currentBone] && imageAnnotationToDropdownMap[currentBone][checkText]) {
+        checkText = imageAnnotationToDropdownMap[currentBone][checkText];
+    }
+
+    const isValidSubbone = combinedData.subbones.some(sb => sb.name?.toLowerCase() === checkText);
+    const isValidBone = combinedData.bones.some(b => b.name?.toLowerCase() === checkText);
+
+    if (isValidSubbone || isValidBone) {
+        e.detail.isValid = true;
+    }
+  });
+
+  // Image annotation clicked
+  document.addEventListener("annotationSelected", (e) => {
+    let clickedText = e.detail.text;
+    if (!clickedText) return;
+
+    clickedText = clickedText.replace(/\s+/g, " ").trim().toLowerCase();
+
+    const currentBone = boneSelect.value;
+
+    // Mapping the image annotation to dropdown option
+    // If the currently viewed bone has a dictionary, and the clicked text is in it, translate it.
+    if (currentBone && imageAnnotationToDropdownMap[currentBone] && imageAnnotationToDropdownMap[currentBone][clickedText]) {
+        clickedText = imageAnnotationToDropdownMap[currentBone][clickedText];
+    }
+
+    // Check Sub-bones
+    const matchedSubbone = combinedData.subbones.find(
+      sb => sb.name?.toLowerCase() === clickedText
+    );
+
+    if (matchedSubbone) {
+      if (boneSelect.value !== matchedSubbone.bone) {
+         boneSelect.value = matchedSubbone.bone;
+         boneSelect.dispatchEvent(new Event("change"));
+      }
+      subboneSelect.value = matchedSubbone.id;
+      subboneSelect.dispatchEvent(new Event("change"));
+      return;
+    }
+
+    // Check Bones
+    const matchedBone = combinedData.bones.find(
+      b => b.name?.toLowerCase() === clickedText
+    );
+
+    if (matchedBone) {
+      boneSelect.value = matchedBone.id;
+      boneSelect.dispatchEvent(new Event("change"));
+      return;
+    }
+
+  });
 }

@@ -9,7 +9,7 @@ const html = `
 `;
 document.body.innerHTML = html;
 
-const { initializeSidebar } = require("../templates/js/sidebar.js"); // Import the JavaScript code
+const {initializeSidebar} = require("../js/sidebar.js"); // Import the JavaScript code
 
 
 beforeEach(() => {

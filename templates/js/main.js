@@ -1,6 +1,6 @@
 import { fetchCombinedData, fetchBoneData } from "./api.js";
 import { populateBonesetDropdown, setupDropdownListeners } from "./dropdowns.js";
-import { initializeSidebar } from "./sidebar.js";
+import {initializeSidebar} from "./sidebar.js";
 import { setupNavigation, setBoneAndSubbones, disableButtons } from "./navigation.js";
 import { loadDescription } from "./description.js";
 import { displayBoneData, clearViewer } from "./viewer.js";
@@ -16,32 +16,15 @@ let combinedData = { bonesets: [], bones: [], subbones: [] };
 // handleBoneSelection is defined inside DOMContentLoaded after DOM elements are known
 
 document.addEventListener("DOMContentLoaded", async () => {
-    // 1. Initialize search functionality
     initializeSearch();
-
-    // 2. Sidebar behavior
     await initializeSidebar();
 
-    // 3. Fetch data FIRST (moved from step 4)
     combinedData = await fetchCombinedData();
     populateBonesetDropdown(combinedData.bonesets);
     setupDropdownListeners(combinedData);
 
-    // 4. Initialize quiz system AFTER data is loaded
     try {
-        // Pass BOTH bones and subbones to quizManager
-        quizManager.allBones = combinedData.bones || [];
-        quizManager.allSubbones = combinedData.subbones || [];
-        
-        // Create the master question pool
-        quizManager.createMasterQuestionPool();
-        
-        if (quizManager.masterQuestionPool.length >= 4) {
-            quizManager.setupEventListeners();
-            console.log("Quiz system initialized successfully with", quizManager.masterQuestionPool.length, "items");
-        } else {
-            console.warn("Not enough items for quiz:", quizManager.masterQuestionPool.length);
-        }
+        await quizManager.initialize(combinedData);
     } catch (error) {
         console.error("Error initializing quiz:", error);
     }
@@ -61,7 +44,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const descContainer = document.getElementById("description-Container");
     if (descContainer) descContainer.innerHTML = "";
 
-    // 5. Setup navigation after everything else
+    // Setup navigation
     // Pass DOM elements and the description updater to the navigation module
     const prevButton = document.getElementById("prev-button");
     const nextButton = document.getElementById("next-button");
@@ -74,7 +57,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Initialize button states
     disableButtons(prevButton, nextButton);
 
-    // 6. Update navigation when bone changes
+    // Update navigation when bone changes
     const boneDropdown = document.getElementById("bone-select");
     boneDropdown.addEventListener("change", (event) => {
         const selectedBone = event.target.value;
@@ -103,9 +86,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     });
 
-    // (No auto-select) The UI shows the boneset placeholder and waits for user selection
-
-    // 8. Initialize display
+    // Initialize display
     clearViewer();
 });
 

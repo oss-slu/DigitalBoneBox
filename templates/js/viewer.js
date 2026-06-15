@@ -1,41 +1,3 @@
-// viewer.js - Dedicated module for managing viewer state and display
-
-/**
- * Displays bone image with error handling for broken URLs
- * @param {Object} boneData - The bone object from mock data
- */
-export function displayBoneImage(boneData) {
-    const boneImage = document.getElementById("bone-image");
-    if (!boneImage) {
-        console.error("Bone image element not found");
-        return;
-    }
-
-    if (boneData.image_url) {
-        boneImage.src = boneData.image_url;
-        boneImage.alt = `${boneData.name} bone image`;
-        boneImage.style.display = "block";
-        
-        // Handle image load errors gracefully
-        boneImage.onerror = () => {
-            console.warn(`Failed to load image for ${boneData.name}: ${boneData.image_url}`);
-            boneImage.src = "https://via.placeholder.com/600x400/CCCCCC/666666?text=Image+Load+Failed";
-            boneImage.alt = `${boneData.name} - Image failed to load`;
-        };
-        
-        // Clear any previous error handlers when image loads successfully
-        boneImage.onload = () => {
-            boneImage.onerror = null;
-        };
-    } else {
-        // Handle missing image_url
-        boneImage.src = "https://via.placeholder.com/600x400/CCCCCC/666666?text=No+Image+Available";
-        boneImage.alt = `${boneData.name} - No image available`;
-        boneImage.style.display = "block";
-        console.warn(`No image URL provided for bone: ${boneData.name}`);
-    }
-}
-
 /**
  * Displays annotations list for the selected bone
  * @param {Array} annotations - Array of annotation objects
@@ -79,8 +41,6 @@ export function displayBoneData(boneData) {
         return;
     }
 
-    // NOTE: Images are now displayed by imageDisplay.js via dropdowns.js
-    // displayBoneImage(boneData); // DISABLED - handled by imageDisplay.js
     displayAnnotations(boneData.annotations);
 }
 
@@ -88,7 +48,7 @@ export function displayBoneData(boneData) {
  * Clears the viewer display (annotations only - images handled by imageDisplay.js)
  */
 export function clearViewer() {
-    // NOTE: Images are now cleared by imageDisplay.js
+    // Images are cleared by imageDisplay.js
     // Only clear annotations here
     const annotationsOverlay = document.getElementById("annotations-overlay");
     

@@ -16,7 +16,6 @@ export function setupNavigation(prevButton, nextButton, subboneDropdown, updateD
 
   disableButtons(prevButton, nextButton);
 
-  // Setup Home button functionality
   setupHomeButton();
 }
 
@@ -31,10 +30,8 @@ function setupHomeButton() {
     return;
   }
 
-  // Add click event listener
   homeButton.addEventListener("click", resetToInitialState);
 
-  // Add keyboard support (Enter and Space keys)
   homeButton.addEventListener("keydown", (event) => {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
@@ -58,16 +55,7 @@ function resetToInitialState() {
       homeButton.style.opacity = "1";
     }, 150);
   }
-
-  // The simplest and most reliable way to reset everything
-  // This ensures ALL state returns to initial load state:
-  // - All dropdowns reset
-  // - Search bar clears
-  // - Images clear
-  // - Description clears
-  // - Sidebar closes
-  // - Page scrolls to top
-  // - All navigation state resets
+  
   window.location.reload();
 }
 

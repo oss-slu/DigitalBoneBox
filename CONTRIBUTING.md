@@ -1,6 +1,6 @@
 # Contributing to Digital Bone Box
 
-Thank you for checking out **Digital Bone Box**! We are so happy you are here. If you are intrested in contributing to the project below are some guidelines that help us make most out of your contribution. For more detailed documentation, see the `Docs/` folder.
+Thank you for checking out **Digital Bone Box**! We are so happy you are here. If you are interested in contributing to the project below are some guidelines that help us make the most out of your contribution. For more detailed documentation, [see the wiki](https://github.com/oss-slu/DigitalBoneBox/wiki).
 
 ## Getting Started
 
@@ -38,7 +38,7 @@ Choose an issue to work on. If you're new to the repository, look for one with t
 
 ### 2. Read Our Documentation
 
-If there's anything you need to know about how the repository is structured or more details about our workflow, you can find it in the `Docs/` folder.
+If there's anything you need to know about how the repository is structured or more details about our workflow, you can find it in our [wiki](https://github.com/oss-slu/DigitalBoneBox/wiki). It documents our project architecture, direction, glossary, and more.
 
 ### 3. Make Your Changes
 
@@ -80,7 +80,7 @@ git push origin feature-branch
 
 ### 1. Documentation
 
-- Update documentation as necessary. If your change impacts functionality, be sure to update the corresponding documentation in the **README** or in any documentation under the `Docs/` folder.
+- Update documentation as necessary. If your change impacts functionality, be sure to update the corresponding documentation in the **README** or in the wiki.
 
 ---
 

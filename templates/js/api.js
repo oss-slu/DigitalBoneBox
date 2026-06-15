@@ -1,6 +1,3 @@
-// api.js - Centralized API configuration and data fetching
-
-// Centralized API configuration
 const API_CONFIG = {
     BASE_URL: "http://127.0.0.1:8000",
     ENDPOINTS: {
@@ -26,20 +23,6 @@ export async function fetchCombinedData() {
     } catch (error) {
         console.error("Error fetching combined data:", error);
         throw error;
-    }
-}
-
-export async function fetchMockBoneData() {
-    try {
-        const response = await fetch(API_CONFIG.ENDPOINTS.MOCK_BONE_DATA);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error("Error fetching mock bone data:", error);
-        return null;
     }
 }
 
@@ -82,6 +65,9 @@ export async function fetchColoredRegionsData(boneId) {
             }
         });
 
+        if (response.status === 404) {
+            return null;
+        }
         if (!response.ok) {
             console.warn(`[ColoredRegions] API returned status ${response.status}: ${response.statusText}`);
             return null;
@@ -121,10 +107,6 @@ export async function fetchAnnotations(boneId) {
  * @returns {string} - HTML content with search results or error message
  */
 export async function fetchSearch(query) {
-    if (!query || query.trim().length < 2) {
-        return "<li class='search-placeholder'>Enter at least 2 characters to search</li>";
-    }
-
     const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SEARCH}?q=${encodeURIComponent(query)}`;
     try {
         const response = await fetch(url);
