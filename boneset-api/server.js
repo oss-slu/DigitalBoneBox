@@ -63,9 +63,23 @@ function isValidBoneId(boneId) {
 
 async function readJSON(filePath) {
     const resolvedPath = path.resolve(filePath);
-    const relativeToDataDir = path.relative(LOCAL_DATA_DIR, resolvedPath);
+
+    let dataRootPath;
+    try {
+        dataRootPath = await fs.realpath(LOCAL_DATA_DIR);
+    } catch (error) {
+        dataRootPath = path.resolve(LOCAL_DATA_DIR);
+    }
+
+    let canonicalPath;
+    try {
+        canonicalPath = await fs.realpath(resolvedPath);
+    } catch (error) {
+        canonicalPath = resolvedPath;
+    }
+
+    const relativeToDataDir = path.relative(dataRootPath, canonicalPath);
     const isWithinDataDir =
-        relativeToDataDir &&
         !relativeToDataDir.startsWith("..") &&
         !path.isAbsolute(relativeToDataDir);
 
@@ -75,13 +89,13 @@ async function readJSON(filePath) {
     }
 
     try {
-        const raw = await fs.readFile(resolvedPath, "utf8");
+        const raw = await fs.readFile(canonicalPath, "utf8");
         return { data: JSON.parse(raw), status: 200 };
     } catch (error) {
         if (error.code === "ENOENT") {
             return { data: null, status: 404 };
         }
-        console.error(`Failed to read JSON ${resolvedPath}:`, error.message);
+        console.error(`Failed to read JSON ${canonicalPath}:`, error.message);
         return { data: null, status: 500 };
     }
 }
