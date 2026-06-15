@@ -95,10 +95,10 @@ export function clearImages() {
  * Also loads colored region overlays and text annotation overlays if applicable.
  * @param {Array<{url?: string, src?: string, alt?: string, filename?: string}>} images - Array of image objects to
  *   display.
- * @param {Object} [options={}] - Optional display configuration:
- *   @param {string} [options.annotationsUrl] - API URL for text annotation JSON.
- *   @param {string} [options.boneId] - Bone ID used for colored region overlays.
- *   @param {boolean} [options.isBonesetSelection] - True when displaying the full boneset view.
+ * @param {Object} [options={}] - Optional display configuration.
+ * @param {string} [options.annotationsUrl] - API URL for text annotations JSON.
+ * @param {string} [options.boneId] - Bone ID used for colored region overlays.
+ * @param {boolean} [options.isBonesetSelection] - True when displaying the full boneset view.
  * @returns {void}
  */
 export function displayBoneImages(images, options = {}) {
@@ -234,7 +234,7 @@ const TWO_IMAGE_ROTATION = {
  * Applies a CSS rotation (and optional horizontal flip) to an image element
  * based on the PowerPoint rotation template for the given view.
  * @param {HTMLImageElement} imgEl - The image element to transform.
- * @param {Object} [options={}] - Rotation parameters.
+ * @param {Object} [options] - Rotation parameters.
  * @param {number} [options.rot_deg=0] - Rotation angle in degrees.
  * @param {boolean} [options.flipH=false] - Whether to flip the image horizontally.
  * @returns {void}

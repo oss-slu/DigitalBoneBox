@@ -79,12 +79,12 @@ function normalizedPointToPx(pt, box, norm) { // <--- RENAMED to reflect change
 
 /**
  * Draws text annotation labels and pointer lines onto the given container.
- * Reads normalized geometry and slide dimensions from the JSON to map PowerPoint
- * EMU coordinates onto the displayed pixel size of the container.
+ * Uses normalized geometry from the annotation payload to map the label and
+ * pointer coordinates onto the displayed pixel size of the container.
  * @param {HTMLElement} container - The element to draw annotations into.
- * @param {Object} annotationsJson - Annotation data from the API, containing:
- *   `annotations` {Array}, `normalized_geometry` {Object}, `slide_width` {number},
- *   and `slide_height` {number}.
+ * @param {Object} annotationsJson - Text annotation payload from the API.
+ * @param {Array<Object>} annotationsJson.text_annotations - Array of text annotation objects.
+ * @param {Object} annotationsJson.normalized_geometry - Normalized geometry for the slide crop.
  * @returns {void}
  */
 export function drawAnnotations(container, annotationsJson) {
@@ -113,7 +113,7 @@ export function drawAnnotations(container, annotationsJson) {
   };
 
   // 4. Get the list of annotations.
-  const list = annotationsJson.annotations || annotationsJson.text_annotations || [];
+  const list = annotationsJson.annotations || [];
 
   list.forEach((a) => {
     if (!a || !a.text_box) return;

@@ -146,11 +146,11 @@ class QuizManager {
     }
 
     /**
-     * Picks `count` distractor names from the master pool, excluding the
-     * correct item.
+     * Generates the wrong answer choices for a quiz question by selecting
+     * names from the master pool, excluding the correct item.
      * @param {string} correctItemId - The ID of the correct answer item to exclude.
-     * @param {number} count - Number of wrong answers to generate.
-     * @returns {string[]} Array of distractor name strings.
+     * @param {number} count - Number of wrong answer choices to generate.
+     * @returns {string[]} Array of wrong answer choice strings.
      */
     generateWrongAnswers(correctItemId, count) {
         const wrongAnswers = [];
@@ -383,8 +383,9 @@ class QuizManager {
 
     /**
      * Renders the answer choice buttons for the given question.
-     * @param {{allAnswers: string[], correctAnswer: string}} question - The
-     *   current question object.
+     * @param {Object} question - The current question object.
+     * @param {string[]} question.allAnswers - All answer choices to display.
+     * @param {string} question.correctAnswer - The correct answer text.
      * @returns {void}
      */
     displayAnswerChoices(question) {
@@ -541,17 +542,17 @@ class QuizManager {
     requestAnimationFrame(() => {
         const retryBtn = document.getElementById("retry-quiz-btn");
         const exitBtn = document.getElementById("exit-results-btn");
-        
+
         console.log("Retry button found:", retryBtn); // Debug
         console.log("Exit button found:", exitBtn); // Debug
-        
+
         if (retryBtn) {
             retryBtn.onclick = () => {
                 console.log("TRY AGAIN CLICKED!"); // Debug
                 this.startQuiz();
             };
         }
-        
+
         if (exitBtn) {
             exitBtn.onclick = () => {
                 console.log("EXIT CLICKED!"); // Debug

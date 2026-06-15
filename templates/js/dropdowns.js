@@ -44,7 +44,7 @@ async function maybeLoadAnnotations(boneId) {
 // Backend API base (runs on 8000)
 const API_BASE = "http://127.0.0.1:8000";
 
-/** Helper: fetch images for a bone/sub-bone and render them
+/** Helper: fetch images for a bone/sub-bone and render them.
  * @param {string} boneId - The bone or subbone ID to load images for.
  * @param {Object} [options={}] - Options forwarded to `displayBoneImages`.
  * @returns {Promise<void>}
@@ -103,8 +103,10 @@ export function populateBonesetDropdown(bonesets) {
 /**
  * Wires up change event listeners on the boneset, bone, and subbone `<select>` elements.
  * Each listener loads images, descriptions, and annotations appropriate to the selection.
- * @param {Object} combinedData - The full application data set containing:
- *   `bonesets` {Array}, `bones` {Array}, and `subbones` {Array}.
+ * @param {Object} combinedData - The full application data set.
+ * @param {Array<Object>} combinedData.bonesets - Array of boneset objects.
+ * @param {Array<Object>} combinedData.bones - Array of bone objects.
+ * @param {Array<Object>} combinedData.subbones - Array of subbone objects.
  * @returns {void}
  */
 export function setupDropdownListeners(combinedData) {
@@ -149,7 +151,7 @@ bonesetSelect.addEventListener("change", (e) => {
 
   // Set annotation URL using the Boneset ID.
   const opts = (bonesetName === "bony pelvis")
-    ? { 
+    ? {
         annotationsUrl: `${API_BASE}/api/annotations/${targetId}`,
         isBonesetSelection: true // Flag to indicate boneset selection
       }
