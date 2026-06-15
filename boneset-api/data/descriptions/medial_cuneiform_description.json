@@ -1,0 +1,13 @@
+{
+    "name": "Medial cuneiform",
+    "id": "medial_cuneiform",
+    "description": [
+        "Articulates with navicular, intermediate cuneiform, 1st and 2nd metatarsals",
+        "Impression on medial border provides attachment for tendon of tibialis anterior",
+        "Plantar surface receives partial attachment of the tendons of tibialis posterior and fibularis longus muscles"
+    ],
+    "images": [
+        "foot_image.png",
+        "foot_image2.png"
+    ]
+}

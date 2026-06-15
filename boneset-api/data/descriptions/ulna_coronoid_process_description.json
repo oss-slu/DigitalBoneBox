@@ -1,0 +1,12 @@
+{
+    "name": "Coronoid process",
+    "id": "coronoid_process",
+    "description": [
+        "A beak-like projection that is located anteriorly at the proximal end.",
+        "Enters",
+        "coronoid fossa",
+        "of the humerus when the forearm is flexed at the elbow.",
+        "Ulnar head of the pronator teres muscle originates from medial surface of the process."
+    ],
+    "images": ["ulna_olecranon_process_left_image.jpg"]
+}

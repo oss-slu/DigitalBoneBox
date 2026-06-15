@@ -1,7 +1,7 @@
 {
   "name": "Lateral",
   "id": "lateral",
-  "subbones": [
+  "subBones": [
     "lateral_ethmoid_bone",
     "lateral_lacrimal_bone",
     "lateral_mandible",

@@ -1,7 +1,7 @@
 {
   "name": "Anterior",
   "id": "anterior",
-  "subbones": [
+  "subBones": [
     "anterior_frontal_bone",
     "anterior_mandible",
     "anterior_maxilla",

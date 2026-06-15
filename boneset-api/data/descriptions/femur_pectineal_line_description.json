@@ -1,0 +1,13 @@
+{
+    "name": "Pectineal line",
+    "id": "femur_pectineal_line",
+    "description": [
+        "Also called \"spiral line\"",
+        "A rough ridge that runs from base of lesser trochanter to linea aspera",
+        "Proximally, it is continuous with the anterior intertrochanteric line",
+        "Serves as insertion site for pectineus muscle"
+    ],
+    "images": [
+        "femur_top_image.png"
+    ]
+}

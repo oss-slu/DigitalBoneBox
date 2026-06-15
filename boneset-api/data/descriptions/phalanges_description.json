@@ -1,0 +1,15 @@
+{
+    "name": "Phalanges",
+    "id": "phalanges",
+    "description": [
+        "Tendons of flexor digitorum longus attach to the bases of the distal phalanges.",
+        "Tendons of flexor digitorum brevis attach to middle phalanges.",
+        "Tendons of extensor digitorum longus attach to bases of middle and distal phalanges.",
+        "Dorsal and plantar interossei attach to proximal phalanx.",
+        "Flexor and abductor digiti minimi attach to base of 5th proximal phalanx."
+    ],
+    "images": [
+        "foot_image.png",
+        "foot_image2.png"
+    ]
+}

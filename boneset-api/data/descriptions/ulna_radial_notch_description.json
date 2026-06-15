@@ -1,0 +1,11 @@
+{
+    "name": "Radial notch",
+    "id": "radial_notch",
+    "description": [
+        "A concave depression that is located just lateral to the coronoid process on the anterior surface of ulna.",
+        "Articulates with the discoid surface of the",
+        "head",
+        "of the radius."
+    ],
+    "images": ["ulna_olecranon_process_left_image.jpg"]
+}

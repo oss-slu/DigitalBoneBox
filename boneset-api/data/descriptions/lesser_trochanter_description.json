@@ -1,0 +1,14 @@
+{
+    "name": "Lesser trochanter",
+    "id": "lesser_trochanter",
+    "description": [
+        "Conical projection from posteromedial aspect of the shaft at its junction with the neck",
+        "Tendons of iliacus and psoas major muscles join together to attach to the anterior and medial surface",
+        "Upper part of the adductor magnus muscle passes over posterior surface"
+    ],
+    "images": [
+        "femur_top_image2.png",
+        "femur_medial_aspect_image2.png",
+        "femur_top_image3.png"
+    ]
+}

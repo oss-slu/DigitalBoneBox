@@ -1,14 +1,12 @@
-[
-    {
-        "name": "Thoracic",
-        "id": "thoracic",
-        "subBones": [
-            "thoracic_body",
-            "thoracic_transverse_process",
-            "thoracic_costal_facets",
-            "thoracic_vertebral_notch",
-            "thoracic_spinous_process",
-            "thoracic_articular_surfaces"
-        ]
-    }
-]
+{
+    "name": "Thoracic",
+    "id": "thoracic",
+    "subBones": [
+        "thoracic_body",
+        "thoracic_transverse_process",
+        "thoracic_costal_facets",
+        "thoracic_vertebral_notch",
+        "thoracic_spinous_process",
+        "thoracic_articular_surfaces"
+    ]
+}

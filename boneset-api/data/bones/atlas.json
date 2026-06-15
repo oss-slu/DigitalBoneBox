@@ -1,15 +1,13 @@
-[
-    {
-        "name": "Atlas",
-        "id": "atlas",
-        "subBones": [
-            "atlas_anterior_and_posterior_tubercles",
-            "atlas_transverse_process",
-            "atlas_arches",
-            "atlas_groove_for_vertebral_artery",
-            "atlas_articular_facet_for_dens",
-            "atlas_lateral_mass",
-            "atlas_articular_surfaces"
-        ]
-    }
-]
+{
+    "name": "Atlas",
+    "id": "atlas",
+    "subBones": [
+        "atlas_anterior_and_posterior_tubercles",
+        "atlas_transverse_process",
+        "atlas_arches",
+        "atlas_groove_for_vertebral_artery",
+        "atlas_articular_facet_for_dens",
+        "atlas_lateral_mass",
+        "atlas_articular_surfaces"
+    ]
+}

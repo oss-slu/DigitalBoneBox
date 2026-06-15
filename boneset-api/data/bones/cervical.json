@@ -1,15 +1,13 @@
-[
-    {
-        "name": "Cervical",
-        "id": "cervical",
-        "subBones": [
-            "cervical_body",
-            "cervical_pedicle",
-            "cervical_transverse_process",
-            "cervical_lamina",
-            "cervical_spinous_process",
-            "cervical_vertebral_arch",
-            "cervical_vertebral_foramen"
-        ]
-    }
-]
+{
+    "name": "Cervical",
+    "id": "cervical",
+    "subBones": [
+        "cervical_body",
+        "cervical_pedicle",
+        "cervical_transverse_process",
+        "cervical_lamina",
+        "cervical_spinous_process",
+        "cervical_vertebral_arch",
+        "cervical_vertebral_foramen"
+    ]
+}

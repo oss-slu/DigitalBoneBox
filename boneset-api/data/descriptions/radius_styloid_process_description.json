@@ -1,0 +1,10 @@
+{
+    "name": "Styloid process",
+    "id": "styloid_process",
+    "description": [
+        "A rough protrusion on the lateral surface that projects distally past the end of the radius.",
+        "The brachioradialis muscle inserts on the proximal part of the process.",
+        "It can be palpated when the tendons around it are slack."
+    ],
+    "images": ["radius_ulnar_notch_image.jpg", "ulna_styloid_process_image.jpg"]
+}

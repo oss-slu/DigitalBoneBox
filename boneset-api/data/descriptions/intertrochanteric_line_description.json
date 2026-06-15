@@ -1,0 +1,16 @@
+{
+    "name": "Intertrochanteric line and crest",
+    "id": "intertrochanteric_line",
+    "description": [
+        "Intertrochanteric line",
+        "Ridge that lies between the neck and shaft on the anterior surface",
+        "Represents lateral limit of the hip joint capsule",
+        "Intertrochanteric crest",
+        "A smooth ridge that marks the junction of the neck with the shaft on the posterior surface",
+        "The proximal part forms the quadrate tubercle and is insertion for the quadratus femoris muscle"
+    ],
+    "images": [
+        "femur_top_image2.png",
+        "femur_top_image3.png"
+    ]
+}

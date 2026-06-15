@@ -1,7 +1,7 @@
 {
   "name": "Scapula",
   "id": "scapula",
-  "subbones": [
+  "subBones": [
     "scapula_body",
     "scapula_spine",
     "scapula_acromion_and_coracoid_process",

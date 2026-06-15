@@ -1,15 +1,13 @@
-[
-    {
-        "name": "Sacrum and Coccyx",
-        "id": "sacrum_and_coccyx",
-        "subBones": [
-            "sacrum_and_coccyx_sacral_promontory",
-            "sacrum_and_coccyx_superior_articular_process",
-            "sacrum_and_coccyx_anterior_and_posterior_sacral_foramina",
-            "sacrum_and_coccyx_median_sacral_crest",
-            "sacrum_and_coccyx__sacral_hiatus",
-            "sacrum_and_coccyx_articular_surface_for_ilium",
-            "coccyx"
-        ]
-    }
-]
+{
+    "name": "Sacrum and Coccyx",
+    "id": "sacrum_and_coccyx",
+    "subBones": [
+        "sacrum_and_coccyx_sacral_promontory",
+        "sacrum_and_coccyx_superior_articular_process",
+        "sacrum_and_coccyx_anterior_and_posterior_sacral_foramina",
+        "sacrum_and_coccyx_median_sacral_crest",
+        "sacrum_and_coccyx__sacral_hiatus",
+        "sacrum_and_coccyx_articular_surface_for_ilium",
+        "coccyx"
+    ]
+}

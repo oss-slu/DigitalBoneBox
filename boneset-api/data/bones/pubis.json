@@ -1,5 +1,5 @@
 {
     "name": "Pubis",
     "id": "pubis",
-    "subBones": ["pubic_rami", "pectineal_line", "symphyseal_surface", "pubic_tubercle"]
+    "subBones": ["pubic_rami", "pubis_pectineal_line", "symphyseal_surface", "pubic_tubercle"]
 }

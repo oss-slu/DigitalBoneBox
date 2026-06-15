@@ -1,0 +1,10 @@
+{
+    "name": "Greater tubercle",
+    "id": "greater_tubercle",
+    "description": [
+        "A large, raised protrusion on the lateral surface of proximal end.",
+        "The posterior surface provides attachment for the supraspinatus, infraspinatus, and teres minor muscles from superior to inferior respectively.",
+        "Inferior portion forms the crest of the greater tubercle and provides attachment for the pectoralis major muscle."
+    ],
+    "images": ["humerus_head_left_image.jpg","humerus_head_right_image.jpg"]
+}

@@ -1,0 +1,16 @@
+{
+    "name": "Condyles",
+    "id": "condyles",
+    "description": [
+        "Begin as widening of the shaft on medial and lateral surfaces.",
+        "Lateral epicondyle lies proximal to the",
+        "capitulum",
+        "and provides origin for the anconeus and superficial head of the supinator muscles as well as the common extensor tendon*.",
+        "Medial epicondyle lies proximal to the",
+        "trochlea",
+        "and provides origin for the pronator teres muscle as well as the common flexor tendon**.",
+        "*Common extensor tendon: Extensor carpi radialis brevis, extensor digitorum, extensor digiti minimi, and extensor carpi ulnaris.",
+        "**Common flexor tendon: flexor carpi radialis, palmaris longus, flexor carpi ulnaris, and flexor digitorum superficialis."
+    ],
+    "images": ["humerus_condyles_left_image.jpg", "humerus_condyles_right_image.jpg"]
+}

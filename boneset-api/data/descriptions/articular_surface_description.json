@@ -1,0 +1,14 @@
+{
+    "name": "Articular surface",
+    "id": "articular_surface",
+    "description": [
+        "Also known as posterior surface",
+        "Proximal portion is smooth with two facets divided by a vertical ridge",
+        "Ridge fits into intercondylar groove on patellar surface of femur",
+        "The lateral facet is usually larger than medial facet",
+        "Distal surface is rough and covered by a infrapatellar pad of fat"
+    ],
+    "images": [
+        "patella_image2.png"
+    ]
+}

@@ -1,14 +1,12 @@
-[
-    {
-        "name": "Vertebrae",
-        "id": "vertebrae",
-        "bones": [
-            "atlas",
-            "axis",
-            "cervical",
-            "thoracic",
-            "lumbar",
-            "sacrum_and_coccyx"
-        ]
-    }
-]
+{
+    "name": "Vertebrae",
+    "id": "vertebrae",
+    "bones": [
+        "atlas",
+        "axis",
+        "cervical",
+        "thoracic",
+        "lumbar",
+        "sacrum_and_coccyx"
+    ]
+}

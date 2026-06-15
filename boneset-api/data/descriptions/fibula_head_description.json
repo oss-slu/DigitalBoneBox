@@ -1,0 +1,13 @@
+{
+    "name": "Head",
+    "id": "fibula_head",
+    "description": [        
+        "Medial aspect articulates with inferolateral surface of lateral tibial condyle",
+        "Part of biceps femoris muscle insertion is on superior aspect",
+        "Part of soleus muscle originates on posterior aspect"
+    ],
+    "images": [
+        "fibula_image.jpeg",
+        "fibula_image2.png"
+    ]
+}

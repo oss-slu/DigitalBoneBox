@@ -1,0 +1,15 @@
+{
+    "name": "Talus",
+    "id": "talus",
+    "description": [
+        "Consists of head, neck, and body",
+        "Articulates with tibia and fibula to form the ankle joint",
+        "Supported by calcaneus",
+        "Articulates with calcaneus and navicular",
+        "No muscle attachments"
+    ],
+    "images": [
+        "foot_image.png",
+        "foot_image2.png"
+    ]
+}

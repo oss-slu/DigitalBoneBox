@@ -1,0 +1,10 @@
+{
+    "name": "Dorsal tubercle",
+    "id": "dorsal_tubercle",
+    "description": [
+        "A rough protuberance located on the posterior surface of the distal end of the radius.",
+        "Acts as a fulcrum for the tendon of the extensor pollicis longus tendon.",
+        "Also known as Lister\u2019s tubercle."
+    ],
+    "images": ["radius_ulnar_notch_image.jpg"]
+}

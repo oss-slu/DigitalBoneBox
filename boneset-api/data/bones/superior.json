@@ -1,7 +1,7 @@
 {
   "name": "Superior",
   "id": "superior",
-  "subbones": [
+  "subBones": [
     "superior_ethmoid_bone",
     "superior_frontal_bone",
     "superior_occipital_bone",

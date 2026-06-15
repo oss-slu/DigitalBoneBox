@@ -1,0 +1,11 @@
+{
+    "name": "Capitate",
+    "id": "capitate",
+    "description": [
+        "The largest carpal bone.",
+        "Articulates with the second, third and fourth metacarpal bones distally and the scaphoid and lunate bones proximally.",
+        "Articulates with the hamate medially and the trapezoid laterally.",
+        "Part of the oblique head of the adductor pollicis muscle originates on the palmar surface."
+    ],
+    "images": ["hand_left_image.jpg", "hand_right_image.jpg"]
+}

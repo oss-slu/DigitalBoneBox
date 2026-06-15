@@ -1,0 +1,14 @@
+{
+    "name": "Radius",
+    "id": "radius",
+    "description": [
+        "Bone on lateral side of forearm",
+        "Articulates with ulna at proximal and distal ends",
+        "Articulates with the",
+        "capitulum",
+        "of the humerus at proximal end.",
+        "Articulates with the carpal bones of the hand at the distal end.",
+        "During pronation, the radius will pivot on its long axis and cross the ulna."
+    ],
+    "images": ["radius_image_left_image.jpg", "radius_image_right_image.jpg"]
+}

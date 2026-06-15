@@ -1,0 +1,9 @@
+{
+    "name": "Lunate",
+    "id": "lunate",
+    "description": [
+        "A semilunar-shaped bone located between the scaphoid and triquetrum bones in the proximal row.",
+        "Distally, it articulates with the capitate and hamate."
+    ],
+    "images": ["hand_left_image.jpg", "hand_right_image.jpg"]
+}

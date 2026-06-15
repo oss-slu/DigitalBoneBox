@@ -1,0 +1,12 @@
+{
+  "name": "Ulna",
+  "id": "ulna",
+  "subBones": [
+    "ulna_olecranon_process",
+    "ulna_trochlear_notch",
+    "ulna_coronoid_process",
+    "ulna_ulnar_tuberosity",
+    "ulna_radial_notch",
+    "ulna_styloid_process"
+  ]
+}

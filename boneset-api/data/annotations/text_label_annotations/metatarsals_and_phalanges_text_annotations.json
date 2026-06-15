@@ -1,0 +1,627 @@
+{
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "I",
+      "text_content": "I",
+      "text_box": {
+        "x": 3512544.0,
+        "y": 6031982.0,
+        "width": 204845.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "23"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [],
+      "target_regions": []
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "II",
+      "text_content": "II",
+      "text_box": {
+        "x": 2667000.0,
+        "y": 5867400.0,
+        "width": 204845.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "25"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [],
+      "target_regions": []
+    },
+    {
+      "annotation_id": "annot_3",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "III",
+      "text_content": "III",
+      "text_box": {
+        "x": 2126282.0,
+        "y": 5547245.0,
+        "width": 204845.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "31"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [],
+      "target_regions": []
+    },
+    {
+      "annotation_id": "annot_4",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "IV",
+      "text_content": "IV",
+      "text_box": {
+        "x": 1828800.0,
+        "y": 5331801.0,
+        "width": 204845.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "32"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [],
+      "target_regions": []
+    },
+    {
+      "annotation_id": "annot_5",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "V",
+      "text_content": "V",
+      "text_box": {
+        "x": 1524000.0,
+        "y": 4947246.0,
+        "width": 204845.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "33"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [],
+      "target_regions": []
+    },
+    {
+      "annotation_id": "annot_6",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Base",
+      "text_content": "Base",
+      "text_box": {
+        "x": 4028100.0,
+        "y": 3569000.0,
+        "width": 257002.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "34"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_1",
+          "kind": "connector",
+          "start_point": {
+            "x": 3581400.0,
+            "y": 3676722.0
+          },
+          "end_point": {
+            "x": 4028100.0,
+            "y": 3676722.0
+          },
+          "style": {
+            "width": 12700,
+            "arrow_head": "none"
+          },
+          "shape_id": "22",
+          "bbox": {
+            "x": 3581400.0,
+            "y": 3676722.0,
+            "width": 446700.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 3584000.0,
+          "y": 3680000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_7",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Head",
+      "text_content": "Head",
+      "text_box": {
+        "x": 4028100.0,
+        "y": 4568127.0,
+        "width": 257002.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "35"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_3",
+          "kind": "connector",
+          "start_point": {
+            "x": 3597794.0,
+            "y": 4675849.0
+          },
+          "end_point": {
+            "x": 4028100.0,
+            "y": 4675849.0
+          },
+          "style": {
+            "width": 12700,
+            "arrow_head": "none"
+          },
+          "shape_id": "41",
+          "bbox": {
+            "x": 3597794.0,
+            "y": 4675849.0,
+            "width": 430306.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 3600000.0,
+          "y": 4672000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_8",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Shaft",
+      "text_content": "Shaft",
+      "text_box": {
+        "x": 3962398.0,
+        "y": 4131290.0,
+        "width": 333204.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "36"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_2",
+          "kind": "connector",
+          "start_point": {
+            "x": 3581400.0,
+            "y": 4239012.0
+          },
+          "end_point": {
+            "x": 3962398.0,
+            "y": 4239012.0
+          },
+          "style": {
+            "width": 12700,
+            "arrow_head": "none"
+          },
+          "shape_id": "39",
+          "bbox": {
+            "x": 3581400.0,
+            "y": 4239012.0,
+            "width": 380998.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 3584000.0,
+          "y": 4240000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_9",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "1st proximal phalanx",
+      "text_content": "1st proximal phalanx",
+      "text_box": {
+        "x": 4097007.0,
+        "y": 5221075.0,
+        "width": 990600.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "60"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_4",
+          "kind": "connector",
+          "start_point": {
+            "x": 3741895.0,
+            "y": 5328797.0
+          },
+          "end_point": {
+            "x": 4097007.0,
+            "y": 5328797.0
+          },
+          "style": {
+            "width": 12700,
+            "arrow_head": "none"
+          },
+          "shape_id": "61",
+          "bbox": {
+            "x": 3741895.0,
+            "y": 5328797.0,
+            "width": 355112.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 3744000.0,
+          "y": 5328000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_10",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "1st distal phalanx",
+      "text_content": "1st distal phalanx",
+      "text_box": {
+        "x": 4028100.0,
+        "y": 5687437.0,
+        "width": 806401.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "64"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_5",
+          "kind": "connector",
+          "start_point": {
+            "x": 3672988.0,
+            "y": 5795159.0
+          },
+          "end_point": {
+            "x": 4028100.0,
+            "y": 5795159.0
+          },
+          "style": {
+            "width": 12700,
+            "arrow_head": "none"
+          },
+          "shape_id": "65",
+          "bbox": {
+            "x": 3672988.0,
+            "y": 5795159.0,
+            "width": 355112.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 3672000.0,
+          "y": 5792000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_11",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "5th  proximal phalanx",
+      "text_content": "5th  proximal phalanx",
+      "text_box": {
+        "x": 509475.0,
+        "y": 4250755.0,
+        "width": 990600.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "68"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_6",
+          "kind": "connector",
+          "start_point": {
+            "x": 1500075.0,
+            "y": 4358477.0
+          },
+          "end_point": {
+            "x": 1828800.0,
+            "y": 4466199.0
+          },
+          "style": {
+            "width": 12700,
+            "arrow_head": "none"
+          },
+          "shape_id": "71",
+          "bbox": {
+            "x": 1500075.0,
+            "y": 4358477.0,
+            "width": 328725.0,
+            "height": 107722.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 1832000.0,
+          "y": 4464000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_12",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "5th distal phalanx",
+      "text_content": "5th distal phalanx",
+      "text_box": {
+        "x": 414901.0,
+        "y": 4783571.0,
+        "width": 806401.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "69"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_8",
+          "kind": "connector",
+          "start_point": {
+            "x": 1221302.0,
+            "y": 4891293.0
+          },
+          "end_point": {
+            "x": 1673099.0,
+            "y": 4891293.0
+          },
+          "style": {
+            "width": 12700,
+            "arrow_head": "none"
+          },
+          "shape_id": "73",
+          "bbox": {
+            "x": 1221302.0,
+            "y": 4891293.0,
+            "width": 451797.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 1672000.0,
+          "y": 4888000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_13",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "5th middle phalanx",
+      "text_content": "5th middle phalanx",
+      "text_box": {
+        "x": 414901.0,
+        "y": 4569936.0,
+        "width": 883109.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "70"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_7",
+          "kind": "connector",
+          "start_point": {
+            "x": 1298010.0,
+            "y": 4677658.0
+          },
+          "end_point": {
+            "x": 1673099.0,
+            "y": 4744383.0
+          },
+          "style": {
+            "width": 12700,
+            "arrow_head": "none"
+          },
+          "shape_id": "72",
+          "bbox": {
+            "x": 1298010.0,
+            "y": 4677658.0,
+            "width": 375089.0,
+            "height": 66725.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 1672000.0,
+          "y": 4744000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_14",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Base",
+      "text_content": "Base",
+      "text_box": {
+        "x": 3081901.0,
+        "y": 4891293.0,
+        "width": 257002.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "37"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_9",
+          "kind": "connector",
+          "start_point": {
+            "x": 3338903.0,
+            "y": 4999015.0
+          },
+          "end_point": {
+            "x": 3512544.0,
+            "y": 4999015.0
+          },
+          "style": {
+            "width": 12700,
+            "arrow_head": "none"
+          },
+          "shape_id": "42",
+          "bbox": {
+            "x": 3338903.0,
+            "y": 4999015.0,
+            "width": 173641.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 3512000.0,
+          "y": 5000000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_15",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Shaft",
+      "text_content": "Shaft",
+      "text_box": {
+        "x": 3043213.0,
+        "y": 5127692.0,
+        "width": 333204.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "38"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_11",
+          "kind": "connector",
+          "start_point": {
+            "x": 3376417.0,
+            "y": 5235414.0
+          },
+          "end_point": {
+            "x": 3581400.0,
+            "y": 5235414.0
+          },
+          "style": {
+            "width": 12700,
+            "arrow_head": "none"
+          },
+          "shape_id": "44",
+          "bbox": {
+            "x": 3376417.0,
+            "y": 5235414.0,
+            "width": 204983.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 3584000.0,
+          "y": 5232000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_16",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Head",
+      "text_content": "Head",
+      "text_box": {
+        "x": 3081901.0,
+        "y": 5363458.0,
+        "width": 257002.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "40"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_10",
+          "kind": "connector",
+          "start_point": {
+            "x": 3338903.0,
+            "y": 5471180.0
+          },
+          "end_point": {
+            "x": 3512544.0,
+            "y": 5471180.0
+          },
+          "style": {
+            "width": 12700,
+            "arrow_head": "none"
+          },
+          "shape_id": "43",
+          "bbox": {
+            "x": 3338903.0,
+            "y": 5471180.0,
+            "width": 173641.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 3512000.0,
+          "y": 5472000.0
+        }
+      ]
+    }
+  ],
+  "total_text_annotations": 16,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

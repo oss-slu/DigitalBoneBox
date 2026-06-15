@@ -1,0 +1,14 @@
+{
+    "name": "Calcaneus",
+    "id": "calcaneus",
+    "description": [
+        "Articulates with talus, navicular, and cuboid.",
+        "Calcaneal (Achilles) tendon and  the plantaris muscle attach to the posterior surface.",
+        "Abductor hallucis, flexor digitorum brevis, and the  plantar aponeurosis attach to medial process.",
+        "Abductor digiti minimi muscle attaches to lateral and medial processes."
+    ],
+    "images": [
+        "foot_image.png",
+        "foot_image2.png"
+    ]
+}

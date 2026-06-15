@@ -1,0 +1,9 @@
+{
+    "name": "Pisiform",
+    "id": "pisiform",
+    "description": [
+        "A small bone in the proximal row shaped like a pea.",
+        "Acts as a sesamoid bone for the tendon of the flexor carpi ulnaris muscle."
+    ],
+    "images": ["hand_left_image.jpg", "hand_right_image.jpg"]
+}

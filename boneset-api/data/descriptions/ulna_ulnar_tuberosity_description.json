@@ -1,0 +1,9 @@
+{
+    "name": "Ulnar tuberosity",
+    "id": "ulnar_tuberosity",
+    "description": [
+        "A rough protrusion on anterior surface just distal to the coronoid process.",
+        "Provides the insertion for the brachialis muscle."
+    ],
+    "images": ["ulna_olecranon_process_left_image.jpg"]
+}

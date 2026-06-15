@@ -1,0 +1,19 @@
+{
+    "name": "Phalanges",
+    "id": "hand_phalanges",
+    "description": [
+        "text",
+        "Labels",
+        "I",
+        "Head",
+        "Base",
+        "Shaft",
+        "Phalanges",
+        "There are 14 phalanges.",
+        "Each finger has a proximal, middle, and distal phalanx except",
+        "the thumb.",
+        "The thumb only has a proximal and distal phalanx.",
+        "Each phalanx has a base, shaft, and head from proximal to distal."
+    ],
+    "images": ["hand_left_image.jpg", "hand_right_image.jpg"]
+}

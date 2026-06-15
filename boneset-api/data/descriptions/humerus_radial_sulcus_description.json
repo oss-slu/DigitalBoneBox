@@ -1,0 +1,13 @@
+{
+    "name": "Radial sulcus",
+    "id": "humerus_radial_sulcus",
+    "description": [
+        "A spiraled groove on the posterior surface of the",
+        "shaft",
+        ".",
+        "The radial nerve and the deep brachial vessels travel in this depression.",
+        "Fractures of the shaft can damage these structures."
+    
+    ],
+    "images": ["humerus_radial_sulcus_image.jpg"]
+}

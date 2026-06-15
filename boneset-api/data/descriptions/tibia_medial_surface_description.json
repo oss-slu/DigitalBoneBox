@@ -1,0 +1,14 @@
+{
+    "name": "Medial surface",
+    "id": "tibia_medial_surface",
+    "description": [
+        "Lies between anterior and medial borders",
+        "Almost entirely subcutaneous",
+        "Anterior part of medial collateral ligament attaches to proximal part near medial border",
+        "Tendons for sartorius, gracilis, and semitendinosus muscles attach just anterior to medial collateral ligament"
+    ],
+    "images": [
+        "tibia_image.png",
+        "tibia_image2.png"
+    ]
+}

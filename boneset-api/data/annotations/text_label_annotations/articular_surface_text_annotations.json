@@ -1,0 +1,153 @@
+{
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Lateral facet",
+      "text_content": "Lateral facet",
+      "text_box": {
+        "x": 7467600.0,
+        "y": 3406258.0,
+        "width": 609600.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "21"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_1",
+          "kind": "connector",
+          "start_point": {
+            "x": 6368612.0,
+            "y": 3513980.0
+          },
+          "end_point": {
+            "x": 7467601.0,
+            "y": 3513980.0
+          },
+          "style": {
+            "width": 0,
+            "arrow_head": "none"
+          },
+          "shape_id": "22",
+          "bbox": {
+            "x": 6368612.0,
+            "y": 3513980.0,
+            "width": 1098989.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 6368000.0,
+          "y": 3512000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Medial facet",
+      "text_content": "Medial facet",
+      "text_box": {
+        "x": 3276600.0,
+        "y": 3403774.0,
+        "width": 609600.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "31"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_2",
+          "kind": "connector",
+          "start_point": {
+            "x": 3886200.0,
+            "y": 3511496.0
+          },
+          "end_point": {
+            "x": 4572000.0,
+            "y": 3511496.0
+          },
+          "style": {
+            "width": 0,
+            "arrow_head": "none"
+          },
+          "shape_id": "33",
+          "bbox": {
+            "x": 3886200.0,
+            "y": 3511496.0,
+            "width": 685800.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4576000.0,
+          "y": 3512000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_3",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Ridge",
+      "text_content": "Ridge",
+      "text_box": {
+        "x": 5105401.0,
+        "y": 1934112.0,
+        "width": 396821.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "36"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_3",
+          "kind": "connector",
+          "start_point": {
+            "x": 5303811.0,
+            "y": 2149556.0
+          },
+          "end_point": {
+            "x": 5303811.0,
+            "y": 2971800.0
+          },
+          "style": {
+            "width": 0,
+            "arrow_head": "none"
+          },
+          "shape_id": "37",
+          "bbox": {
+            "x": 5303811.0,
+            "y": 2149556.0,
+            "width": 0.0,
+            "height": 822244.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 5304000.0,
+          "y": 2968000.0
+        }
+      ]
+    }
+  ],
+  "total_text_annotations": 3,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

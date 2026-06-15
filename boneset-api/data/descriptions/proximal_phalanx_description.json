@@ -1,0 +1,11 @@
+{
+    "name": "Proximal phalanx",
+    "id": "proximal_phalanx",
+    "description": [
+        "No muscle attachments"
+    ],
+    "images": [
+        "foot_image.png",
+        "foot_image2.png"
+    ]
+}

@@ -1,0 +1,12 @@
+{
+    "name": "Navicular",
+    "id": "navicular",
+    "description": [
+        "Articulates with talus proximally, cuneiform bones distally, and cuboid laterally",
+        "Medial surface projects proximally as a prominent tuberosity \u2013 main attachment for tibialis posterior muscle"
+    ],
+    "images": [
+        "foot_image.png",
+        "foot_image2.png"
+    ]
+}
