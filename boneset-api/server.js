@@ -12,6 +12,8 @@ const PORT = process.env.PORT || 8000;
 app.use(cors());
 app.use(express.json());
 
+const API_BASE_URL = `http://127.0.0.1:${PORT}`;
+
 const LOCAL_DATA_DIR = path.join(__dirname, "data");
 const BONESET_DIR = path.join(LOCAL_DATA_DIR, "boneset");
 const BONES_DIR = path.join(LOCAL_DATA_DIR, "bones");
@@ -187,6 +189,7 @@ app.get("/combined-data", async (_req, res) => {
             const bonesetResult = await readJSON(bonesetPath);
             const bonesetData = bonesetResult.data;
             if (!bonesetData) {
+                console.error(`Failed to load boneset data from ${bonesetName}`);
                 return res.status(bonesetResult.status).json({ error: "Failed to load boneset data" });
             }
 
@@ -201,6 +204,9 @@ app.get("/combined-data", async (_req, res) => {
                     (boneData.subBones || []).forEach((subBoneId) => {
                         subbones.push({ id: subBoneId, name: subBoneId.replace(/_/g, " "), bone: boneData.id });
                     });
+                } else {
+                    console.error(`Failed to load bone data from ${boneId}`);
+                    return res.status(boneResult.status).json({error: "Failed to load bone data"});
                 }
             }
         }
@@ -294,7 +300,7 @@ app.get("/api/bone-data/", async (req, res) => {
     const imagesArray = descriptionData.images || [];
     const images = imagesArray.map((filename) => ({
         filename,
-        url: `/api/images/${encodeURIComponent(filename)}`,
+        url: `${API_BASE_URL}/api/images/${encodeURIComponent(filename)}`,
     }));
 
     res.json({
