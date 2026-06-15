@@ -62,14 +62,26 @@ function isValidBoneId(boneId) {
 }
 
 async function readJSON(filePath) {
+    const resolvedPath = path.resolve(filePath);
+    const relativeToDataDir = path.relative(LOCAL_DATA_DIR, resolvedPath);
+    const isWithinDataDir =
+        relativeToDataDir &&
+        !relativeToDataDir.startsWith("..") &&
+        !path.isAbsolute(relativeToDataDir);
+
+    if (!isWithinDataDir) {
+        console.error(`Blocked file access outside data directory: ${filePath}`);
+        return { data: null, status: 403 };
+    }
+
     try {
-        const raw = await fs.readFile(filePath, "utf8");
+        const raw = await fs.readFile(resolvedPath, "utf8");
         return { data: JSON.parse(raw), status: 200 };
     } catch (error) {
         if (error.code === "ENOENT") {
             return { data: null, status: 404 };
         }
-        console.error(`Failed to read JSON ${filePath}:`, error.message);
+        console.error(`Failed to read JSON ${resolvedPath}:`, error.message);
         return { data: null, status: 500 };
     }
 }
