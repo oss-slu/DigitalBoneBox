@@ -54,7 +54,8 @@ function isValidBoneId(boneId) {
     }
 
     // Only allow alphanumeric characters and underscores
-    // This prevents path traversal and URL injection attacks    const validBoneIdPattern = /^[a-z0-9_]+$/i;
+    // This prevents path traversal and URL injection attacks
+    const validBoneIdPattern = /^[a-z0-9_]+$/i;
     return validBoneIdPattern.test(boneId) && boneId.length > 0 && boneId.length <= 100;
 }
 
@@ -286,7 +287,7 @@ app.get("/api/bone-data/", async (req, res) => {
     const descriptionPath = path.join(DESCRIPTIONS_DIR, `${boneId}_description.json`);
     const descriptionResult = await readJSON(descriptionPath);
     if (!descriptionResult.data) {
-        return res.status(descriptionResult.status === 404 ? 404 : 500).json({ error: "Failed to fetch bone data" });
+        return res.status(descriptionResult.status).json({error: "Failed to fetch bone data"});
     }
 
     const descriptionData = descriptionResult.data;
@@ -381,7 +382,7 @@ app.get("/api/annotations/:boneId", searchLimiter, async (req, res) => {
         normalized_geometry: normalizedGeometry,
     };
 
-    console.log(`SUCCESS: Serving annotation data for ${boneId} from local data combined with template (Coordinates Normalized).`);
+    console.log(`SUCCESS: Serving annotation data for ${boneId} combined with template (Coordinates Normalized).`);
     return res.json(combinedData);
 });
 
