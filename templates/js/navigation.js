@@ -94,7 +94,7 @@ export function setBoneAndSubbones(bone, boneSubbones) {
 }
 
 /**
- * Decrements the current subbone index (moves to the previous subbone), if possible.
+ * Decrements the current subbone index (moves to the previous subbone), if greater than 0..
  * @returns {void}
  */
 function prevSubbone() {
@@ -104,7 +104,7 @@ function prevSubbone() {
 }
 
 /**
- * Increments the current subbone index (moves to the next subbone), if possible.
+ * Increments the current subbone index (moves to the next subbone), if less than the array of subbones.
  * @returns {void}
  */
 function nextSubbone() {

@@ -42,7 +42,7 @@ function clearCaptionContainer() {
 
 /**
  * Renders the empty-state placeholder message inside the image container
- * and clears all annotations, colored regions, and captions.
+ * and clears all text annotations, colored regions, and captions.
  * @returns {void}
  */
 export function showPlaceholder() {
@@ -67,7 +67,7 @@ export function showPlaceholder() {
 }
 
 /**
- * Clears all images, annotations, colored regions, and captions from the image container.
+ * Clears all images, text annotations, colored regions, and captions from the image container.
  * @returns {void}
  */
 export function clearImages() {
@@ -93,7 +93,8 @@ export function clearImages() {
  * Renders one or more bone images into the image container, applying the appropriate
  * layout (single, two-up, or grid) based on the number of images provided.
  * Also loads colored region overlays and text annotation overlays if applicable.
- * @param {Array<{url?: string, src?: string, alt?: string, filename?: string}>} images - Array of image objects to display.
+ * @param {Array<{url?: string, src?: string, alt?: string, filename?: string}>} images - Array of image objects to
+ *   display.
  * @param {Object} [options={}] - Optional display configuration:
  *   @param {string} [options.annotationsUrl] - API URL for text annotation JSON.
  *   @param {string} [options.boneId] - Bone ID used for colored region overlays.
@@ -250,7 +251,8 @@ function applyRotation(imgEl, { rot_deg = 0, flipH = false } = {}) {
 /**
  * Renders two bone images side by side, each with its own colored region overlay.
  * Appends a two-column caption bar beneath the images if captions are available.
- * @param {Array<{url?: string, src?: string, alt?: string, filename?: string}>} images - Array of exactly two image objects.
+ * @param {Array<{url?: string, src?: string, alt?: string, filename?: string}>} images - Array of exactly two image
+ *   objects.
  * @param {HTMLElement} container - The image container element.
  * @param {Object} [options={}] - Options forwarded from `displayBoneImages`.
  * @returns {void}

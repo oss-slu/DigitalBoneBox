@@ -2,7 +2,7 @@
 const GITHUB_RAW_URL = "https://raw.githubusercontent.com/oss-slu/DigitalBonesBox/data/data/descriptions/";
 
 /**
- * Fetches the description JSON for the given bone/subbone ID from GitHub and
+ * Fetches the description JSON for the given bone/subbone ID and
  * renders it as a list of bullet points inside the `#description-Container` element.
  * Shows an error message in the container if the fetch fails.
  * @param {string} id - The bone or subbone ID (e.g. `"ilium"`, `"iliac_crest"`),

@@ -46,8 +46,7 @@ const API_BASE = "http://127.0.0.1:8000";
 
 /** Helper: fetch images for a bone/sub-bone and render them
  * @param {string} boneId - The bone or subbone ID to load images for.
- * @param {Object} [options={}] - Options forwarded to `displayBoneImages`, e.g.
- *   `{ annotationsUrl: string, boneId: string, isBonesetSelection: boolean }`.
+ * @param {Object} [options={}] - Options forwarded to `displayBoneImages`.
  * @returns {Promise<void>}
  */
 async function loadBoneImages(boneId, options = {}) {
