@@ -127,12 +127,14 @@ async function initializeSearchCache() {
     }
 }
 
+// Search function with ranking
 function searchItems(query, limit = 20) {
     if (!searchCache) return [];
 
     const q = query.toLowerCase().trim();
     const results = [];
 
+    // First pass: prefix matches (higher priority)
     for (const item of searchCache) {
         if (!item.name) continue;
 
@@ -141,6 +143,7 @@ function searchItems(query, limit = 20) {
         }
     }
 
+    // Second pass: substring matches (lower priority)
     for (const item of searchCache) {
         if (!item.name) continue;
 
@@ -149,6 +152,7 @@ function searchItems(query, limit = 20) {
         }
     }
 
+    // Sort by priority, then by name
     results.sort((a, b) => {
         if (a.priority !== b.priority) return a.priority - b.priority;
         return a.name.localeCompare(b.name);
@@ -304,7 +308,10 @@ app.get("/api/annotations/:boneId", searchLimiter, async (req, res) => {
         return res.status(400).json({ error: "Invalid boneId format." });
     }
 
+    // Define the view/rotation to select from the template geometry
+    // This assumes all current bone views use the 'right' view coordinates for scaling.
     const geometryView = "right";
+
     const annotationFilename = `${boneId}_text_annotations.json`;
     const annotationPath = path.join(TEXT_LABEL_ANNOTATIONS_DIR, annotationFilename);
     const templateFilename = "template_bony_pelvis.json";
