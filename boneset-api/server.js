@@ -52,7 +52,9 @@ function isValidBoneId(boneId) {
     if (typeof boneId !== "string") {
         return false;
     }
-    const validBoneIdPattern = /^[a-z0-9_]+$/i;
+
+    // Only allow alphanumeric characters and underscores
+    // This prevents path traversal and URL injection attacks    const validBoneIdPattern = /^[a-z0-9_]+$/i;
     return validBoneIdPattern.test(boneId) && boneId.length > 0 && boneId.length <= 100;
 }
 
@@ -83,6 +85,7 @@ async function initializeSearchCache() {
                 continue;
             }
 
+            // Add boneset to search data
             searchData.push({
                 id: bonesetData.id,
                 name: bonesetData.name,
@@ -92,11 +95,13 @@ async function initializeSearchCache() {
                 subbone: null,
             });
 
+            // Load all bones and sub-bones
             for (const boneId of bonesetData.bones || []) {
                 const bonePath = path.join(BONES_DIR, `${boneId}.json`);
                 const boneResult = await readJSON(bonePath);
                 const boneData = boneResult.data;
                 if (boneData) {
+                    // Add bone to search data
                     searchData.push({
                         id: boneData.id,
                         name: boneData.name,
@@ -106,6 +111,7 @@ async function initializeSearchCache() {
                         subbone: null,
                     });
 
+                    // Add sub-bones to search data
                     for (const subBoneId of boneData.subBones || []) {
                         searchData.push({
                             id: subBoneId,
@@ -322,35 +328,37 @@ app.get("/api/annotations/:boneId", searchLimiter, async (req, res) => {
         return res.status(annotationResult.status).json({ error: `Failed to load annotation data (HTTP ${annotationResult.status})` });
     }
 
+    // Fetch the rotation/scaling template data from GitHub
     const templateResult = await readJSON(templatePath);
     if (!templateResult.data) {
         return res.status(templateResult.status).json({ error: `Failed to load template data (HTTP ${templateResult.status})` });
     }
-
-    const annotationData = annotationResult.data;
-    const templateData = templateResult.data;
 
     // Define Full Slide Dimensions for Normalization. We normalize the text annotation dimentions to the slide
     //  widths so that the values used by the frontend are decoupled from the slide dimensions.
     const slideWidth = 9144000;
     const slideHeight = 5143500;
 
-    let normalizedGeometry = templateData.normalized_geometry
-        ? templateData.normalized_geometry[geometryView]
-        : { normX: 0, normY: 0, normW: 1, normH: 1 };
+    // Combine required data for the frontend
+    let normalizedGeometry = templateResult.data.normalized_geometry
+      ? templateResult.data.normalized_geometry[geometryView]
+      : {normX: 0, normY: 0, normW: 1, normH: 1};
 
     if (boneId === "bony_pelvis" && normalizedGeometry) {
         normalizedGeometry.normX = normalizedGeometry.normX + 0.001;
         console.log("ALIGNMENT WORKAROUND APPLIED: Bony Pelvis normX shifted by +0.001");
     }
 
-    const normalizedAnnotations = (annotationData.text_annotations || []).map((annotation) => {
+    // Normalize Text Annotation Coordinates
+    const normalizedAnnotations = (annotationResult.data.text_annotations || []).map((annotation) => {
         if (annotation.text_box && slideWidth && slideHeight) {
+            // Normalize all coordinate values for the bounding box
             annotation.text_box.x = annotation.text_box.x / slideWidth;
             annotation.text_box.y = annotation.text_box.y / slideHeight;
             annotation.text_box.width = annotation.text_box.width / slideWidth;
             annotation.text_box.height = annotation.text_box.height / slideHeight;
 
+            // Normalize pointer lines (start and end points)
             (annotation.pointer_lines || []).forEach((line) => {
                 if (line.start_point) {
                     line.start_point.x = line.start_point.x / slideWidth;
@@ -361,6 +369,9 @@ app.get("/api/annotations/:boneId", searchLimiter, async (req, res) => {
                     line.end_point.y = line.end_point.y / slideHeight;
                 }
             });
+
+            // Note: Other coordinates like target_regions might also need normalization
+            // depending on your frontend implementation, but we start with text_box and pointer_lines.
         }
         return annotation;
     });
