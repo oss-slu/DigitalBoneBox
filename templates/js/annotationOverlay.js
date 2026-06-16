@@ -166,18 +166,6 @@ export function drawAnnotations(container, annotationsJson) {
   stage.__lastJson = annotationsJson;
 }
 
-/** Load JSON from a URL and draw it. Returns a promise. */
-export async function loadAndDrawAnnotations(container, jsonUrl) {
-  if (!container || !jsonUrl) return;
-  const res = await fetch(jsonUrl);
-  if (!res.ok) return;
-  const data = await res.json();
-
-  // The backend provides data in the structure expected by drawAnnotations
-  drawAnnotations(container, data);
-  attachAutoscale(container); // keep aligned on resize
-}
-
 /** Re-draw on container resize using the last JSON used. */
 export function attachAutoscale(container) {
   const stage = ensureStage(container);
