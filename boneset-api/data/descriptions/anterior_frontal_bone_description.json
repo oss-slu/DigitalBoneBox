@@ -1,0 +1,19 @@
+{
+  "name": "Frontal bone",
+  "id": "frontal_bone",
+  "description": [
+    "Glabella",
+    "A slight depression that lies between the two",
+    "superciliary arches",
+    "It can be more pronounced in males.",
+    "Supraorbital foramen (notch)",
+    "An opening at the superior rim of the orbit that transmits the supraorbital nerve and vessels.",
+    "Nasion",
+    "Lies at the junction where the frontal bone meets the nasal bones.",
+    "Zygomatic process",
+    "The lateral part of the bone that extends inferiorly to join with the zygomatic bone.",
+    "Forms part of the lateral border of the orbit.",
+    "Labels"
+  ],
+  "images": ["anterior_frontal_image.jpg"]
+}

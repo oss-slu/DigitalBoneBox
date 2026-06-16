@@ -1,0 +1,10 @@
+{
+    "name": "Upper limb",
+    "id": "upper_limb",
+    "bones": [
+        "humerus",
+        "ulna",
+        "radius",
+        "hand"
+    ]
+}

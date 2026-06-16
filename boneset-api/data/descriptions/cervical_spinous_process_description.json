@@ -1,0 +1,8 @@
+{
+    "name": "Spinous process",
+    "id": "cervical_spinous_process",
+    "description": [
+        "The posterior projection that is usually short and bifid."
+    ],
+    "images": ["cervical_(superior_aspect)_image.png", "cervical_(inferior_aspect)_image.png", "cervical_(right_lateral_aspect)_image.png"]
+}

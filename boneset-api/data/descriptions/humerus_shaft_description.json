@@ -1,0 +1,15 @@
+{
+    "name": "Humerus Shaft",
+    "id": "humerus_shaft",
+    "description": [
+        "Mostly cylindrical in the proximal half but is triangular in cross section in the distal portion.",
+        "Contains",
+        "Deltoid tuberosity",
+        "and",
+        "Radial sulcus",
+        ".",
+        "The posterior surface provides origins of the lateral and medial heads of triceps brachii muscle.",
+        "The anterior surface provides insertion of the coracobrachialis muscle as well as the origin of the brachialis and brachioradialis muscles."
+    ],
+    "images": ["humerus_left_image.jpg","humerus_right_image.jpg"]
+}

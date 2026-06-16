@@ -1,0 +1,14 @@
+{
+    "name": "Patella",
+    "id": "patella",
+    "description": [
+        "Largest sesamoid bone",
+        "Triangular shaped",
+        "The apex is pointed inferiorly and is attached to the patellar ligament",
+        "The base is superior and is attached to the quadriceps femoris tendon"
+    ],
+    "images": [
+        "patella_image.png",
+        "patella_image2.png"
+    ]
+}

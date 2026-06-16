@@ -1,0 +1,27 @@
+{
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "LV3: posterior aspect",
+      "text_content": "LV3: posterior aspect",
+      "text_box": {
+        "x": 5163015.0,
+        "y": 1422034.0,
+        "width": 1103971.0,
+        "height": 230832.0,
+        "rotation_emu": 0.0,
+        "shape_id": "1426"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [],
+      "target_regions": []
+    }
+  ],
+  "total_text_annotations": 1,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

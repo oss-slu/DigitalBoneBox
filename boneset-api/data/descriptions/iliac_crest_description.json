@@ -1,0 +1,12 @@
+{
+    "name": "Iliac Crest",
+    "id": "iliac_crest",
+    "description": [
+        "Forms the superior border of the ilium.",
+        "Reaches from the anterior superior to the posterior superior iliac spines.",
+        "The tensor fascia lata, abdominal external oblique, and latissumus dorsi muscles attach to the external lip.",
+        "The iliac fascia, internal oblique, transversus abdominus, quadratus lumborum, sacrospinalis, and lilacus muscles attach to the inner lip.",
+        "The top of the iliac crest is a surface anatomy landmark for marking the level of the fourth lumbar vertebral body (LV4) and is an important reference for performing lumbar puncture."
+    ],
+    "images": ["iliac_crest_image1.jpg", "iliac_crest_image2.jpg"]
+}

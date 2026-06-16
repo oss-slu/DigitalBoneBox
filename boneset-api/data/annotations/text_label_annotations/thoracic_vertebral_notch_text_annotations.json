@@ -1,0 +1,243 @@
+{
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "TV5: lateral aspect",
+      "text_content": "TV5: lateral aspect",
+      "text_box": {
+        "x": 5163015.0,
+        "y": 1421986.0,
+        "width": 1103971.0,
+        "height": 230832.0,
+        "rotation_emu": 0.0,
+        "shape_id": "1143"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [],
+      "target_regions": []
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Superior vertebral notch",
+      "text_content": "Superior vertebral notch",
+      "text_box": {
+        "x": 6629400.0,
+        "y": 2272414.0,
+        "width": 1143000.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "1149"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_1",
+          "kind": "connector",
+          "start_point": {
+            "x": 6629400.0,
+            "y": 2380136.0
+          },
+          "end_point": {
+            "x": 6267000.0,
+            "y": 2380136.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1151",
+          "bbox": {
+            "x": 6267000.0,
+            "y": 2380136.0,
+            "width": 362400.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 6264000.0,
+          "y": 2384000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_3",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Inferior vertebral notch",
+      "text_content": "Inferior vertebral notch",
+      "text_box": {
+        "x": 2816343.0,
+        "y": 3124200.0,
+        "width": 1104900.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "1150"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_3",
+          "kind": "connector",
+          "start_point": {
+            "x": 4477143.0,
+            "y": 3231922.0
+          },
+          "end_point": {
+            "x": 3921243.0,
+            "y": 3231922.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1153",
+          "bbox": {
+            "x": 3921243.0,
+            "y": 3231922.0,
+            "width": 555900.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        },
+        {
+          "line_id": "line_4",
+          "kind": "connector",
+          "start_point": {
+            "x": 5289419.0,
+            "y": 3730806.0
+          },
+          "end_point": {
+            "x": 4477218.0,
+            "y": 3231923.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1154",
+          "bbox": {
+            "x": 4477218.0,
+            "y": 3231923.0,
+            "width": 812201.0,
+            "height": 498883.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 5288000.0,
+          "y": 3728000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_4",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Outline for intervertebral foramen",
+      "text_content": "Outline for intervertebral foramen",
+      "text_box": {
+        "x": 6812928.0,
+        "y": 2611559.0,
+        "width": 1524000.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "1155"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_5",
+          "kind": "connector",
+          "start_point": {
+            "x": 6812928.0,
+            "y": 2719281.0
+          },
+          "end_point": {
+            "x": 6553128.0,
+            "y": 2719281.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1156",
+          "bbox": {
+            "x": 6553128.0,
+            "y": 2719281.0,
+            "width": 259800.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 6552000.0,
+          "y": 2720000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_5",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Outline for TV6",
+      "text_content": "Outline for TV6",
+      "text_box": {
+        "x": 2816344.0,
+        "y": 4258571.0,
+        "width": 765057.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "1158"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_7",
+          "kind": "connector",
+          "start_point": {
+            "x": 4037101.0,
+            "y": 4366293.0
+          },
+          "end_point": {
+            "x": 3581401.0,
+            "y": 4366293.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1159",
+          "bbox": {
+            "x": 3581401.0,
+            "y": 4366293.0,
+            "width": 455700.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4040000.0,
+          "y": 4368000.0
+        }
+      ]
+    }
+  ],
+  "total_text_annotations": 5,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

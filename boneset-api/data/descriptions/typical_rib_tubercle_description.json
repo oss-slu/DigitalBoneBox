@@ -1,0 +1,11 @@
+{
+  "slide": 21,
+  "name": "Tubercle",
+  "id": "tubercle",
+  "description": [
+    "The tubercle of each typical rib is a knob like structure on the posterior surface where the neck joins the body.",
+    "It articulates with the transverse process of the corresponding vertebra.",
+    "Ribs 11 and 12 have no tubercles"
+  ],
+  "images": ["Typical_Rib_Left_Image.jpg", "Typical_Rib_Right_Image.jpg"]
+}

@@ -1,0 +1,407 @@
+{
+  "total_slides": 41,
+  "slides_with_annotations": [
+    10,
+    11,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    2,
+    20,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    3,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    48,
+    49,
+    5,
+    50,
+    51,
+    52,
+    53,
+    6,
+    7,
+    8,
+    9
+  ],
+  "extraction_summary": {
+    "10": {
+      "regions_found": 4,
+      "anatomical_names": [
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen"
+      ]
+    },
+    "11": {
+      "regions_found": 4,
+      "anatomical_names": [
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen"
+      ]
+    },
+    "14": {
+      "regions_found": 3,
+      "anatomical_names": [
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen"
+      ]
+    },
+    "15": {
+      "regions_found": 5,
+      "anatomical_names": [
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen"
+      ]
+    },
+    "16": {
+      "regions_found": 3,
+      "anatomical_names": [
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen"
+      ]
+    },
+    "17": {
+      "regions_found": 4,
+      "anatomical_names": [
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen"
+      ]
+    },
+    "18": {
+      "regions_found": 5,
+      "anatomical_names": [
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen"
+      ]
+    },
+    "19": {
+      "regions_found": 3,
+      "anatomical_names": [
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen"
+      ]
+    },
+    "2": {
+      "regions_found": 4,
+      "anatomical_names": [
+        "Ischium",
+        "Pubis_and_Obturator_foramen",
+        "Ischium",
+        "Pubis_and_Obturator_foramen"
+      ]
+    },
+    "20": {
+      "regions_found": 6,
+      "anatomical_names": [
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen"
+      ]
+    },
+    "23": {
+      "regions_found": 4,
+      "anatomical_names": [
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen"
+      ]
+    },
+    "24": {
+      "regions_found": 4,
+      "anatomical_names": [
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen"
+      ]
+    },
+    "25": {
+      "regions_found": 5,
+      "anatomical_names": [
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen"
+      ]
+    },
+    "26": {
+      "regions_found": 5,
+      "anatomical_names": [
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen"
+      ]
+    },
+    "27": {
+      "regions_found": 3,
+      "anatomical_names": [
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen"
+      ]
+    },
+    "28": {
+      "regions_found": 1,
+      "anatomical_names": [
+        "Ischium"
+      ]
+    },
+    "29": {
+      "regions_found": 1,
+      "anatomical_names": [
+        "Ischium"
+      ]
+    },
+    "3": {
+      "regions_found": 2,
+      "anatomical_names": [
+        "Ischium",
+        "Ischium"
+      ]
+    },
+    "32": {
+      "regions_found": 3,
+      "anatomical_names": [
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen"
+      ]
+    },
+    "33": {
+      "regions_found": 5,
+      "anatomical_names": [
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen"
+      ]
+    },
+    "34": {
+      "regions_found": 9,
+      "anatomical_names": [
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen"
+      ]
+    },
+    "35": {
+      "regions_found": 4,
+      "anatomical_names": [
+        "Ischium",
+        "Ischium",
+        "Ischium",
+        "Pubis_and_Obturator_foramen"
+      ]
+    },
+    "36": {
+      "regions_found": 3,
+      "anatomical_names": [
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen"
+      ]
+    },
+    "37": {
+      "regions_found": 6,
+      "anatomical_names": [
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen"
+      ]
+    },
+    "40": {
+      "regions_found": 3,
+      "anatomical_names": [
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen"
+      ]
+    },
+    "41": {
+      "regions_found": 5,
+      "anatomical_names": [
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen"
+      ]
+    },
+    "42": {
+      "regions_found": 3,
+      "anatomical_names": [
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen"
+      ]
+    },
+    "43": {
+      "regions_found": 2,
+      "anatomical_names": [
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen"
+      ]
+    },
+    "44": {
+      "regions_found": 2,
+      "anatomical_names": [
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen"
+      ]
+    },
+    "45": {
+      "regions_found": 5,
+      "anatomical_names": [
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen"
+      ]
+    },
+    "48": {
+      "regions_found": 1,
+      "anatomical_names": [
+        "Pubis_and_Obturator_foramen"
+      ]
+    },
+    "49": {
+      "regions_found": 2,
+      "anatomical_names": [
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen"
+      ]
+    },
+    "5": {
+      "regions_found": 4,
+      "anatomical_names": [
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen"
+      ]
+    },
+    "50": {
+      "regions_found": 16,
+      "anatomical_names": [
+        "Ischium",
+        "Ischium",
+        "Ischium",
+        "Ischium",
+        "Ischium",
+        "Ischium",
+        "Ischium",
+        "Ischium",
+        "Ischium",
+        "Ischium",
+        "Ischium",
+        "Ischium",
+        "Ischium",
+        "Ischium",
+        "Ischium",
+        "Ischium"
+      ]
+    },
+    "51": {
+      "regions_found": 1,
+      "anatomical_names": [
+        "Pubis_and_Obturator_foramen"
+      ]
+    },
+    "52": {
+      "regions_found": 1,
+      "anatomical_names": [
+        "Pubis_and_Obturator_foramen"
+      ]
+    },
+    "53": {
+      "regions_found": 2,
+      "anatomical_names": [
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen"
+      ]
+    },
+    "6": {
+      "regions_found": 4,
+      "anatomical_names": [
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen"
+      ]
+    },
+    "7": {
+      "regions_found": 4,
+      "anatomical_names": [
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen"
+      ]
+    },
+    "8": {
+      "regions_found": 2,
+      "anatomical_names": [
+        "Pubis_and_Obturator_foramen",
+        "Pubis_and_Obturator_foramen"
+      ]
+    },
+    "9": {
+      "regions_found": 1,
+      "anatomical_names": [
+        "Pubis_and_Obturator_foramen"
+      ]
+    }
+  }
+}

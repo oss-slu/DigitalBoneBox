@@ -1,0 +1,9 @@
+{
+    "name": "Ilium",
+    "id": "ilium",
+    "description": [
+        "The Ilium forms the superior part of the bony pelvis.",
+        "It articulates with the sacrum to form the sacroiliac joint."
+    ],
+    "images": ["ilium_image1.jpg", "ilium_image2.jpg"]
+}

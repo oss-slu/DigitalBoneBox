@@ -1,0 +1,63 @@
+{
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "TV5: superior aspect",
+      "text_content": "TV5: superior aspect",
+      "text_box": {
+        "x": 2731950.0,
+        "y": 1306570.0,
+        "width": 1103971.0,
+        "height": 230832.0,
+        "rotation_emu": 0.0,
+        "shape_id": "1083"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [],
+      "target_regions": []
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "TV5: inferior aspect",
+      "text_content": "TV5: inferior aspect",
+      "text_box": {
+        "x": 2731950.0,
+        "y": 3735983.0,
+        "width": 1103971.0,
+        "height": 230832.0,
+        "rotation_emu": 0.0,
+        "shape_id": "1084"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [],
+      "target_regions": []
+    },
+    {
+      "annotation_id": "annot_3",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "TV5: lateral aspect",
+      "text_content": "TV5: lateral aspect",
+      "text_box": {
+        "x": 6843550.0,
+        "y": 1537402.0,
+        "width": 1103971.0,
+        "height": 230832.0,
+        "rotation_emu": 0.0,
+        "shape_id": "1085"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [],
+      "target_regions": []
+    }
+  ],
+  "total_text_annotations": 3,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

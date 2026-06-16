@@ -1,0 +1,8 @@
+{
+    "name": "Spinous process",
+    "id": "thoracic_spinous_process",
+    "description": [
+        "The spinous processes of thoracic vertebrae project posteriorly and inferiorly."
+    ],
+    "images": ["thoracic_(superior_aspect)_image.png", "thoracic_(inferior_aspect)_image.png", "thoracic_(lateral_aspect)_image.png"]
+}

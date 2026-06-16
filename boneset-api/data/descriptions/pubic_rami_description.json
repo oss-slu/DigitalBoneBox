@@ -1,0 +1,14 @@
+{
+  "name": "Pubic Rami",
+  "id": "pubic_rami",
+  "description": [
+    "Superior pubic ramus",
+    "Projects posterolaterally from the body.",
+    "Contains the pectineal line on its superior surface.",
+    "There is an obturator groove on its inferior surface which contributes to forming the obturator canal.",
+    "Inferior pubic ramus",
+    "Projects inferiorly and laterally from the body.",
+    "Joins with the ischial ramus to form part of the obturator foramen."
+  ], 
+  "images": ["pubic_rami_image1.jpg", "pubic_rami_image2.jpg"]
+}

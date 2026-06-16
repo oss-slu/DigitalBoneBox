@@ -1,0 +1,12 @@
+{
+    "name": "Posterior Iliac Spines",
+    "id": "posterior_iliac_spines",
+    "description": [
+        "Posterior Superior Iliac Spine",
+        "A bony projection at the end of the iliac crest posteriorly.",
+        "Provides attachment for the posterior sacroiliac ligaments.",
+        "Posterior Inferior Iliac Spine",
+        "A small prominent along the posterior border of the greater sciatic notch."
+    ],
+    "images": ["posterior_iliac_spines_image1.jpg", "posterior_iliac_spines_image2.jpg"]
+}

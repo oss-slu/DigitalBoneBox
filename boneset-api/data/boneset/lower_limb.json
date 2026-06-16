@@ -1,0 +1,11 @@
+{
+    "name": "Lower Limb",
+    "id": "lower_limb",
+    "bones": [
+        "femur",
+        "patella",
+        "tibia",
+        "fibula",
+        "foot"
+    ]
+}

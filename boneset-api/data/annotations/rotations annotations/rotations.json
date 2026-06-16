@@ -1,0 +1,18 @@
+{
+  "bone_set": "Bony Pelvis",
+  "display_format": "side-by-side",
+  "left_image_rotation": {
+    "rotation_degree": -16.999,
+    "rotation_emu": -1019938.0
+  },
+  "right_image_rotation": {
+    "rotation_degree": 0.0,
+    "rotation_emu": 0
+  },
+  "extracted_from_slide": 2,
+  "applies_to_all_slides_with_format": true,
+  "verified_slides": [
+    2,
+    3
+  ]
+}

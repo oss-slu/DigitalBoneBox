@@ -1,0 +1,166 @@
+{
+  "slide_number": 8,
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Frontal process",
+      "text_content": "Frontal process",
+      "text_box": {
+        "x": 7963946.0,
+        "y": 2948950.0,
+        "width": 685800.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "306"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId15",
+        "target": "/ppt/slides/slide8.xml",
+        "target_slide": 8
+      },
+      "pointer_lines": [
+        {
+          "line_id": "line_1",
+          "kind": "connector",
+          "start_point": {
+            "x": 7963946.0,
+            "y": 3056672.0
+          },
+          "end_point": {
+            "x": 7620146.0,
+            "y": 3056672.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "309",
+          "bbox": {
+            "x": 7620146.0,
+            "y": 3056672.0,
+            "width": 343800.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 7624000.0,
+          "y": 3056000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Temporal process",
+      "text_content": "Temporal process",
+      "text_box": {
+        "x": 8077723.0,
+        "y": 3733800.0,
+        "width": 456154.0,
+        "height": 338554.0,
+        "rotation_emu": 0.0,
+        "shape_id": "307"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId16",
+        "target": "/ppt/slides/slide8.xml",
+        "target_slide": 8
+      },
+      "pointer_lines": [
+        {
+          "line_id": "line_2",
+          "kind": "connector",
+          "start_point": {
+            "x": 8077723.0,
+            "y": 3903077.0
+          },
+          "end_point": {
+            "x": 7848223.0,
+            "y": 3903077.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "310",
+          "bbox": {
+            "x": 7848223.0,
+            "y": 3903077.0,
+            "width": 229500.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 7848000.0,
+          "y": 3904000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_3",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Zygomaticofacial foramen",
+      "text_content": "Zygomaticofacial foramen",
+      "text_box": {
+        "x": 7890527.0,
+        "y": 3335923.0,
+        "width": 784320.0,
+        "height": 338554.0,
+        "rotation_emu": 0.0,
+        "shape_id": "308"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId17",
+        "target": "/ppt/slides/slide8.xml",
+        "target_slide": 8
+      },
+      "pointer_lines": [
+        {
+          "line_id": "line_3",
+          "kind": "connector",
+          "start_point": {
+            "x": 7890527.0,
+            "y": 3505200.0
+          },
+          "end_point": {
+            "x": 7619927.0,
+            "y": 3505200.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "311",
+          "bbox": {
+            "x": 7619927.0,
+            "y": 3505200.0,
+            "width": 270600.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 7616000.0,
+          "y": 3504000.0
+        }
+      ]
+    }
+  ],
+  "total_text_annotations": 3,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

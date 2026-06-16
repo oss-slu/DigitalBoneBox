@@ -1,0 +1,11 @@
+{
+    "name": "Groove for vertebral artery",
+    "id": "atlas_groove_for_vertebral_artery",
+    "description": [
+        "A shallow groove on the superior surface of the posterior arch.",
+        "Situated just posterior to the lateral mass.",
+        "* The dorsal primary ramus of C1 (suboccipital nerve) passes between the vertebral artery and the vertebra.",
+        "** The ventral primary ramus of C1 passes posterior to the vertebral artery."
+    ],
+    "images": ["atlas_(superior_aspect)_image.png"]
+}

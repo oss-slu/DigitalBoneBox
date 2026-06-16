@@ -1,0 +1,82 @@
+{
+  "slide_number": 11,
+  "images": [
+    {
+      "index": 0,
+      "name": "pelvis_lat_blk.psd",
+      "width": 2236557,
+      "height": 3535362,
+      "colored_regions": [
+        {
+          "anatomical_name": "Ramus (Lateral View)",
+          "color": "008000",
+          "path_data": [
+            {
+              "path_width": 657092,
+              "path_height": 511803,
+              "commands": [
+                {"type": "moveTo", "x": 657092, "y": 176919},
+                {"type": "lineTo", "x": 657092, "y": 120052},
+                {"type": "lineTo", "x": 549683, "y": 0},
+                {"type": "lineTo", "x": 442274, "y": 63185},
+                {"type": "lineTo", "x": 341183, "y": 94778},
+                {"type": "lineTo", "x": 214819, "y": 145327},
+                {"type": "lineTo", "x": 151637, "y": 101097},
+                {"type": "lineTo", "x": 82137, "y": 164282},
+                {"type": "lineTo", "x": 0, "y": 221149},
+                {"type": "lineTo", "x": 18955, "y": 334883},
+                {"type": "lineTo", "x": 44228, "y": 410706},
+                {"type": "lineTo", "x": 101091, "y": 473891},
+                {"type": "lineTo", "x": 227455, "y": 505484},
+                {"type": "lineTo", "x": 265364, "y": 511803},
+                {"type": "lineTo", "x": 404365, "y": 448617},
+                {"type": "lineTo", "x": 530728, "y": 366476},
+                {"type": "lineTo", "x": 644456, "y": 290653},
+                {"type": "lineTo", "x": 657092, "y": 176919},
+                {"type": "close"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "pelvis_med_blk.psd",
+      "width": 2554738,
+      "height": 3429000,
+      "colored_regions": [
+        {
+          "anatomical_name": "Ramus (Medial View)",
+          "color": "008000",
+          "path_data": [
+            {
+              "path_width": 701319,
+              "path_height": 454936,
+              "commands": [
+                {"type": "moveTo", "x": 461227, "y": 0},
+                {"type": "lineTo", "x": 410682, "y": 107415},
+                {"type": "lineTo", "x": 309591, "y": 132689},
+                {"type": "lineTo", "x": 176909, "y": 170601},
+                {"type": "lineTo", "x": 88454, "y": 202193},
+                {"type": "lineTo", "x": 56863, "y": 315927},
+                {"type": "lineTo", "x": 25272, "y": 379113},
+                {"type": "lineTo", "x": 0, "y": 429661},
+                {"type": "lineTo", "x": 56863, "y": 454936},
+                {"type": "lineTo", "x": 202182, "y": 448617},
+                {"type": "lineTo", "x": 322227, "y": 448617},
+                {"type": "lineTo", "x": 505455, "y": 417024},
+                {"type": "lineTo", "x": 644455, "y": 385431},
+                {"type": "lineTo", "x": 695000, "y": 271697},
+                {"type": "lineTo", "x": 701319, "y": 195875},
+                {"type": "lineTo", "x": 644455, "y": 101097},
+                {"type": "lineTo", "x": 461227, "y": 0},
+                {"type": "close"}
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

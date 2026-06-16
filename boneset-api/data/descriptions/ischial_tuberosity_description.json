@@ -1,0 +1,11 @@
+{
+    "name": "Ischial tuberosity",
+    "id": "ischial_tuberosity",
+    "description": [
+        "A large swelling at the posterior end of the ramus.",
+        "Also known as the \u201csits bone.\u201d",
+        "Provides attachment for the origins of the adductor magnus, semimembranosus, semitendinosus, and long head of the biceps femoris muscles.",
+        "Also provides attachment for the sacrotuberous ligament."
+    ],
+    "images": ["ischial_tuberosity_image1.jpg", "ischial_tuberosity_image2.jpg"]
+}

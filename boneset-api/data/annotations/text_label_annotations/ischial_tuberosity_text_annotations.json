@@ -1,0 +1,154 @@
+{
+  "slide_number": 12,
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Body",
+      "text_content": "Body",
+      "text_box": {
+        "x": 8700000.0,
+        "y": 4000000.0,
+        "width": 409452.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "386"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_1",
+          "kind": "connector",
+          "start_point": {
+            "x": 8459700.0,
+            "y": 4107722.0
+          },
+          "end_point": {
+            "x": 8700000.0,
+            "y": 4107722.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "387",
+          "bbox": {
+            "x": 8459700.0,
+            "y": 4107722.0,
+            "width": 240300.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        },
+        {
+          "line_id": "line_2",
+          "kind": "connector",
+          "start_point": {
+            "x": 8288000.0,
+            "y": 3738390.0
+          },
+          "end_point": {
+            "x": 8459714.0,
+            "y": 4107722.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "388",
+          "bbox": {
+            "x": 8138000.0,
+            "y": 3738390.0,
+            "width": 521714.0,
+            "height": 369332.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 7934800.0,
+          "y": 3735694.0
+        }
+      ]
+    },
+    {
+  "annotation_id": "annot_2",
+  "bone_name": "Bony Pelvis",
+  "subbone_name": "Body",
+  "text_content": "Body",
+  "text_box": {
+    "x": 5990624.0,
+    "y": 4597694.0,
+    "width": 409452.0,
+    "height": 215444.0,
+    "rotation_emu": 0.0,
+    "shape_id": "389"
+  },
+  "has_hyperlink": false,
+  "hyperlink": {},
+  "pointer_lines": [
+    {
+      "line_id": "line_3",
+      "kind": "connector",
+      "start_point": {
+        "x": 5750324.0,       
+        "y": 4705416.0
+      },
+      "end_point": {
+        "x": 5990624.0,        
+        "y": 4705416.0
+      },
+      "style": {
+        "width": 9525,
+        "arrow_head": "none"
+      },
+      "shape_id": "390",
+      "bbox": {
+        "x": 5750324.0,
+        "y": 4705416.0,
+        "width": 240300.0,
+        "height": 0.0,
+        "rotation_emu": 0.0
+      }
+    },
+    {
+      "line_id": "line_4",
+      "kind": "connector",
+      "start_point": {
+        "x": 5542400.0,          
+        "y": 4277092.0
+      },
+      "end_point": {
+        "x": 5750338.0,          
+        "y": 4705416.0
+      },
+      "style": {
+        "width": 9525,
+        "arrow_head": "none"
+      },
+      "shape_id": "391",
+      "bbox": {
+        "x": 5442400.0,
+        "y": 4377092.0,
+        "width": 307938.0,
+        "height": 328324.0,
+        "rotation_emu": 0.0
+      }
+    }
+  ],
+  "target_regions": [
+    {
+      "x": 5438800.0,            
+      "y": 4375694.0
+    }
+  ]
+}
+  ],
+  "total_text_annotations": 2,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

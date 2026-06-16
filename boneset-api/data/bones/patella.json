@@ -1,0 +1,8 @@
+{
+    "name": "Patella",
+    "id": "patella",
+    "subBones": [
+        "anterior_surface",
+        "articular_surface"
+    ]
+}

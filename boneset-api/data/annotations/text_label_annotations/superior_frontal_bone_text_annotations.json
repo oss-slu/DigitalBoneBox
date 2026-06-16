@@ -1,0 +1,202 @@
+{
+  "slide_number": 29,
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Orbital plate",
+      "text_content": "Orbital plate",
+      "text_box": {
+        "x": 2971801.0,
+        "y": 2438400.0,
+        "width": 618131.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "1091"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_1",
+          "kind": "connector",
+          "start_point": {
+            "x": 3962532.0,
+            "y": 2546122.0
+          },
+          "end_point": {
+            "x": 3589932.0,
+            "y": 2546122.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1092",
+          "bbox": {
+            "x": 3589932.0,
+            "y": 2546122.0,
+            "width": 372600.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        },
+        {
+          "line_id": "line_2",
+          "kind": "connector",
+          "start_point": {
+            "x": 4800601.0,
+            "y": 3276600.0
+          },
+          "end_point": {
+            "x": 3962402.0,
+            "y": 2546122.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1093",
+          "bbox": {
+            "x": 3962402.0,
+            "y": 2546122.0,
+            "width": 838199.0,
+            "height": 730478.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4800000.0,
+          "y": 3280000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Groove for superior sagittal sinus",
+      "text_content": "Groove for superior sagittal sinus",
+      "text_box": {
+        "x": 7086601.0,
+        "y": 1752600.0,
+        "width": 1447801.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "1094"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_3",
+          "kind": "connector",
+          "start_point": {
+            "x": 7086601.0,
+            "y": 1860322.0
+          },
+          "end_point": {
+            "x": 6477001.0,
+            "y": 1860322.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1095",
+          "bbox": {
+            "x": 6477001.0,
+            "y": 1860322.0,
+            "width": 609600.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 6480000.0,
+          "y": 1864000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_3",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Groove for anterior meningeal vessels",
+      "text_content": "Groove for anterior meningeal vessels",
+      "text_box": {
+        "x": 2743200.0,
+        "y": 1857717.0,
+        "width": 1676400.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "1097"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_5",
+          "kind": "connector",
+          "start_point": {
+            "x": 4724400.0,
+            "y": 1965439.0
+          },
+          "end_point": {
+            "x": 4419600.0,
+            "y": 1965439.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1098",
+          "bbox": {
+            "x": 4419600.0,
+            "y": 1965439.0,
+            "width": 304800.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        },
+        {
+          "line_id": "line_6",
+          "kind": "connector",
+          "start_point": {
+            "x": 5486400.0,
+            "y": 3056673.0
+          },
+          "end_point": {
+            "x": 4724400.0,
+            "y": 1968046.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "1099",
+          "bbox": {
+            "x": 4724400.0,
+            "y": 1968046.0,
+            "width": 762000.0,
+            "height": 1088627.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 5488000.0,
+          "y": 3056000.0
+        }
+      ]
+    }
+  ],
+  "total_text_annotations": 3,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

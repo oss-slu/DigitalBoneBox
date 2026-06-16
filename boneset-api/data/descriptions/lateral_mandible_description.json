@@ -1,0 +1,18 @@
+{
+  "name": "Mandible",
+  "id": "mandible",
+  "description": [
+    "Mandible",
+    "Ramus",
+    "Is quadrangular in shape and projects superiorly from the posterior part of the body of the mandible. The insertion of the masseter muscle attaches to the lateral surface of the ramus.",
+    "Condylar process",
+    "The posterior projection of the ramus. The distal portion has a head that articulates with the condylar fossa of the temporal bone to form the temporomandibular joint.",
+    "Coronoid process",
+    "The anterior projection of the ramus. The temporalis muscle inserts on the coronoid process.",
+    "Mandibular notch",
+    "Space created by the separation of the two processes of the ramus.",
+    "Angle",
+    "The part of the bone where the ramus and inferior borders meet."
+  ],
+  "images": ["lateral_mandible_bone_image.jpg"]
+}

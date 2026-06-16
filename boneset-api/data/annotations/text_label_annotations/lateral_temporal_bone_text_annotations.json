@@ -1,0 +1,298 @@
+{
+  "slide_number": 17,
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "External acoustic meatus",
+      "text_content": "External acoustic meatus",
+      "text_box": {
+        "x": 2743200.0,
+        "y": 4586645.0,
+        "width": 779495.0,
+        "height": 338554.0,
+        "rotation_emu": 0.0,
+        "shape_id": "584"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_1",
+          "kind": "connector",
+          "start_point": {
+            "x": 4756295.0,
+            "y": 4755922.0
+          },
+          "end_point": {
+            "x": 3522695.0,
+            "y": 4755922.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "585",
+          "bbox": {
+            "x": 3522695.0,
+            "y": 4755922.0,
+            "width": 1233600.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4760000.0,
+          "y": 4752000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Mastoid process",
+      "text_content": "Mastoid process",
+      "text_box": {
+        "x": 2754415.0,
+        "y": 5029200.0,
+        "width": 768281.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "586"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_2",
+          "kind": "connector",
+          "start_point": {
+            "x": 4419696.0,
+            "y": 5136922.0
+          },
+          "end_point": {
+            "x": 3522696.0,
+            "y": 5136922.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "588",
+          "bbox": {
+            "x": 3522696.0,
+            "y": 5136922.0,
+            "width": 897000.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4416000.0,
+          "y": 5136000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_3",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Zygomatic process",
+      "text_content": "Zygomatic process",
+      "text_box": {
+        "x": 2754414.0,
+        "y": 3945523.0,
+        "width": 522186.0,
+        "height": 338554.0,
+        "rotation_emu": 0.0,
+        "shape_id": "587"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_3",
+          "kind": "connector",
+          "start_point": {
+            "x": 4191000.0,
+            "y": 4114800.0
+          },
+          "end_point": {
+            "x": 3276600.0,
+            "y": 4114800.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "589",
+          "bbox": {
+            "x": 3276600.0,
+            "y": 4114800.0,
+            "width": 914400.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        },
+        {
+          "line_id": "line_6",
+          "kind": "connector",
+          "start_point": {
+            "x": 5638800.0,
+            "y": 4648200.0
+          },
+          "end_point": {
+            "x": 4191000.0,
+            "y": 4114800.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "593",
+          "bbox": {
+            "x": 4191000.0,
+            "y": 4114800.0,
+            "width": 1447800.0,
+            "height": 533400.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 5640000.0,
+          "y": 4648000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_4",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Mandibular fossa",
+      "text_content": "Mandibular fossa",
+      "text_box": {
+        "x": 3044860.0,
+        "y": 5486400.0,
+        "width": 768281.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "590"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_4",
+          "kind": "connector",
+          "start_point": {
+            "x": 4267341.0,
+            "y": 5594122.0
+          },
+          "end_point": {
+            "x": 3813141.0,
+            "y": 5594122.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "591",
+          "bbox": {
+            "x": 3813141.0,
+            "y": 5594122.0,
+            "width": 454200.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4264000.0,
+          "y": 5592000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_5",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Squamous part",
+      "text_content": "Squamous part",
+      "text_box": {
+        "x": 2783766.0,
+        "y": 3238369.0,
+        "width": 522186.0,
+        "height": 338554.0,
+        "rotation_emu": 0.0,
+        "shape_id": "594"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_7",
+          "kind": "connector",
+          "start_point": {
+            "x": 4114752.0,
+            "y": 3407646.0
+          },
+          "end_point": {
+            "x": 3305952.0,
+            "y": 3407646.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "595",
+          "bbox": {
+            "x": 3305952.0,
+            "y": 3407646.0,
+            "width": 808800.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        },
+        {
+          "line_id": "line_8",
+          "kind": "connector",
+          "start_point": {
+            "x": 4876800.0,
+            "y": 3505201.0
+          },
+          "end_point": {
+            "x": 4114800.0,
+            "y": 3407648.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "596",
+          "bbox": {
+            "x": 4114800.0,
+            "y": 3407648.0,
+            "width": 762000.0,
+            "height": 97553.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4880000.0,
+          "y": 3504000.0
+        }
+      ]
+    }
+  ],
+  "total_text_annotations": 5,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

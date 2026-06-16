@@ -1,0 +1,15 @@
+{
+    "name": "Posterior surface",
+    "id": "fibula_posterior_surface",
+    "description": [
+        "Largest surface",
+        "Proximal two-thirds divided longitudinally by a medial crest",
+        "Distal third curves towards medial aspect",
+        "Soleus muscle inserts on proximal portion",
+        "Flexor hallucis longus muscle originates on distal two-thirds"
+    ],
+    "images": [
+        "fibula_image.jpeg",
+        "fibula_image2.png"
+    ]
+}

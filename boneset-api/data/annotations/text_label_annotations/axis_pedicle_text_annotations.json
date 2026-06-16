@@ -1,0 +1,45 @@
+{
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Axis (CV2): inferior aspect",
+      "text_content": "Axis (CV2): inferior aspect",
+      "text_box": {
+        "x": 6553201.0,
+        "y": 2057400.0,
+        "width": 1390539.0,
+        "height": 230832.0,
+        "rotation_emu": 0.0,
+        "shape_id": "593"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [],
+      "target_regions": []
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Axis (CV2): superior aspect",
+      "text_content": "Axis (CV2): superior aspect",
+      "text_box": {
+        "x": 3429000.0,
+        "y": 2057400.0,
+        "width": 1408772.0,
+        "height": 230832.0,
+        "rotation_emu": 0.0,
+        "shape_id": "594"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [],
+      "target_regions": []
+    }
+  ],
+  "total_text_annotations": 2,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

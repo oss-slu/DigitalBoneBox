@@ -1,0 +1,13 @@
+{
+  "slide": 18,
+  "name": "Typical rib",
+  "id": "typical_rib",
+  "description": [
+    "Ribs 2-12 are similarly shaped.",
+    "They are longer and narrower than the 1",
+    "st",
+    "rib.",
+    "Each rib contains a head that articulates with at least one thoracic vertebrae."
+  ],
+  "images": ["Typical_Rib_Left_Image.jpg", "Typical_Rib_Right_Image.jpg"]
+}

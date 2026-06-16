@@ -1,0 +1,11 @@
+{
+  "name": "Superior",
+  "id": "superior",
+  "subBones": [
+    "superior_ethmoid_bone",
+    "superior_frontal_bone",
+    "superior_occipital_bone",
+    "superior_sphenoid_bone",
+    "superior_temporal_bone"
+  ]
+}

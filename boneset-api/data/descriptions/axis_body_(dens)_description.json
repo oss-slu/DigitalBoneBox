@@ -1,0 +1,13 @@
+{
+    "name": "Body (Dens)",
+    "id": "axis_body_(dens)",
+    "description": [
+        "Superior part",
+        "Consists of an odontoid process (dens).",
+        "This process articulates with a facet on the posterior surface of the anterior arch of the atlas.",
+        "It is held in place by the transverse ligament of the atlas.",
+        "Inferior part",
+        "Projects downward and overlaps part of CV3."
+    ],
+    "images": ["axis_(superior_aspect)_image.png", "axis_(lateral_aspect)_image.png"]
+}

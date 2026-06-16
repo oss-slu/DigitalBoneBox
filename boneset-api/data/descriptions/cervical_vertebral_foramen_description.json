@@ -1,0 +1,9 @@
+{
+    "name": "Vertebral foramen",
+    "id": "cervical_vertebral_foramen",
+    "description": [
+        "An opening created by the vertebral arch posteriorly and the body anteriorly.",
+        "Transmits the spinal cord and its coverings as well as the vessels that supply it."
+    ],
+    "images": ["cervical_(superior_aspect)_image.png"]
+}

@@ -1,0 +1,25 @@
+{
+  "name": "Maxilla ",
+  "id": "maxilla",
+  "description": [
+    "Maxilla",
+    "Two bones that form the central part of the face and the upper jaw.",
+    "Forms the majority of the hard palate, the floor and lateral walls of the nasal cavity, and part of the orbital floor.",
+    "Frontal process",
+    "Part of the maxilla that extends superiorly to articulate with the frontal and nasal bones.",
+    "Forms the medial border of the orbit.",
+    "Infraorbital foramen",
+    "A small opening located just inferior to the orbital rim.",
+    "Transmits the infraorbital nerve (branch of CN V2) and blood vessels.",
+    "Serves as a landmark for regional anesthesia in dental procedures.",
+    "Zygomatic process",
+    "Part of the maxilla that extends laterally and superiorly to articulate with the zygomatic bone.",
+    "Helps form the lateral wall of the orbit.",
+    "Forms the base of the malar prominence (cheekbone).",
+    "Alveolar process",
+    "The inferiorly projecting portion of the maxilla that contains the upper teeth.",
+    "Provides support and attachment for the maxillary teeth.",
+    "Resorbs with age and loss of teeth."
+  ],
+  "images": ["anterior_maxilla_image.jpg"]
+}

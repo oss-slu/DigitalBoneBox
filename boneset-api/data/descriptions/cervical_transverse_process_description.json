@@ -1,0 +1,9 @@
+{
+    "name": "Transverse process",
+    "id": "cervical_transverse_process",
+    "description": [
+        "Formed around the transverse foramina on each side.",
+        "Projects laterally from the junction of the lamina and pedicles."
+    ],
+    "images": ["cervical_(superior_aspect)_image.png", "cervical_(inferior_aspect)_image.png", "cervical_(right_lateral_aspect)_image.png"]
+}

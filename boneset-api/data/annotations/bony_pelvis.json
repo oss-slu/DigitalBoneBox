@@ -1,0 +1,139 @@
+[
+    {
+        "text": "",
+        "position": {
+            "x": 2743200,
+            "y": 1299410,
+            "width": 5943600,
+            "height": 4952999
+        }
+    },
+    {
+        "text": "Right Pelvis (lateral aspect)",
+        "position": {
+            "x": 3579863,
+            "y": 6251729,
+            "width": 1323299,
+            "height": 215444
+        }
+    },
+    {
+        "text": "Ilium",
+        "position": {
+            "x": 5586937,
+            "y": 2083816,
+            "width": 393457,
+            "height": 215444
+        }
+    },
+    {
+        "text": "",
+        "position": {
+            "x": 3873661,
+            "y": 4149666,
+            "width": 1134543,
+            "height": 1310358
+        },
+        "color": "C133AD"
+    },
+    {
+        "text": "",
+        "position": {
+            "x": 4562474,
+            "y": 3962400,
+            "width": 1014265,
+            "height": 1060450
+        },
+        "color": "2F8E29"
+    },
+    {
+        "text": "Pubis",
+        "position": {
+            "x": 5682077,
+            "y": 4259252,
+            "width": 419318,
+            "height": 215444
+        }
+    },
+    {
+        "text": "Ischium",
+        "position": {
+            "x": 5446767,
+            "y": 5263629,
+            "width": 507320,
+            "height": 215444
+        }
+    },
+    {
+        "text": "Acetabulum",
+        "position": {
+            "x": 5450756,
+            "y": 3572102,
+            "width": 692939,
+            "height": 215444
+        }
+    },
+    {
+        "shape": "line",
+        "position": {
+            "x": 4267200,
+            "y": 2191538,
+            "width": 1319736,
+            "height": 0
+        }
+    },
+    {
+        "shape": "line",
+        "position": {
+            "x": 5980394,
+            "y": 2191538,
+            "width": 1411007,
+            "height": 0
+        }
+    },
+    {
+        "shape": "line",
+        "position": {
+            "x": 5954088,
+            "y": 5371351,
+            "width": 961063,
+            "height": 0
+        }
+    },
+    {
+        "shape": "line",
+        "position": {
+            "x": 4495801,
+            "y": 5371351,
+            "width": 950967,
+            "height": 0
+        }
+    },
+    {
+        "shape": "line",
+        "position": {
+            "x": 5105401,
+            "y": 4366974,
+            "width": 576677,
+            "height": 0
+        }
+    },
+    {
+        "shape": "line",
+        "position": {
+            "x": 5171505,
+            "y": 3679824,
+            "width": 279250,
+            "height": 0
+        }
+    },
+    {
+        "shape": "line",
+        "position": {
+            "x": 4562474,
+            "y": 3679825,
+            "width": 609031,
+            "height": 495300
+        }
+    }
+]

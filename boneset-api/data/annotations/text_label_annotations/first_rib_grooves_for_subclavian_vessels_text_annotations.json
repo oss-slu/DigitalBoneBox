@@ -1,0 +1,82 @@
+{
+  "slide_number": 17,
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Scalene tubercle",
+      "text_content": "Scalene tubercle",
+      "text_box": {
+        "x": 4343400.0,
+        "y": 3168748.0,
+        "width": 753172.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "534"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_1",
+          "kind": "connector",
+          "start_point": {
+            "x": 5096572.0,
+            "y": 3276470.0
+          },
+          "end_point": {
+            "x": 5333872.0,
+            "y": 3276470.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "535",
+          "bbox": {
+            "x": 5096572.0,
+            "y": 3276470.0,
+            "width": 237300.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        },
+        {
+          "line_id": "line_2",
+          "kind": "connector",
+          "start_point": {
+            "x": 5334000.0,
+            "y": 3276470.0
+          },
+          "end_point": {
+            "x": 5791200.0,
+            "y": 3918446.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "536",
+          "bbox": {
+            "x": 5334000.0,
+            "y": 3276470.0,
+            "width": 457200.0,
+            "height": 641976.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 5792000.0,
+          "y": 3920000.0
+        }
+      ]
+    }
+  ],
+  "total_text_annotations": 1,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

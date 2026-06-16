@@ -1,0 +1,106 @@
+{
+  "slide_number": 16,
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Fossa for lacrimal sac",
+      "text_content": "Fossa for lacrimal sac",
+      "text_box": {
+        "x": 7715154.0,
+        "y": 2648178.0,
+        "width": 990600.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "558"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_1",
+          "kind": "connector",
+          "start_point": {
+            "x": 7715154.0,
+            "y": 2755900.0
+          },
+          "end_point": {
+            "x": 7467654.0,
+            "y": 2755900.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "559",
+          "bbox": {
+            "x": 7467654.0,
+            "y": 2755900.0,
+            "width": 247500.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 7464000.0,
+          "y": 2752000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Frontal process of maxilla",
+      "text_content": "Frontal process of maxilla",
+      "text_box": {
+        "x": 7848600.0,
+        "y": 2073092.0,
+        "width": 857154.0,
+        "height": 338554.0,
+        "rotation_emu": 0.0,
+        "shape_id": "561"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_3",
+          "kind": "connector",
+          "start_point": {
+            "x": 7848600.0,
+            "y": 2242369.0
+          },
+          "end_point": {
+            "x": 7620000.0,
+            "y": 2242369.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "562",
+          "bbox": {
+            "x": 7620000.0,
+            "y": 2242369.0,
+            "width": 228600.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 7616000.0,
+          "y": 2240000.0
+        }
+      ]
+    }
+  ],
+  "total_text_annotations": 2,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

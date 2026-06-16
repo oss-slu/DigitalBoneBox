@@ -1,0 +1,82 @@
+{
+  "slide_number": 20,
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Pubic crest",
+      "text_content": "Pubic crest",
+      "text_box": {
+        "x": 8300000.0,
+        "y": 2150000.0,
+        "width": 643768.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "592"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_1",
+          "kind": "connector",
+          "start_point": {
+            "x": 8000000.0,
+            "y": 2250000.0
+          },
+          "end_point": {
+            "x": 8300000.0,
+            "y": 2250000.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "593",
+          "bbox": {
+            "x": 8250000.0,
+            "y": 2150000.0,
+            "width": 194400.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        },
+        {
+          "line_id": "line_2",
+          "kind": "connector",
+          "start_point": {
+            "x": 7500000.0,
+            "y": 2700000.0
+          },
+          "end_point": {
+            "x": 8000000.0,
+            "y": 2250000.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "594",
+          "bbox": {
+            "x": 7700600.0,
+            "y": 2150000.0,
+            "width": 549400.0,
+            "height": 534678.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 7352000.0,
+          "y": 3768000.0
+        }
+      ]
+    }
+  ],
+  "total_text_annotations": 1,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

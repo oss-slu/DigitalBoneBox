@@ -1,0 +1,23 @@
+{
+  "slide": 20,
+  "name": "Head and Neck",
+  "id": "head_and_neck",
+  "description": [
+    "The",
+    "head",
+    "of each rib will articulate with the bodies of 2 vertebrae and an intervertebral disc.",
+    "It contains a pair of articular facets (superior and inferior).",
+    "The superior facet will articulate with the body of the superior vertebra.",
+    "The inferior facet will articulate with the body of the inferior vertebra.",
+    "The heads of ribs 10-12 have a single facet and articulate with their own vertebrae.",
+    "The",
+    "neck",
+    "is a constricted portion just lateral to the head.",
+    "The 11",
+    "th",
+    "and 12",
+    "th",
+    "pair of ribs have no necks."
+  ],
+  "images": ["Typical_Rib_Left_Image.jpg", "Typical_Rib_Right_Image.jpg"]
+}

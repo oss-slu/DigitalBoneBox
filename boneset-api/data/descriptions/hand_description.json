@@ -1,0 +1,18 @@
+{
+    "name": "Hand",
+    "id": "hand",
+    "description": [
+        "The hand is composed of 27 bones",
+        "8 carpal bones",
+        "5 metacarpal bones",
+        "14 phalanges",
+        "The carpal bones are arranged in two rows.",
+        "The proximal row includes the scaphoid, lunate, triquetrum, and pisiform.",
+        "The distal row includes the trapezium, trapezoid, capitate, and hamate.",
+        "The scaphoid, lunate, and triquetrum bones articulate with the radius and articular disc of the radio-ulnar joint.",
+        "* A mnemonic for remembering the carpal bones is \u201cScary Lunatics Try Poisons That They Can\u2019t Handle.\u201d",
+        "The first letter of each word is the first letter of each of the bones from lateral to medial, proximal row first."
+    ],
+    "images": ["hand_left_image.jpg", "hand_right_image.jpg"]
+
+}

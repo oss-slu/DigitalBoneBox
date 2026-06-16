@@ -1,0 +1,434 @@
+{
+  "slide_number": 9,
+  "text_annotations": [
+    {
+    "annotation_id": "annot_1",
+    "bone_name": "Bony Pelvis",
+    "subbone_name": "Ramus",
+    "text_content": "Ramus",
+    "text_box": {
+        "x": 6505000.0,
+        "y": 4100000.0,
+        "width": 490123.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "299"
+    },
+    "has_hyperlink": true,
+    "hyperlink": {
+        "rId": "rId9",
+        "target": "/ppt/slides/slide11.xml",
+        "target_slide": 11
+    },
+    "pointer_lines": [
+        {
+        "line_id": "line_3",
+        "kind": "connector",
+        "start_point": {
+            "x": 6188271.0,
+            "y": 4246884.0
+        },
+        "end_point": {
+            "x": 6495000.0,
+            "y": 4246884.0
+        },
+        "style": {
+            "width": 9525,
+            "arrow_head": "none"
+        },
+        "shape_id": "302",
+        "bbox": {
+            "x": 5688271.0,
+            "y": 4246884.0,
+            "width": 616729.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+        }
+        }
+    ],
+    "target_regions": [
+        {
+        "x": 5687594.0,
+        "y": 4249764.0
+        }
+    ]
+    },
+    {
+  "annotation_id": "annot_2",
+  "bone_name": "Bony Pelvis",
+  "subbone_name": "Ischial tuberosity",
+  "text_content": "Ischial tuberosity",
+  "text_box": {
+    "x": 4600000.0,
+    "y": 4655964.0,
+    "width": 902811.0,
+    "height": 215444.0,
+    "rotation_emu": 0.0,
+    "shape_id": "300"
+  },
+  "has_hyperlink": true,
+  "hyperlink": {
+    "rId": "rId10",
+    "target": "/ppt/slides/slide12.xml",
+    "target_slide": 12
+  },
+  "pointer_lines": [
+    {
+      "line_id": "line_2",
+      "kind": "connector",
+      "start_point": {
+        "x": 5480000.0,
+        "y": 4655964.0
+      },
+      "end_point": {
+        "x": 5730000.0,
+        "y": 4343686.0
+      },
+      "style": {
+        "width": 9525,
+        "arrow_head": "none"
+      },
+      "shape_id": "301",
+      "bbox": {
+        "x": 6584840.0,
+        "y": 4543686.0,
+        "width": 341400.0,
+        "height": 0.0,
+        "rotation_emu": 0.0
+      }
+    }
+  ],
+  "target_regions": [
+    {
+      "x": 6927594.0,
+      "y": 4545764.0
+    }
+  ]
+},
+    {
+  "annotation_id": "annot_3",
+  "bone_name": "Bony Pelvis",
+  "subbone_name": "Ischial spine",
+  "text_content": "Ischial spine",
+  "text_box": {
+    "x": 4600000.0,
+    "y": 3392738.0,
+    "width": 689862.0,
+    "height": 215444.0,
+    "rotation_emu": 0.0,
+    "shape_id": "298"
+  },
+  "has_hyperlink": false,
+  "hyperlink": {},
+  "pointer_lines": [
+    {
+      "line_id": "line_1",
+      "kind": "connector",
+      "start_point": {
+        "x": 5300000.0,
+        "y": 3500460.0
+      },
+      "end_point": {
+        "x": 5560000.0,
+        "y": 3500460.0
+      },
+      "style": {
+        "width": 9525,
+        "arrow_head": "none"
+      },
+      "shape_id": "297",
+      "bbox": {
+        "x": 6369639.0,
+        "y": 3500460.0,
+        "width": 399000.0,
+        "height": 0.0,
+        "rotation_emu": 0.0
+      }
+    }
+  ],
+  "target_regions": [
+    {
+      "x": 6767594.0,
+      "y": 3497764.0
+    }
+  ]
+},
+    {
+      "annotation_id": "annot_4",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Greater sciatic notch",
+      "text_content": "Greater sciatic notch",
+      "text_box": {
+        "x": 8528804.0,
+        "y": 2530964.0,
+        "width": 745591.0,
+        "height": 338554.0,
+        "rotation_emu": 0.0,
+        "shape_id": "307"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId15",
+        "target": "/ppt/slides/slide14.xml",
+        "target_slide": 14
+      },
+      "pointer_lines": [
+        {
+          "line_id": "line_5",
+          "kind": "connector",
+          "start_point": {
+            "x": 8583704.0,
+            "y": 2800000.0
+          },
+          "end_point": {
+            "x": 8728804.0,
+            "y": 2800000.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "308",
+          "bbox": {
+            "x": 8583704.0,
+            "y": 2700241.0,
+            "width": 245100.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        },
+        {
+          "line_id": "line_6",
+          "kind": "connector",
+          "start_point": {
+            "x": 8355194.0,
+            "y": 2607165.0
+          },
+          "end_point": {
+            "x": 8583794.0,
+            "y": 2800000.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "309",
+          "bbox": {
+            "x": 8355194.0,
+            "y": 2607165.0,
+            "width": 228600.0,
+            "height": 93077.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 8351594.0,
+          "y": 2609764.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_5",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Lesser sciatic notch",
+      "text_content": "Lesser sciatic notch",
+      "text_box": {
+        "x": 8500000.0,
+        "y": 3450000.0,
+        "width": 702534.0,
+        "height": 338554.0,
+        "rotation_emu": 0.0,
+        "shape_id": "310"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId16",
+        "target": "/ppt/slides/slide14.xml",
+        "target_slide": 14
+      },
+      "pointer_lines": [
+        {
+          "line_id": "line_7",
+          "kind": "connector",
+          "start_point": {
+            "x": 8300000.0,
+            "y": 3500000.0
+          },
+          "end_point": {
+            "x": 8500000.0,
+            "y": 3500000.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "311",
+          "bbox": {
+            "x": 7648486.0,
+            "y": 4366974.0,
+            "width": 288000.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 7648000.0,
+          "y": 4368000.0
+        }
+      ]
+    },
+   {
+  "annotation_id": "annot_6",
+  "bone_name": "Bony Pelvis",
+  "subbone_name": "Body",
+  "text_content": "Body",
+  "text_box": {
+    "x": 8660000.0,
+    "y": 4450000.0,
+    "width": 409452.0,
+    "height": 215444.0,
+    "rotation_emu": 0.0,
+    "shape_id": "313"
+  },
+  "has_hyperlink": false,
+  "hyperlink": {},
+  "pointer_lines": [
+    {
+      "line_id": "line_8",
+      "kind": "connector",
+      "start_point": {
+        "x": 8419700.0,
+        "y": 4557722.0
+      },
+      "end_point": {
+        "x": 8650000.0,
+        "y": 4557722.0
+      },
+      "style": {
+        "width": 9525,
+        "arrow_head": "none"
+      },
+      "shape_id": "314",
+      "bbox": {
+        "x": 8419700.0,
+        "y": 4557722.0,
+        "width": 240300.0,
+        "height": 0.0,
+        "rotation_emu": 0.0
+      }
+    },
+    {
+      "line_id": "line_9",
+      "kind": "connector",
+      "start_point": {
+        "x": 8272794.0,
+        "y": 3900460.0
+      },
+      "end_point": {
+        "x": 8419700.0,
+        "y": 4557722.0
+      },
+      "style": {
+        "width": 9525,
+        "arrow_head": "none"
+      },
+      "shape_id": "315",
+      "bbox": {
+        "x": 8202794.0,
+        "y": 3500460.0,
+        "width": 216906.0,
+        "height": 1057262.0,
+        "rotation_emu": 0.0
+      }
+    }
+  ],
+  "target_regions": [
+    {
+      "x": 8199594.0,
+      "y": 3497764.0
+    }
+  ]
+},
+    {
+  "annotation_id": "annot_7",
+  "bone_name": "Bony Pelvis",
+  "subbone_name": "Body",
+  "text_content": "Body",
+  "text_box": {
+    "x": 6350000.0,
+    "y": 4500000.0,
+    "width": 409452.0,
+    "height": 215444.0,
+    "rotation_emu": 0.0,
+    "shape_id": "316"
+  },
+  "has_hyperlink": false,
+  "hyperlink": {},
+  "pointer_lines": [
+    {
+      "line_id": "line_10",
+      "kind": "connector",
+      "start_point": {
+        "x": 6109700.0,        
+        "y": 4607722.0       
+      },
+      "end_point": {
+        "x": 6350000.0,      
+        "y": 4607722.0        
+      },
+      "style": {
+        "width": 9525,
+        "arrow_head": "none"
+      },
+      "shape_id": "317",
+      "bbox": {
+        "x": 6109700.0,
+        "y": 4607722.0,
+        "width": 240300.0,    
+        "height": 0.0,
+        "rotation_emu": 0.0
+      }
+    },
+    {
+      "line_id": "line_11",
+      "kind": "connector",
+      "start_point": {
+        "x": 5871776.0,
+        "y": 4279398.0         
+      },
+      "end_point": {
+        "x": 6109714.0,      
+        "y": 4607722.0         
+      },
+      "style": {
+        "width": 9525,
+        "arrow_head": "none"
+      },
+      "shape_id": "318",
+      "bbox": {
+        "x": 5801776.0,
+        "y": 4279398.0,
+        "width": 307938.0,      
+        "height": 328324.0,
+        "rotation_emu": 0.0
+      }
+    }
+  ],
+  "target_regions": [
+    {
+      "x": 5303594.0,
+      "y": 4137764.0
+    }
+  ]
+}
+  ],
+  "total_text_annotations": 7,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

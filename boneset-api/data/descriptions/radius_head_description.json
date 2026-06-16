@@ -1,0 +1,16 @@
+{
+    "name": "Radius Head",
+    "id": "radius_head",
+    "description": [
+        "The most proximal end of the radius is smooth and discoid in shape.",
+        "The proximal surface is concaved and articulates with the",
+        "capitulum",
+        "of the humerus.",
+        "The smooth circumference of the disc articulates with the ulna at the",
+        "radial notch",
+        "and is covered by the annular ligament.",
+        "Both articular surfaces are covered by hyaline cartilage."
+    ],
+    "images": ["radius_head_left_image.jpg", "radius_head_right_image.jpg"]
+
+}

@@ -1,0 +1,9 @@
+{
+    "name": "Spinous process",
+    "id": "axis_spinous_process",
+    "description": [
+        "The posterior projection of the vertebra.",
+        "Usually large, very strong and bifurcated at the tip."
+    ],
+    "images": ["axis_(superior_aspect)_image.png", "axis_(inferior_aspect)_image.png", "axis_(lateral_aspect)_image.png"]
+}

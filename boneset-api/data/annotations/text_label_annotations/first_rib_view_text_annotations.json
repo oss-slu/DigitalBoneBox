@@ -1,0 +1,46 @@
+{
+  "slide_number": 14,
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "1st Right rib (superior aspect)",
+      "text_content": "1st Right rib (superior aspect)",
+      "text_box": {
+        "x": 7239000.0,
+        "y": 3220656.0,
+        "width": 1401696.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "458"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [],
+      "target_regions": []
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "1st Right rib (inferior aspect)",
+      "text_content": "1st Right rib (inferior aspect)",
+      "text_box": {
+        "x": 7239000.0,
+        "y": 6032955.0,
+        "width": 1362522.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "459"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [],
+      "target_regions": []
+    }
+  ],
+  "total_text_annotations": 2,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

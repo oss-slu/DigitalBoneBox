@@ -1,0 +1,14 @@
+{
+    "name": "Femur",
+    "id": "femur",
+    "description": [
+        "Longest bone in the human body.",
+        "Proximal head articulates with acetabulum of the pelvis to form hip joint.",
+        "Distal end articulates with the tibia to form the knee joint.",
+        "Shaft is long, mostly cylindrical, and has a slight anterior curve."
+    ],
+    "images": [
+        "femur_image.png",
+        "femur_image2.png"
+    ]
+}

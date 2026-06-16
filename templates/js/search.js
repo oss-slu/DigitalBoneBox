@@ -1,5 +1,8 @@
+import { fetchSearch } from "./api.js";
+
 let selectedIndex = -1;
 let searchTimeout;
+let isInitialized = false;
 
 /**
  * Sets up the search bar's input, keyboard navigation, and outside-click
@@ -7,6 +10,7 @@ let searchTimeout;
  * @returns {void}
  */
 export function initializeSearch() {
+    if (isInitialized) return;
     const searchBar = document.getElementById("search-bar");
     const searchResultsContainer = document.getElementById("search-results");
     const searchLoading = document.getElementById("search-loading");
@@ -17,7 +21,8 @@ export function initializeSearch() {
     }
 
     console.log("Search initialized");
-
+    isInitialized = true;
+    
     // Handle typing in search bar
     searchBar.addEventListener("input", (e) => {
         clearTimeout(searchTimeout);
@@ -80,25 +85,16 @@ async function performSearch(query) {
     
     try {
         console.log("Performing search for:", query);
-        const response = await fetch(`http://127.0.0.1:8000/api/search?q=${encodeURIComponent(query)}`);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const html = await response.text();
-        console.log("Search response received");
-        
+        const html = await fetchSearch(query);
         searchResultsContainer.innerHTML = html;
         searchLoading.style.display = "none";
         selectedIndex = -1;
         
-        // Attach click handlers to new results
         attachClickHandlers();
         
     } catch (error) {
         console.error("Search error:", error);
-        searchResultsContainer.innerHTML = "<li class=\"search-error\">Search failed. Make sure the server is running.</li>";
+        searchResultsContainer.innerHTML = "<li class=\"search-error\">Search failed. Please try again.</li>";
         searchLoading.style.display = "none";
     }
 }
@@ -230,5 +226,4 @@ function clearSearchResults() {
     selectedIndex = -1;
 }
 
-// Initialize when DOM is loaded
 document.addEventListener("DOMContentLoaded", initializeSearch);

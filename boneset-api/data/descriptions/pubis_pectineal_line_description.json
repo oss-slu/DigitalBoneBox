@@ -1,0 +1,10 @@
+{
+    "name": "Pectineal line",
+    "id": "pectineal_line",
+    "description": [
+        "A prominent ridge on the superior ramus of the pubis.",
+        "Provides attachment for the origin of the pectineus muscle.",
+        "Also provides attachment for the conjoint tendon, and the lacunar and pectineal ligaments."
+    ],
+    "images": ["pectineal_line_image.png"]
+}

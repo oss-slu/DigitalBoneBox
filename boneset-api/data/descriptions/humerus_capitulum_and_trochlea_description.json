@@ -1,0 +1,16 @@
+{
+    "name": "Capitulum and Trochlea",
+    "id": "capitulum_and_trochlea",
+    "description": [
+        "Capitulum",
+        "is a rounded projection on the anterior and inferior surface of distal end of the humerus.",
+        "Articulates with the proximal surface of the",
+        "head",
+        "of the radius.",
+        "Trochlea",
+        "is a saddle-like process at distal end of the humerus and extends onto the posterior surface of the bone.",
+        "Articulates with the trochlear notch of the ulna.",
+        "* The ulnar nerve travels in a small sulcus between the trochlea and medial condyle"
+    ],
+    "images": ["humerus_condyles_left_image.jpg", "humerus_condyles_right_image.jpg"]
+}

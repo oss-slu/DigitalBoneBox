@@ -1,0 +1,11 @@
+{
+    "name": "Sciatic notches",
+    "id": "sciatic_notches",
+    "description": [
+        "Greater sciatic notch : 1. A large notch superior to the ischial spine. 2. Converted into a foramen by the sacrospinous and sacrotuberous ligament.",
+        "Foramen transmits: Superior gluteal vessels and nerve. Piriformis muscle. Sciatic nerve. Inferior gluteal vessels and nerve. Internal pudendal vessels and pudendal nerve. Posterior femoral cutaneous nerves. Nerves to quadratus femoris and obturator internus muscles",
+        "Lesser sciatic notch : 1. A smaller notch inferior to the ischial spine. 2. Converted into a foramen by the sacrotuberous ligament.",
+        "Foramen transmits : Tendon of obturator internus muscle. Internal pudendal vessels and pudendal nerve. Nerve to obturator internus"
+    ], 
+    "images": ["sciatic_notches_image1.jpg", "sciatic_notches_image2.jpg"]
+}

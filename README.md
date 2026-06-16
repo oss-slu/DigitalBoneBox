@@ -1,3 +1,5 @@
+# DigitalBoneBox : A Web-Based Study Tool for Human Anatomy
+
 [![Lint and Test JavaScript](https://github.com/oss-slu/DigitalBonesBox/actions/workflows/lint.yml/badge.svg)](https://github.com/oss-slu/DigitalBonesBox/actions/workflows/lint.yml)
 ![GitHub License](https://img.shields.io/github/license/oss-slu/DigitalBonesBox)
 
@@ -5,9 +7,7 @@
 [![Chat on Slack](https://img.shields.io/badge/Chat_on-Slack-4A154B?logo=slack)](https://join.slack.com/t/oswslu/shared_invite/zt-24f0qhjbo-NkSfQ4LOg5wXxBdxP4vzfA)
 [![Donate to OSS](https://img.shields.io/badge/Donate_to-OSS-003AA6)](https://oss-slu.github.io/connect_with/donate)
 
-# DigitalBoneBox : A Web-Based Study Tool for Human Anatomy
-
-This project is a Web App project aims to convert an existing PowerPoint-based educational tool into an interactive, mobile-friendly web application.
+This project aims to convert an existing PowerPoint-based educational tool into an interactive, mobile-friendly web application for anatomy students.
 
 ## How / why did we get here?
 
@@ -43,7 +43,7 @@ Designed for use on iPads, laptops, or other devices commonly used by students.
   - Includes **placeholder options** such as **Search**, **Contact**, **Recent**, and **Help**, which are non-functional and reserved for future implementation.
   - Users can open and close the sidebar using the ☰ button on the top-left corner of the page.
 
-## Setup:
+## Setup
 
 To run this project locally, you will need to have Node.js installed. The application consists of a backend API and a frontend client, which can be run together with a single command.
 

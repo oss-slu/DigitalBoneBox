@@ -1247,14 +1247,16 @@ button:disabled {
     transition: width var(--transition-normal);
 }
 
-#search-results li:hover {
+#search-results li:hover,
+#search-results li.selected {
     background: var(--primary-light);
     transform: translateX(12px);
     color: var(--primary);
     font-weight: 600;
 }
 
-#search-results li:hover::before {
+#search-results li:hover::before,
+#search-results li.selected::before {
     width: 4px;
 }
 
@@ -1349,7 +1351,6 @@ button:disabled {
     transform: none !important;
     position: relative;
     /* --- MODIFIED FOR 4:3 ASPECT RATIO --- */
-    min-height: 400px;
     /* Minimum height to ensure visibility */
     aspect-ratio: 3 / 4;
     /* Modern CSS aspect ratio */
@@ -2444,4 +2445,14 @@ button:disabled {
         font-size: 13px;
         padding: 8px 6px;
     }
+}
+
+.annotation-label.valid-link {
+    cursor: pointer;
+}
+
+.annotation-label.valid-link:hover {
+    color: #007bff;
+    transform: scale(1.05);
+    z-index: 101
 }

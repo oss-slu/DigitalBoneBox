@@ -1,0 +1,45 @@
+{
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Atlas (CV1): inferior aspect",
+      "text_content": "Atlas (CV1): inferior aspect",
+      "text_box": {
+        "x": 2895600.0,
+        "y": 4038600.0,
+        "width": 1357313.0,
+        "height": 230832.0,
+        "rotation_emu": 0.0,
+        "shape_id": "280"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [],
+      "target_regions": []
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Atlas (CV1): superior aspect",
+      "text_content": "Atlas (CV1): superior aspect",
+      "text_box": {
+        "x": 2820639.0,
+        "y": 1401143.0,
+        "width": 1447801.0,
+        "height": 230832.0,
+        "rotation_emu": 0.0,
+        "shape_id": "282"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [],
+      "target_regions": []
+    }
+  ],
+  "total_text_annotations": 2,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

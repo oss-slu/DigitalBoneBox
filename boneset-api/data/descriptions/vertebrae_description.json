@@ -1,0 +1,23 @@
+{
+    "name": "Vertebrae",
+    "id": "vertebrae",
+    "description": [
+        "There are 33 vertebrae that, along with intervertebral discs, make up the vertebral column.",
+        "It is divided into five regions.",
+        "Cervical (CV) = 7",
+        "Thoracic (TV) = 12",
+        "Lumbar  (LV) = 5",
+        "Sacral (SV) = 5 (fused)",
+        "Coccygeal (CoV) = 3-5  (fused)",
+        "There are two sets of curvatures",
+        "Primary curvatures ",
+        "are present at birth.",
+        "Thoracic ",
+        "Sacral",
+        "Secondary curvatures ",
+        "develop after birth.",
+        "Cervical",
+        "Lumbar"
+    ],
+    "images": ["vertebrae_image.png"]
+}

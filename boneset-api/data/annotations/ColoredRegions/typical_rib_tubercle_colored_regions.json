@@ -1,0 +1,123 @@
+{
+  "slide_number": 21,
+  "image_dimensions": {
+    "width": 12192000,
+    "height": 6858000
+  },
+  "colored_regions": [
+    {
+      "anatomical_name": "Pubis_and_Obturator_foramen",
+      "color": "008000",
+      "color_name": "green_variant",
+      "shape_id": "650",
+      "path_data": [
+        {
+          "path_width": 284530,
+          "path_height": 104093,
+          "commands": [
+            {
+              "type": "moveTo",
+              "x": 5132675,
+              "y": 1977770
+            },
+            {
+              "type": "lineTo",
+              "x": 4993880,
+              "y": 1998588
+            },
+            {
+              "type": "lineTo",
+              "x": 4848145,
+              "y": 2033286
+            },
+            {
+              "type": "lineTo",
+              "x": 4959181,
+              "y": 2074923
+            },
+            {
+              "type": "lineTo",
+              "x": 5049398,
+              "y": 2081863
+            },
+            {
+              "type": "lineTo",
+              "x": 5132675,
+              "y": 1977770
+            },
+            {
+              "type": "close"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "anatomical_name": "Pubis_and_Obturator_foramen",
+      "color": "008000",
+      "color_name": "green_variant",
+      "shape_id": "651",
+      "path_data": [
+        {
+          "path_width": 360867,
+          "path_height": 215125,
+          "commands": [
+            {
+              "type": "moveTo",
+              "x": 6555326,
+              "y": 1776523
+            },
+            {
+              "type": "lineTo",
+              "x": 6534507,
+              "y": 1866737
+            },
+            {
+              "type": "lineTo",
+              "x": 6638603,
+              "y": 1901435
+            },
+            {
+              "type": "lineTo",
+              "x": 6777399,
+              "y": 1908374
+            },
+            {
+              "type": "lineTo",
+              "x": 6832917,
+              "y": 1825100
+            },
+            {
+              "type": "lineTo",
+              "x": 6888435,
+              "y": 1797342
+            },
+            {
+              "type": "lineTo",
+              "x": 6895374,
+              "y": 1700188
+            },
+            {
+              "type": "lineTo",
+              "x": 6763519,
+              "y": 1693249
+            },
+            {
+              "type": "lineTo",
+              "x": 6638603,
+              "y": 1734886
+            },
+            {
+              "type": "lineTo",
+              "x": 6555326,
+              "y": 1776523
+            },
+            {
+              "type": "close"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "name": "Palatine bone",
+  "id": "palatine_bone",
+  "description": [
+    "Horizontal plate",
+    "Forms the posterior part of the hard palate.",
+    "Greater palatine foramen",
+    "An opening just lateral to the third molars of the upper jaw.",
+    "Transmits the greater palatine nerve and vessels.",
+    "Lesser palatine foramen",
+    "A smaller opening that lies posterior to the greater palatine foramen.",
+    "Usually found in the pyramid process of palatine bone.",
+    "Transmits the lesser palatine nerve and vessels."
+  ],
+  "images": ["inferior_palatine_bone_image.jpg"]
+}

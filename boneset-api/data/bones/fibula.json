@@ -1,0 +1,15 @@
+{
+    "name": "Fibula",
+    "id": "fibula",
+    "subBones": [
+        "fibula_head",
+        "fibula_shaft",
+        "interosseous_border",
+        "posterior_border",
+        "anterior_border",
+        "fibula_lateral_surface",
+        "fibula_medial_surface",
+        "fibula_posterior_surface",
+        "lateral_malleolus"
+    ]
+}

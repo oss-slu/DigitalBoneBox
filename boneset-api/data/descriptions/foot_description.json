@@ -1,0 +1,11 @@
+{
+  "name": "Foot",
+  "id": "foot",
+  "description": [
+
+  ],
+  "images": [
+        "foot_image.png",
+        "foot_image2.png"
+    ]
+}

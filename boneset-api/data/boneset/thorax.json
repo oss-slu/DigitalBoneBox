@@ -1,0 +1,11 @@
+{
+    "name": "Thorax",
+    "id": "thorax",
+    "bones": [
+        "sternum",
+        "clavicle",
+        "first_rib",
+        "typical_rib",
+        "scapula"
+    ]
+}

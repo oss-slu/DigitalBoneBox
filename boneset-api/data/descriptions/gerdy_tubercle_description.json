@@ -1,0 +1,12 @@
+{
+    "name": "Gerdy\u2019s tubercle",
+    "id": "gerdy_tubercle",
+    "description": [
+        "Raised area that emerges inferomedially from anterior aspect of lateral condyle",
+        "Is attached to iliotibial tract"
+    ],
+    "images": [
+        "tibia_image.png",
+        "tibia_top_image.png"
+    ]
+}

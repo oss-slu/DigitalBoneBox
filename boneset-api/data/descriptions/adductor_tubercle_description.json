@@ -1,0 +1,12 @@
+{
+    "name": "Adductor tubercle",
+    "id": "adductor_tubercle",
+    "description": [
+        "A projection that arises at the end of the medial supracondylar line on the superior surface of the medial condyle",
+        "Serves as attachment for the tendon of adductor magnus muscle"
+    ],
+    "images": [
+        "femur_bottom_image4.png",
+        "femur_bottom_image6.png"
+    ]
+}

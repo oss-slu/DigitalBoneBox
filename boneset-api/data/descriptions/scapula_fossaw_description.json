@@ -1,0 +1,29 @@
+{
+  "slide": 27,
+  "name": "Labels",
+  "id": "labels",
+  "description": [
+    "Fossae",
+    "The anterior (costal) surface is known as the ",
+    "subscapular fossa ",
+    "and provides attachment for the subscapularis muscle.",
+    "The posterior (dorsal) surface is divided into the supraspinous and infraspinous fossa by the spine of the scapula.",
+    "The ",
+    "supraspinous fossa ",
+    "provides the origin of the supraspinatus muscle.",
+    "The ",
+    "infraspinous fossa ",
+    "provides the origin of the infraspinatus muscle.",
+    "The lateral angle presents the glenoid fossa.",
+    "The ",
+    "glenoid fossa ",
+    "is a shallow depression that articulates with the head of the humerus to create a ball-and-socket type synovial joint.",
+    "The ",
+    "supraglenoid tubercle ",
+    "sits above the glenoid fossa and provides the origin for the long head of the biceps brachii muscle.",
+    "The ",
+    "infraglenoid tubercle ",
+    "sits below the glenoid fossa and provides the origin for the long head of the triceps brachii muscle."
+  ],
+  "images": ["Scapula_Left_Image.jpg", "Scapula_Right_Image.jpg", "Scapula_Extra_Image.jpg"]
+}

@@ -1,0 +1,8 @@
+{
+    "name": "Articular surfaces",
+    "id": "thoracic_articular_surfaces",
+    "description": [
+        "The articular surfaces are closest to the coronal plane."
+    ],
+    "images": ["thoracic_(superior_aspect)_image.png", "thoracic_(inferior_aspect)_image.png", "thoracic_(lateral_aspect)_image.png"]
+}

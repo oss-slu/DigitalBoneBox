@@ -1,0 +1,12 @@
+{
+  "name": "Anterior",
+  "id": "anterior",
+  "subBones": [
+    "anterior_frontal_bone",
+    "anterior_mandible",
+    "anterior_maxilla",
+    "anterior_nasal_bone",
+    "anterior_sphenoid_bone",
+    "anterior_zygomatic_bone"
+  ]
+}

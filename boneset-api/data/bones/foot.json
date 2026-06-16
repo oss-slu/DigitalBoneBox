@@ -1,0 +1,21 @@
+{
+    "name": "Foot",
+    "id": "foot",
+    "subBones": [
+        "calcaneus",
+        "sustentaculum_tali",
+        "tarsal_sinus",
+        "talus",
+        "navicular",
+        "cuboid",
+        "medial_cuneiform",
+        "intermediate_cuneiform",
+        "lateral_cuneiform",
+        "metatarsals_and_phalanges",
+        "1st_metatarsal",
+        "proximal_phalanx",
+        "first_distal_phalanx",
+        "2nd-5th_metatarsals",
+        "phalanges"
+    ]
+}

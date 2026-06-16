@@ -1,0 +1,10 @@
+{
+    "name": "Auricular surface",
+    "id": "auricular_surface",
+    "description": [
+        "Roughened surface on the posterior part of the ilium.",
+        "Normally covered with cartilage",
+        "Marks the point of articulation for the lateral surface of the sacrum at the sacroiliac joint."
+    ],
+    "images": ["auricular_surface_image.jpg"]
+}

@@ -1,0 +1,10 @@
+{
+    "name": "Articular surface for ilium",
+    "id": "sacrum_and_coccyx_articular_surface_for_ilium",
+    "description": [
+        "A flattened surface on the lateral border of the sacrum.",
+        "Covered in hyaline cartilage.",
+        "Articulates with the ilium to form the sacroiliac joint."
+    ],
+    "images": ["sacrum_(posterior_aspect)_image.png"]
+}

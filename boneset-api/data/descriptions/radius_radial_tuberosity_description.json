@@ -1,0 +1,9 @@
+{
+    "name": "Radial tuberosity",
+    "id": "radial_tuberosity",
+    "description": [
+        "A rough protrusion on the medial surface and is located just below the neck.",
+        "Provides the insertion for the biceps brachii muscle."
+    ],
+    "images": ["radius_head_left_image.jpg", "radius_head_right_image.jpg"]
+}

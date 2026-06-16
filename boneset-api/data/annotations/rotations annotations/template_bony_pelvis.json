@@ -1,0 +1,29 @@
+{
+  "bone_set": "Bony Pelvis",
+  "display_format": "side-by-side",
+  "extracted_from_slide": 2,
+  "normalized_geometry": {
+    "layout": "side-by-side",
+    "left": {
+      "normX": 0.0,
+      "normY": 0.026786097711103796,
+      "normW": 0.4252635273707576,
+      "normH": 0.9732139022888963,
+      "rot_deg": -16.998966666666668,
+      "rot_emu": -1019938.0,
+      "flipH": false,
+      "flipV": false
+    },
+    "right": {
+      "normX": 0.5142368858079116,
+      "normY": 0.0,
+      "normW": 0.48576311419208834,
+      "normH": 0.9439343204498732,
+      "rot_deg": 0.0,
+      "rot_emu": 0.0,
+      "flipH": false,
+      "flipV": false
+    },
+    "norm_basis": "two-image-union"
+  }
+}

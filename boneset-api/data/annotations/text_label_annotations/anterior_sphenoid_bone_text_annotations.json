@@ -1,0 +1,142 @@
+{
+  "slide_number": 6,
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Lesser wing",
+      "text_content": "Lesser wing",
+      "text_box": {
+        "x": 8092412.0,
+        "y": 2716860.0,
+        "width": 533400.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "257"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [],
+      "target_regions": []
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Greater wing",
+      "text_content": "Greater wing",
+      "text_box": {
+        "x": 8092412.0,
+        "y": 3029180.0,
+        "width": 594388.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "258"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [],
+      "target_regions": []
+    },
+    {
+      "annotation_id": "annot_3",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Superior orbital fissure",
+      "text_content": "Superior orbital fissure",
+      "text_box": {
+        "x": 2715798.0,
+        "y": 1534000.0,
+        "width": 713202.0,
+        "height": 338554.0,
+        "rotation_emu": 0.0,
+        "shape_id": "260"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_4",
+          "kind": "connector",
+          "start_point": {
+            "x": 3429000.0,
+            "y": 1703277.0
+          },
+          "end_point": {
+            "x": 4800600.0,
+            "y": 3657477.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "266",
+          "bbox": {
+            "x": 3429000.0,
+            "y": 1703277.0,
+            "width": 1371600.0,
+            "height": 1954200.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4800000.0,
+          "y": 3656000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_4",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Optic canal",
+      "text_content": "Optic canal",
+      "text_box": {
+        "x": 3810000.0,
+        "y": 1536462.0,
+        "width": 544826.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "261"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_3",
+          "kind": "connector",
+          "start_point": {
+            "x": 4354826.0,
+            "y": 1644184.0
+          },
+          "end_point": {
+            "x": 5121326.0,
+            "y": 3692584.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "265",
+          "bbox": {
+            "x": 4354826.0,
+            "y": 1644184.0,
+            "width": 766500.0,
+            "height": 2048400.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 5120000.0,
+          "y": 3696000.0
+        }
+      ]
+    }
+  ],
+  "total_text_annotations": 4,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

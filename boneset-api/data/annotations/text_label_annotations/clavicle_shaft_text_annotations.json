@@ -1,0 +1,238 @@
+{
+  "slide_number": 10,
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Clavicle (superior aspect)",
+      "text_content": "Clavicle (superior aspect)",
+      "text_box": {
+        "x": 4968787.0,
+        "y": 3001418.0,
+        "width": 1237037.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "335"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [],
+      "target_regions": []
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Clavicle (inferior aspect)",
+      "text_content": "Clavicle (inferior aspect)",
+      "text_box": {
+        "x": 5124988.0,
+        "y": 5633469.0,
+        "width": 1197864.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "336"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [],
+      "target_regions": []
+    },
+    {
+      "annotation_id": "annot_3",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Subclavian groove",
+      "text_content": "Subclavian groove",
+      "text_box": {
+        "x": 5562332.0,
+        "y": 3886200.0,
+        "width": 760520.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "341"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_2",
+          "kind": "connector",
+          "start_point": {
+            "x": 5334032.0,
+            "y": 3993922.0
+          },
+          "end_point": {
+            "x": 5562332.0,
+            "y": 3993922.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "343",
+          "bbox": {
+            "x": 5334032.0,
+            "y": 3993922.0,
+            "width": 228300.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 5336000.0,
+          "y": 3992000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_4",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Trapezoid line",
+      "text_content": "Trapezoid line",
+      "text_box": {
+        "x": 4116280.0,
+        "y": 4052249.0,
+        "width": 760520.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "344"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_3",
+          "kind": "connector",
+          "start_point": {
+            "x": 3962380.0,
+            "y": 4159971.0
+          },
+          "end_point": {
+            "x": 4116280.0,
+            "y": 4159971.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "345",
+          "bbox": {
+            "x": 3962380.0,
+            "y": 4159971.0,
+            "width": 153900.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 3960000.0,
+          "y": 4160000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_5",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Conoid tubercle",
+      "text_content": "Conoid tubercle",
+      "text_box": {
+        "x": 2971215.0,
+        "y": 5429830.0,
+        "width": 760520.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "348"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_5",
+          "kind": "connector",
+          "start_point": {
+            "x": 3731735.0,
+            "y": 5537552.0
+          },
+          "end_point": {
+            "x": 3936935.0,
+            "y": 5537552.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "349",
+          "bbox": {
+            "x": 3731735.0,
+            "y": 5537552.0,
+            "width": 205200.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 3936000.0,
+          "y": 5536000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_6",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Impression for costoclavicular ligament",
+      "text_content": "Impression for costoclavicular ligament",
+      "text_box": {
+        "x": 6199353.0,
+        "y": 4677141.0,
+        "width": 760520.0,
+        "height": 461665.0,
+        "rotation_emu": 0.0,
+        "shape_id": "353"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_7",
+          "kind": "connector",
+          "start_point": {
+            "x": 6959873.0,
+            "y": 4907974.0
+          },
+          "end_point": {
+            "x": 7086473.0,
+            "y": 4907974.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "354",
+          "bbox": {
+            "x": 6959873.0,
+            "y": 4907974.0,
+            "width": 126600.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 7088000.0,
+          "y": 4904000.0
+        }
+      ]
+    }
+  ],
+  "total_text_annotations": 6,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

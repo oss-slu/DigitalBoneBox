@@ -1,0 +1,12 @@
+{
+    "name": "Anterior surface",
+    "id": "anterior_surface",
+    "description": [
+        "Separated from skin by pre-patellar bursa",
+        "Most of surface is covered by tendon of quadriceps femoris",
+        "The patellar tendonpartially attaches to inferior part of anterior surface before blending with quadriceps femoris tendon"
+    ],
+    "images": [
+        "patella_image.png"
+    ]
+}

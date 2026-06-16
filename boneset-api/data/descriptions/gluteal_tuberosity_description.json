@@ -1,0 +1,11 @@
+{
+    "name": "Gluteal tuberosity",
+    "id": "gluteal_tuberosity",
+    "description": [
+        "An elongated ridge that lies distal to greater trochanter and continues distally as lateral lip of linea aspera",
+        "Insertion site for deeper fibers of distal half of gluteus maximus muscle"
+    ],
+    "images": [
+        "femur_top_image.png"
+    ]
+}

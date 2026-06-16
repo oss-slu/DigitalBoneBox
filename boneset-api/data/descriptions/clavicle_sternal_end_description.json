@@ -1,0 +1,11 @@
+{
+  "slide": 12,
+  "name": "Sternal end",
+  "id": "sternal_end",
+  "description": [
+    "The medial end that articulates with the manubrium of the sternum.",
+    "Provides attachment for the lateral fibers of the sternohyoid muscle on the posterior surface.",
+    "Provides proximal attachment for the clavicular head of the sternocleidomastoid muscle."
+  ],
+  "images": ["Clavicle_Top_Image.jpg", "Clavicle_Bottom_Image.jpg"]
+}

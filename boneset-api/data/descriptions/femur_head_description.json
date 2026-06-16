@@ -1,0 +1,18 @@
+{
+    "name": "Head",
+    "id": "femur_head",
+    "description": [
+        "Faces anteriorly, superiorly, and medially",
+        "Spheroidal in shape",
+        "Articulates with the acetabulum of the pelvis to form the hip joint",
+        "Surface is mostly smooth, except for then fovea on posteroinferior surface",
+        "Completely enclosed by the joint capsule",
+        "Fovea is a shallow pit on posteromedial surface of head",
+        "Serves as attachment for round ligament of the femur"
+    ],
+    "images": [
+        "femur_top_image2.png",
+        "femur_medial_aspect_image.png",
+        "femur_top_image3.png"
+    ]
+}

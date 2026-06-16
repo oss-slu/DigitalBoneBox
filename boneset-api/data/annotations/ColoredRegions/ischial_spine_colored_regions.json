@@ -1,0 +1,66 @@
+{
+  "slide_number": 13,
+  "images": [
+    {
+      "index": 0,
+      "name": "pelvis_lat_blk.psd",
+      "width": 2236557,
+      "height": 3535362,
+      "colored_regions": [
+        {
+          "anatomical_name": "Ischial Spine (Lateral View)",
+          "color": "008000",
+          "path_data": [
+            {
+              "path_width": 151637,
+              "path_height": 183238,
+              "commands": [
+                {"type": "moveTo", "x": 82137, "y": 0},
+                {"type": "lineTo", "x": 25273, "y": 37912},
+                {"type": "lineTo", "x": 0, "y": 63186},
+                {"type": "lineTo", "x": 0, "y": 101097},
+                {"type": "lineTo", "x": 18955, "y": 132690},
+                {"type": "lineTo", "x": 63182, "y": 183238},
+                {"type": "lineTo", "x": 126364, "y": 183238},
+                {"type": "lineTo", "x": 151637, "y": 50549},
+                {"type": "lineTo", "x": 82137, "y": 0},
+                {"type": "close"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "pelvis_med_blk.psd",
+      "width": 2554738,
+      "height": 3429000,
+      "colored_regions": [
+        {
+          "anatomical_name": "Ischial Spine (Medial View)",
+          "color": "008000",
+          "path_data": [
+            {
+              "path_width": 176909,
+              "path_height": 214831,
+              "commands": [
+                {"type": "moveTo", "x": 56864, "y": 0},
+                {"type": "lineTo", "x": 12637, "y": 69505},
+                {"type": "lineTo", "x": 0, "y": 145327},
+                {"type": "lineTo", "x": 31591, "y": 202194},
+                {"type": "lineTo", "x": 75818, "y": 214831},
+                {"type": "lineTo", "x": 145319, "y": 214831},
+                {"type": "lineTo", "x": 176909, "y": 151646},
+                {"type": "lineTo", "x": 176909, "y": 75823},
+                {"type": "lineTo", "x": 88455, "y": 44230},
+                {"type": "lineTo", "x": 56864, "y": 0},
+                {"type": "close"}
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

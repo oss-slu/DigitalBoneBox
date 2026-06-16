@@ -1,0 +1,138 @@
+{
+  "slide_number": 7,
+  "images": [
+    {
+      "index": 0,
+      "name": "pelvis_lat_blk.psd",
+      "width": 2236557,
+      "height": 3535362,
+      "colored_regions": [
+        {
+          "anatomical_name": "Posterior Superior Iliac Spine - Left",
+          "color": "008000",
+          "path_data": [
+            {
+              "path_width": 163357,
+              "path_height": 336862,
+              "commands": [
+                {
+                  "type": "moveTo",
+                  "x": 92940,
+                  "y": 337
+                },
+                {
+                  "type": "cubicBezTo",
+                  "x1": 65802,
+                  "y1": 5241,
+                  "x2": 16020,
+                  "y2": 62911,
+                  "x": 530,
+                  "y": 107559
+                },
+                {
+                  "type": "cubicBezTo",
+                  "x1": 353,
+                  "y1": 161114,
+                  "x2": 177,
+                  "y2": 214668,
+                  "x": 0,
+                  "y": 268223
+                },
+                {
+                  "type": "lineTo",
+                  "x": 109048,
+                  "y": 336862
+                },
+                {
+                  "type": "lineTo",
+                  "x": 158677,
+                  "y": 198913
+                },
+                {
+                  "type": "lineTo",
+                  "x": 163357,
+                  "y": 78137
+                },
+                {
+                  "type": "cubicBezTo",
+                  "x1": 152401,
+                  "y1": 45041,
+                  "x2": 120078,
+                  "y2": -4567,
+                  "x": 92940,
+                  "y": 337
+                },
+                {
+                  "type": "close"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "pelvis_med_blk.psd",
+      "width": 2554738,
+      "height": 3429000,
+      "colored_regions": [
+        {
+          "anatomical_name": "Posterior Superior Iliac Spine - Right",
+          "color": "008000",
+          "path_data": [
+            {
+              "path_width": 208500,
+              "path_height": 420061,
+              "commands": [
+                {
+                  "type": "moveTo",
+                  "x": 171123,
+                  "y": 113682
+                },
+                {
+                  "type": "lineTo",
+                  "x": 23296,
+                  "y": 0
+                },
+                {
+                  "type": "lineTo",
+                  "x": 0,
+                  "y": 147111
+                },
+                {
+                  "type": "lineTo",
+                  "x": 27974,
+                  "y": 277629
+                },
+                {
+                  "type": "lineTo",
+                  "x": 45482,
+                  "y": 396234
+                },
+                {
+                  "type": "lineTo",
+                  "x": 107409,
+                  "y": 420061
+                },
+                {
+                  "type": "lineTo",
+                  "x": 208500,
+                  "y": 249460
+                },
+                {
+                  "type": "lineTo",
+                  "x": 171123,
+                  "y": 113682
+                },
+                {
+                  "type": "close"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

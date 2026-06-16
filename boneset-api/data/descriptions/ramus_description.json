@@ -1,0 +1,11 @@
+{
+    "name": "Ramus",
+    "id": "ramus",
+    "description": [
+        "The inferior portion of the ischium.",
+        "Continuous with the inferior ramus of the Pubis.",
+        "Forms part of the border of the obturator foramen.",
+        "Provides attachment for the ischiocavernosus and the crus of the penis or clitoris."
+    ], 
+    "images": ["ramus_image1.jpg", "ramus_image2.jpg"]
+}

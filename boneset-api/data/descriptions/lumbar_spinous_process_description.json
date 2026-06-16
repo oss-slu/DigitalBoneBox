@@ -1,0 +1,9 @@
+{
+    "name": "Spinous process",
+    "id": "lumbar_spinous_process",
+    "description": [
+        "Short, thick, broad, and directed posteriorly.",
+        "Thickened along its posterior and inferior borders."
+    ],
+    "images": ["lumbar_(superior_aspect)_image.png", "lumbar_(inferior_aspect)_image.png", "lumbar_(lateral_aspect)_image.png"]
+}

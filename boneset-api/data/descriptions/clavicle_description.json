@@ -1,0 +1,13 @@
+{
+  "slide": 8,
+  "name": "Clavicle",
+  "id": "clavicle",
+  "description": [
+    "Also known as the collar bone.",
+    "It is the most frequently broken bone in the body.",
+    "It is convex medially and concave laterally on its anterior surface.",
+    "It articulates medially with the manubrium of the sternum and laterally with the acromion process of the scapula.",
+    "Acts as a brace or strut for the shoulder and allows the upper limb to move freely on the trunk."
+  ],
+  "images": ["Clavicle_Left_View_Image.jpg", "Clavicle_Right_View_Image.jpg"]
+}

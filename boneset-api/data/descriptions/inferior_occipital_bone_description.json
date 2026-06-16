@@ -1,0 +1,17 @@
+{
+  "name": "Occipital bone",
+  "id": "occipital_bone",
+  "description": [
+    "Foramen lacerum",
+    "An opening bounded by the pterygoid process, petrous part of the temporal and basilar part of the occipital bones. Transmits the greater petrosal nerve. (not part of the occipital bone)",
+    "Jugular foramen",
+    "An opening between the petrous part of the temporal bone and the jugular notch of the occipital bone. Transmits the internal jugular vein, the glossopharyngeal nerve (CN IX), vagus nerve (CN X), and the accessory nerve (CN XI).",
+    "Hypoglossal canal",
+    "An opening anterior and superior to the condyle. Transmits the hypoglossal nerve (CN XII).",
+    "Occipital condyle",
+    "A smooth surface that articulates with the first cervical vertebrae (atlas).",
+    "Foramen magnum",
+    "A large opening in the anterior and midline part of the occipital bone. Transmits the medulla of the brainstem, the vertebral vessels, and the spinal roots of the accessory nerve (CN XI)."
+  ],
+  "images": ["inferior_occipital_bone_image.jpg"]
+}

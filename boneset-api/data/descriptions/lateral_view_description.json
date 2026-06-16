@@ -1,0 +1,21 @@
+{
+  "name": "Lateral view",
+  "id": "lateral_view",
+  "description": [
+    "Lateral view",
+    "The lateral view can be divided into 3 sections:",
+    "Facial - anterior",
+    "Temporal - middle",
+    "Occipital - posterior",
+    "The temporal section is separated by the zygomatic arch into into a",
+    "temporal fossa",
+    "superiorly and an infratemporal fossa inferiorly.",
+    "The origin of the temporalis muscle attaches to the temporal fossa",
+    "The",
+    "pterion",
+    "is located in the temporal fossa and marks the junction where the frontal, parietal, temporal, and sphenoid bones meet.",
+    "The pterion is an important landmark because it overlies the anterior branch of the middle meningeal artery.",
+    "Damage to this area of the skull can cause a rupture of this artery"
+  ],
+  "images": ["lateral_image.jpg"]
+}

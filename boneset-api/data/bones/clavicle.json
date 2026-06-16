@@ -1,0 +1,9 @@
+{
+  "name": "Clavicle",
+  "id": "clavicle",
+  "subbones": [
+    "clavicle_sternal_end",
+    "clavicle_shaft",
+    "clavicle_acromial_end"
+  ]
+}

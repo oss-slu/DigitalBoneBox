@@ -1,0 +1,172 @@
+{
+  "slide_number": 9,
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Frontal process",
+      "text_content": "Frontal process",
+      "text_box": {
+        "x": 2895601.0,
+        "y": 2452463.0,
+        "width": 685799.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "335"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_2",
+          "kind": "connector",
+          "start_point": {
+            "x": 5486400.0,
+            "y": 2560185.0
+          },
+          "end_point": {
+            "x": 3581400.0,
+            "y": 2560185.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "338",
+          "bbox": {
+            "x": 3581400.0,
+            "y": 2560185.0,
+            "width": 1905000.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 5488000.0,
+          "y": 2560000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Infraorbital foramen",
+      "text_content": "Infraorbital foramen",
+      "text_box": {
+        "x": 7810905.0,
+        "y": 2809470.0,
+        "width": 883833.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "340"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [],
+      "target_regions": []
+    },
+    {
+      "annotation_id": "annot_3",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Alveolar process",
+      "text_content": "Alveolar process",
+      "text_box": {
+        "x": 7467600.0,
+        "y": 4887469.0,
+        "width": 762000.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "342"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_4",
+          "kind": "connector",
+          "start_point": {
+            "x": 7467600.0,
+            "y": 4995191.0
+          },
+          "end_point": {
+            "x": 6554400.0,
+            "y": 4995191.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "341",
+          "bbox": {
+            "x": 6554400.0,
+            "y": 4995191.0,
+            "width": 913200.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 6552000.0,
+          "y": 4992000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_4",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Zygomatic process",
+      "text_content": "Zygomatic process",
+      "text_box": {
+        "x": 2734934.0,
+        "y": 3936639.0,
+        "width": 800100.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "337"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_1",
+          "kind": "connector",
+          "start_point": {
+            "x": 4182734.0,
+            "y": 4044361.0
+          },
+          "end_point": {
+            "x": 3535034.0,
+            "y": 4044361.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "336",
+          "bbox": {
+            "x": 3535034.0,
+            "y": 4044361.0,
+            "width": 647700.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4184000.0,
+          "y": 4048000.0
+        }
+      ]
+    }
+  ],
+  "total_text_annotations": 4,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

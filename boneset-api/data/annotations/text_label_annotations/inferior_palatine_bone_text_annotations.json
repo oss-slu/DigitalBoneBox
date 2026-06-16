@@ -1,0 +1,178 @@
+{
+  "slide_number": 23,
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Horizontal plate",
+      "text_content": "Horizontal plate",
+      "text_box": {
+        "x": 2936419.0,
+        "y": 1752600.0,
+        "width": 721182.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "835"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_1",
+          "kind": "connector",
+          "start_point": {
+            "x": 3994201.0,
+            "y": 1860322.0
+          },
+          "end_point": {
+            "x": 3657601.0,
+            "y": 1860322.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "836",
+          "bbox": {
+            "x": 3657601.0,
+            "y": 1860322.0,
+            "width": 336600.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        },
+        {
+          "line_id": "line_6",
+          "kind": "connector",
+          "start_point": {
+            "x": 3994248.0,
+            "y": 1860322.0
+          },
+          "end_point": {
+            "x": 5372101.0,
+            "y": 3200400.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "847",
+          "bbox": {
+            "x": 3994248.0,
+            "y": 1860322.0,
+            "width": 1377853.0,
+            "height": 1340078.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 5376000.0,
+          "y": 3200000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Greater palatine foramen",
+      "text_content": "Greater palatine foramen",
+      "text_box": {
+        "x": 7451042.0,
+        "y": 1654192.0,
+        "width": 1143000.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "837"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_2",
+          "kind": "connector",
+          "start_point": {
+            "x": 7451042.0,
+            "y": 1761914.0
+          },
+          "end_point": {
+            "x": 7070042.0,
+            "y": 1761914.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "839",
+          "bbox": {
+            "x": 7070042.0,
+            "y": 1761914.0,
+            "width": 381000.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 7072000.0,
+          "y": 1760000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_3",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Lesser palatine foramen",
+      "text_content": "Lesser palatine foramen",
+      "text_box": {
+        "x": 7523210.0,
+        "y": 1957365.0,
+        "width": 1107980.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "838"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_3",
+          "kind": "connector",
+          "start_point": {
+            "x": 7523210.0,
+            "y": 2065087.0
+          },
+          "end_point": {
+            "x": 7363010.0,
+            "y": 2065087.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "840",
+          "bbox": {
+            "x": 7363010.0,
+            "y": 2065087.0,
+            "width": 160200.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 7360000.0,
+          "y": 2064000.0
+        }
+      ]
+    }
+  ],
+  "total_text_annotations": 3,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

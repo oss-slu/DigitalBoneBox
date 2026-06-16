@@ -1,0 +1,17 @@
+{
+  "name": "Zygomatic bone",
+  "id": "zygomatic_bone",
+  "description": [
+    "An irregular shaped bone that, together with the maxilla, forms the \u201ccheek\u201d bones.",
+    "Frontal process",
+    "The portion of bone that extends superiorly to join with the frontal bone.",
+    "Contributes to the lateral border of the orbit.",
+    "Zygomaticofacial foramen",
+    "A small opening just inferior and lateral to the orbit.",
+    "Transmits the zygomaticofacial nerve and vessels.",
+    "Temporal process",
+    "The portion of bone that extends laterally and posteriorly to join the temporal bone.",
+    "Forms part of the zygomatic arch."
+  ],
+  "images": ["anterior_zygomatic_bone_image.jpg"]
+}

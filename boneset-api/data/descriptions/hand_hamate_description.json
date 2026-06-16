@@ -1,0 +1,9 @@
+{
+    "name": "Hamate",
+    "id": "hamate",
+    "description": [
+        "An irregular shaped bone with a hamulus (hook) on its palmar surface.",
+        "Hamulus is attached to flexor retinaculum."
+    ],
+    "images": ["hand_left_image.jpg", "hand_right_image.jpg"]
+}

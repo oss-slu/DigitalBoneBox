@@ -1,0 +1,12 @@
+{
+  "name": "Radius",
+  "id": "radius",
+  "subBones": [
+    "radius_head",
+    "radius_neck",
+    "radius_radial_tuberosity",
+    "radius_ulnar_notch",
+    "radius_styloid_process",
+    "radius_dorsal_tubercle"
+  ]
+}

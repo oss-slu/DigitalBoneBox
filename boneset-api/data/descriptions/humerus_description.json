@@ -1,0 +1,11 @@
+{
+    "name": "Humerus",
+    "id": "humerus",
+    "description": [
+        "Longest bone in upper limb",
+        "Articulates at proximal end with scapula through shoulder joint",
+        "Articulates at distal end with radius and ulna at elbow joint",
+        "No labels"
+    ],
+  "images": ["humerus_left_image.jpg","humerus_right_image.jpg"]
+}

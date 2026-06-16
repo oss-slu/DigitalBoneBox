@@ -1,0 +1,351 @@
+{
+  "slide_number": 3,
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Iliac Crest",
+      "text_content": "Iliac Crest",
+      "text_box": {
+        "x": 6581116,
+        "y": 370000,
+        "width": 595035,
+        "height": 215444,
+        "rotation": 0,
+        "shape_id": "148"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId13",
+        "target": "/ppt/slides/slide5.xml",
+        "target_slide": 5
+      },
+      "pointer_lines": [
+        {
+          "line_id": "line_1",
+          "line_type": "straight_arrow",
+          "start_point": {
+            "x": 5700000,
+            "y": 477722
+          },
+          "end_point": {
+            "x": 6581116,
+            "y": 477722
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "149"
+        },
+        {
+          "line_id": "line_2",
+          "line_type": "straight_arrow",
+          "start_point": {
+            "x": 7176151,
+            "y": 477722
+          },
+          "end_point": {
+            "x": 8130000,
+            "y": 477722
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "150"
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 6581116,
+          "y": 477722
+        },
+        {
+          "x": 8389051,
+          "y": 477722
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Anterior Superior Iliac Spine",
+      "text_content": "Anterior Superior Iliac Spine",
+      "text_box": {
+        "x": 6557752,
+        "y": 1400000,
+        "width": 766897,
+        "height": 461665,
+        "rotation": 0,
+        "shape_id": "151"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId14",
+        "target": "/ppt/slides/slide6.xml",
+        "target_slide": 6
+      },
+      "pointer_lines": [
+        {
+          "line_id": "line_3",
+          "line_type": "straight_arrow",
+          "start_point": {
+            "x": 6300000,
+            "y": 1400000
+          },
+          "end_point": {
+            "x": 6680000,
+            "y": 1400000
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "152"
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 6557752,
+          "y": 1109320
+        },
+        {
+          "x": 6421485,
+          "y": 1747672
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_3",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Anterior Inferior Iliac Spine",
+      "text_content": "Anterior Inferior Iliac Spine",
+      "text_box": {
+        "x": 6531485,
+        "y": 2050000,
+        "width": 766897,
+        "height": 461665,
+        "rotation": 0,
+        "shape_id": "153"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId15",
+        "target": "/ppt/slides/slide6.xml",
+        "target_slide": 6
+      },
+      "pointer_lines": [
+        {
+          "line_id": "line_4",
+          "line_type": "straight_arrow",
+          "start_point": {
+            "x": 6230000,
+            "y": 2150000
+          },
+          "end_point": {
+            "x": 6450000,
+            "y": 2150000
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "154"
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 6421485,
+          "y": 1747672
+        },
+        {
+          "x": 6557752,
+          "y": 1109320
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_4",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Posterior Inferior Iliac Spine",
+      "text_content": "Posterior Inferior Iliac Spine",
+      "text_box": {
+        "x": 8537969,
+        "y": 3000000,
+        "width": 766897,
+        "height": 461665,
+        "rotation": 0,
+        "shape_id": "155"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId16",
+        "target": "/ppt/slides/slide7.xml",
+        "target_slide": 7
+      },
+      "pointer_lines": [
+        {
+          "line_id": "line_5",
+          "line_type": "straight_arrow",
+          "start_point": {
+            "x": 9303518,
+            "y": 1792983
+          },
+          "end_point": {
+            "x": 9421418,
+            "y": 2104383
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "156"
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 9421418,
+          "y": 2104383
+        },
+        {
+          "x": 9531990,
+          "y": 1340019
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_5",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Posterior Superior Iliac Spine",
+      "text_content": "Posterior Superior Iliac Spine",
+      "text_box": {
+        "x": 8500000,
+        "y": 10000,
+        "width": 766897,
+        "height": 461665,
+        "rotation": 0,
+        "shape_id": "157"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId17",
+        "target": "/ppt/slides/slide7.xml",
+        "target_slide": 7
+      },
+      "pointer_lines": [
+        {
+        "line_id": "line_6",
+        "line_type": "straight_arrow",
+        "start_point": {
+            "x": 9750000,
+            "y": 950000
+        },
+        "end_point": {
+            "x": 9750000,
+            "y": 1950000
+        },
+        "style": {
+            "width": 9525,
+            "arrow_head": "none"
+        },
+        "shape_id": "158"
+        },
+        {
+          "line_id": "line_7",
+          "line_type": "straight_arrow",
+          "start_point": {
+            "x": 8822440,
+            "y": 716000
+          },
+          "end_point": {
+            "x": 8922440,
+            "y": 1992000
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "160"
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 9531990,
+          "y": 1340019
+        },
+        {
+          "x": 8922440,
+          "y": 1411877
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_6",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Auricular surface",
+      "text_content": "Auricular surface",
+      "text_box": {
+        "x": 7850000,
+        "y": 10000,
+        "width": 624749,
+        "height": 338554,
+        "rotation": 0,
+        "shape_id": "159"
+      },
+      "has_hyperlink": true,
+      "hyperlink": {
+        "rId": "rId18",
+        "target": "/ppt/slides/slide8.xml",
+        "target_slide": 8
+      },
+      "pointer_lines": [
+        {
+          "line_id": "line_7",
+          "line_type": "straight_arrow",
+          "start_point": {
+            "x": 8289051,
+            "y": 500000
+          },
+          "end_point": {
+            "x": 8500000,
+            "y": 1800000
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "160"
+        },
+        {
+          "line_id": "line_2",
+          "line_type": "straight_arrow",
+          "start_point": {
+            "x": 8589051,
+            "y": 2300000
+          },
+          "end_point": {
+            "x": 8789051,
+            "y": 2800000
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "150"
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 8922440,
+          "y": 1411877
+        },
+        {
+          "x": 8389051,
+          "y": 307722
+        }
+      ]
+    }
+  ],
+  "total_text_annotations": 6
+}

@@ -1,0 +1,12 @@
+{
+  "name": "Parietal bone",
+  "id": "parietal_bone",
+  "description": [
+    "Makes up the large, curved portion superior, lateral and posterior skull.",
+    "Joins with the posterior part of the frontal bone at the",
+    "coronal suture.",
+    "Joins with the superior part of the occipital bone at the",
+    "lambdoid suture."
+  ],
+  "images": ["lateral_view_image.jpg"]
+}

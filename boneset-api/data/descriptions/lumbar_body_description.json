@@ -1,0 +1,10 @@
+{
+    "name": "Body",
+    "id": "lumbar_body",
+    "description": [
+        "Bodies are large to support body weight",
+        "When viewed from superior or inferior aspect, bodies look kidney-shaped.",
+        "Body is wider transversely."
+    ],
+    "images": ["lumbar_(superior_aspect)_image.png", "lumbar_(inferior_aspect)_image.png", "lumbar_(lateral_aspect)_image.png"]
+}

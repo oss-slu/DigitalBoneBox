@@ -1,0 +1,10 @@
+{
+  "name": "Skull",
+  "id": "skull",
+  "bones": [
+    "anterior",
+    "lateral",
+    "inferior",
+    "superior"
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "name": "Temporal bone",
+  "id": "temporal_bone",
+  "description": [
+    "Temporal bone",
+    "Petrous part",
+    "An elevated portion of bone that resembles a mountain.",
+    "The petrous ridge separates the middle cranial fossa from the posterior cranial fossa.",
+    "Petrous = rock like.",
+    "Squamous part",
+    "The flattened part of bone that extends superiorly towards the lateral part of the skull.",
+    "Internal acoustic meatus",
+    "An opening in the medial side of the petrous part just superior and anterior to the jugular foramen.",
+    "Transmits the facial nerve (CN VII), the vestibulocochlear nerve (CN VIII), and the labyrinthine artery.",
+    "Arcuate eminence",
+    "A rounded elevation on the superior aspect of the petrous part.",
+    "Indicates the position of the underlying anterior semicircular canal of inner ear."
+  ],
+  "images": ["superior_temporal_bone_image.jpg"]
+}

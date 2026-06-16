@@ -1,0 +1,298 @@
+{
+  "slide_number": 21,
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Incisive foramen",
+      "text_content": "Incisive foramen",
+      "text_box": {
+        "x": 7543800.0,
+        "y": 2393019.0,
+        "width": 752390.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "751"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_1",
+          "kind": "connector",
+          "start_point": {
+            "x": 7543800.0,
+            "y": 2500741.0
+          },
+          "end_point": {
+            "x": 5943600.0,
+            "y": 2500741.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "752",
+          "bbox": {
+            "x": 5943600.0,
+            "y": 2500741.0,
+            "width": 1600200.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 5944000.0,
+          "y": 2504000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Palatine process",
+      "text_content": "Palatine process",
+      "text_box": {
+        "x": 7543800.0,
+        "y": 2895600.0,
+        "width": 752390.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "753"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_2",
+          "kind": "connector",
+          "start_point": {
+            "x": 7543800.0,
+            "y": 3003322.0
+          },
+          "end_point": {
+            "x": 6324600.0,
+            "y": 3003322.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "754",
+          "bbox": {
+            "x": 6324600.0,
+            "y": 3003322.0,
+            "width": 1219200.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 6328000.0,
+          "y": 3000000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_3",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Median palatine suture",
+      "text_content": "Median palatine suture",
+      "text_box": {
+        "x": 7543800.0,
+        "y": 2667907.0,
+        "width": 1066800.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "755"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_3",
+          "kind": "connector",
+          "start_point": {
+            "x": 7543800.0,
+            "y": 2775629.0
+          },
+          "end_point": {
+            "x": 5867400.0,
+            "y": 2775629.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "756",
+          "bbox": {
+            "x": 5867400.0,
+            "y": 2775629.0,
+            "width": 1676400.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 5864000.0,
+          "y": 2776000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_4",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Zygomatic process",
+      "text_content": "Zygomatic process",
+      "text_box": {
+        "x": 2743200.0,
+        "y": 2789662.0,
+        "width": 895350.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "757"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_4",
+          "kind": "connector",
+          "start_point": {
+            "x": 3867150.0,
+            "y": 2897384.0
+          },
+          "end_point": {
+            "x": 3638550.0,
+            "y": 2897384.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "758",
+          "bbox": {
+            "x": 3638550.0,
+            "y": 2897384.0,
+            "width": 228600.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        },
+        {
+          "line_id": "line_5",
+          "kind": "connector",
+          "start_point": {
+            "x": 4213226.0,
+            "y": 3184526.0
+          },
+          "end_point": {
+            "x": 3867026.0,
+            "y": 2897426.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "759",
+          "bbox": {
+            "x": 3867026.0,
+            "y": 2897426.0,
+            "width": 346200.0,
+            "height": 287100.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4216000.0,
+          "y": 3184000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_5",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Transverse palatine suture",
+      "text_content": "Transverse palatine suture",
+      "text_box": {
+        "x": 2768788.0,
+        "y": 2194818.0,
+        "width": 1193612.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "760"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_6",
+          "kind": "connector",
+          "start_point": {
+            "x": 4213226.0,
+            "y": 2302541.0
+          },
+          "end_point": {
+            "x": 5740526.0,
+            "y": 3540041.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "761",
+          "bbox": {
+            "x": 4213226.0,
+            "y": 2302541.0,
+            "width": 1527300.0,
+            "height": 1237500.0,
+            "rotation_emu": 0.0
+          }
+        },
+        {
+          "line_id": "line_7",
+          "kind": "connector",
+          "start_point": {
+            "x": 3962400.0,
+            "y": 2302540.0
+          },
+          "end_point": {
+            "x": 4213200.0,
+            "y": 2302540.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "762",
+          "bbox": {
+            "x": 3962400.0,
+            "y": 2302540.0,
+            "width": 250800.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 5744000.0,
+          "y": 3544000.0
+        }
+      ]
+    }
+  ],
+  "total_text_annotations": 5,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

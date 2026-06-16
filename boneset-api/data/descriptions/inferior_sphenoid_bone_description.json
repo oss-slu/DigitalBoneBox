@@ -1,0 +1,14 @@
+{
+  "name": "Sphenoid Bone",
+  "id": "Sphenoid_bone",
+  "description": [
+    "Sphenoid bone",
+    "Pterygoid process",
+    "Projects inferiorly from the junction of the body and the greater wing of the sphenoid bone. Composed of medial and lateral pterygoid plates separated by the pterygoid fossae. The origins of the medial and lateral pterygoid muscles are from either side of the lateral plate respectively. The tensor veli palatini muscle arises partially from the scaphoid fossa at the base of the medial plate and hooks around the hamulus.",
+    "Foramen ovale",
+    "An oval opening at the base of the lateral plate. Transmits the mandibular branch (V3) of the trigeminal nerve (CN V) as well as the lesser petrosal nerve and the accessory meningeal artery.",
+    "Foramen spinosum",
+    "A smaller opening just posterior and lateral to the foramen ovale. Transmits the middle meningeal artery and the meningeal branch of the mandibular nerve."
+  ],
+  "images": ["inferior_sphenoid_bone_image.jpg"]
+}

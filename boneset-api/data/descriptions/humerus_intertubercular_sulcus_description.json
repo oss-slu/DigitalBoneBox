@@ -1,0 +1,10 @@
+{
+    "name": "Intertubercular sulcus",
+    "id": "intertubercular_sulcus",
+    "description": [
+        "A narrow depression that lies between the greater and lesser tubercles.",
+        "Insertion site for the latissimus dorsi muscle.",
+        "The long head of the biceps brachii tendon passes through this sulcus."
+        ],
+        "images": ["humerus_head_left_image.jpg"]
+}

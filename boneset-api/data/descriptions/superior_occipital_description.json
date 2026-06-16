@@ -1,0 +1,17 @@
+{
+  "name": "Occipital bone",
+  "id": "occipital_bone",
+  "description": [
+    "Occipital bone",
+    "Jugular foramen",
+    "A large opening in the created by the joining of the occipital bone and the petrous part of the temporal bone.",
+    "Transmits the internal jugular vein, the glossopharyngeal nerve (CN IX), the vagus nerve (CN X), the accessory nerve (CN XI), and the posterior meningeal artery.",
+    "Foramen magnum",
+    "A large opening in the anterior and midline part of the occipital bone.",
+    "Transmits the medulla of the brainstem, the vertebral vessels, and the spinal roots of the accessory nerve (CN XI).",
+    "Hypoglossal canal",
+    "An opening just medial and inferior to the jugular foramen and superior to the margins of the foramen magnum.",
+    "Transmits the hypoglossal nerve (CN XII)."
+  ],
+  "images": ["superior_occipital_bone_image.jpg"]
+}

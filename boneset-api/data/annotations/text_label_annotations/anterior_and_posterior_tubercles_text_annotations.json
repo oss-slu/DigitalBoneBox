@@ -1,0 +1,213 @@
+{
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Atlas (CV1): inferior aspect",
+      "text_content": "Atlas (CV1): inferior aspect",
+      "text_box": {
+        "x": 2895600.0,
+        "y": 4038600.0,
+        "width": 1357313.0,
+        "height": 230832.0,
+        "rotation_emu": 0.0,
+        "shape_id": "246"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [],
+      "target_regions": []
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Atlas (CV1): superior aspect",
+      "text_content": "Atlas (CV1): superior aspect",
+      "text_box": {
+        "x": 2820639.0,
+        "y": 1401143.0,
+        "width": 1447801.0,
+        "height": 230832.0,
+        "rotation_emu": 0.0,
+        "shape_id": "248"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [],
+      "target_regions": []
+    },
+    {
+      "annotation_id": "annot_3",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Anterior tubercle",
+      "text_content": "Anterior tubercle",
+      "text_box": {
+        "x": 6972300.0,
+        "y": 3732125.0,
+        "width": 838200.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "250"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_1",
+          "kind": "connector",
+          "start_point": {
+            "x": 6972300.0,
+            "y": 3839847.0
+          },
+          "end_point": {
+            "x": 6127500.0,
+            "y": 3839847.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "251",
+          "bbox": {
+            "x": 6127500.0,
+            "y": 3839847.0,
+            "width": 844800.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        },
+        {
+          "line_id": "line_3",
+          "kind": "connector",
+          "start_point": {
+            "x": 5715000.0,
+            "y": 3604873.0
+          },
+          "end_point": {
+            "x": 6127596.0,
+            "y": 3839848.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "253",
+          "bbox": {
+            "x": 5715000.0,
+            "y": 3604873.0,
+            "width": 412596.0,
+            "height": 234975.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 5712000.0,
+          "y": 3608000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_4",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Posterior tubercle",
+      "text_content": "Posterior tubercle",
+      "text_box": {
+        "x": 6248400.0,
+        "y": 1566966.0,
+        "width": 838200.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "254"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_4",
+          "kind": "connector",
+          "start_point": {
+            "x": 6248400.0,
+            "y": 1674688.0
+          },
+          "end_point": {
+            "x": 5755200.0,
+            "y": 1674688.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "256",
+          "bbox": {
+            "x": 5755200.0,
+            "y": 1674688.0,
+            "width": 493200.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 5752000.0,
+          "y": 1672000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_5",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Posterior tubercle",
+      "text_content": "Posterior tubercle",
+      "text_box": {
+        "x": 6477000.0,
+        "y": 5912078.0,
+        "width": 838200.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "255"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_5",
+          "kind": "connector",
+          "start_point": {
+            "x": 6477000.0,
+            "y": 6019800.0
+          },
+          "end_point": {
+            "x": 5960100.0,
+            "y": 6019800.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "257",
+          "bbox": {
+            "x": 5960100.0,
+            "y": 6019800.0,
+            "width": 516900.0,
+            "height": 0.0,
+            "rotation_emu": 10800000.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 5960000.0,
+          "y": 6016000.0
+        }
+      ]
+    }
+  ],
+  "total_text_annotations": 5,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

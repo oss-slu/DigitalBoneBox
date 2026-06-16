@@ -1,0 +1,10 @@
+{
+    "name": "Axis",
+    "id": "axis",
+    "description": [
+        "The second cervical vertebra (CV2).",
+        "Contains an odontoid process (dens) that articulates with the Atlas (CV1) superiorly.",
+        "This allows for rotational movement of the skull."
+    ],
+    "images": ["axis_(superior_aspect)_image.png", "axis_(inferior_aspect)_image.png", "axis_(lateral_aspect)_image.png"]
+}

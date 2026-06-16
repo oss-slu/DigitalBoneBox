@@ -1,0 +1,178 @@
+{
+  "slide_number": 22,
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Costal groove",
+      "text_content": "Costal groove",
+      "text_box": {
+        "x": 6434152.0,
+        "y": 3170338.0,
+        "width": 626969.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "673"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_1",
+          "kind": "connector",
+          "start_point": {
+            "x": 7061121.0,
+            "y": 3278060.0
+          },
+          "end_point": {
+            "x": 7239021.0,
+            "y": 3278060.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "674",
+          "bbox": {
+            "x": 7061121.0,
+            "y": 3278060.0,
+            "width": 177900.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 7240000.0,
+          "y": 3280000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Angle",
+      "text_content": "Angle",
+      "text_box": {
+        "x": 3124201.0,
+        "y": 1981200.0,
+        "width": 321019.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "675"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_2",
+          "kind": "connector",
+          "start_point": {
+            "x": 3445220.0,
+            "y": 2088922.0
+          },
+          "end_point": {
+            "x": 3657620.0,
+            "y": 2088922.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "676",
+          "bbox": {
+            "x": 3445220.0,
+            "y": 2088922.0,
+            "width": 212400.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        },
+        {
+          "line_id": "line_5",
+          "kind": "connector",
+          "start_point": {
+            "x": 3657600.0,
+            "y": 2088922.0
+          },
+          "end_point": {
+            "x": 4114800.0,
+            "y": 2286000.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "682",
+          "bbox": {
+            "x": 3657600.0,
+            "y": 2088922.0,
+            "width": 457200.0,
+            "height": 197078.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 4112000.0,
+          "y": 2288000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_3",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Angle",
+      "text_content": "Angle",
+      "text_box": {
+        "x": 8153401.0,
+        "y": 1818370.0,
+        "width": 321019.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "677"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_3",
+          "kind": "connector",
+          "start_point": {
+            "x": 7877101.0,
+            "y": 1926092.0
+          },
+          "end_point": {
+            "x": 8153401.0,
+            "y": 1926092.0
+          },
+          "style": {
+            "width": 9525,
+            "arrow_head": "none"
+          },
+          "shape_id": "678",
+          "bbox": {
+            "x": 7877101.0,
+            "y": 1926092.0,
+            "width": 276300.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 7880000.0,
+          "y": 1928000.0
+        }
+      ]
+    }
+  ],
+  "total_text_annotations": 3,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

@@ -1,0 +1,105 @@
+{
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Lateral process",
+      "text_content": "Lateral process",
+      "text_box": {
+        "x": 7311946.0,
+        "y": 1752600.0,
+        "width": 685801.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "19"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_1",
+          "kind": "connector",
+          "start_point": {
+            "x": 6905949.0,
+            "y": 1860322.0
+          },
+          "end_point": {
+            "x": 7311945.0,
+            "y": 1860322.0
+          },
+          "style": {
+            "width": 12700,
+            "arrow_head": "none"
+          },
+          "shape_id": "20",
+          "bbox": {
+            "x": 6905949.0,
+            "y": 1860322.0,
+            "width": 405996.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 6904000.0,
+          "y": 1864000.0
+        }
+      ]
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Medial process",
+      "text_content": "Medial process",
+      "text_box": {
+        "x": 5464663.0,
+        "y": 1777281.0,
+        "width": 685801.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "21"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [
+        {
+          "line_id": "line_2",
+          "kind": "connector",
+          "start_point": {
+            "x": 6150463.0,
+            "y": 1885003.0
+          },
+          "end_point": {
+            "x": 6640443.0,
+            "y": 1885003.0
+          },
+          "style": {
+            "width": 12700,
+            "arrow_head": "none"
+          },
+          "shape_id": "22",
+          "bbox": {
+            "x": 6150463.0,
+            "y": 1885003.0,
+            "width": 489980.0,
+            "height": 0.0,
+            "rotation_emu": 0.0
+          }
+        }
+      ],
+      "target_regions": [
+        {
+          "x": 6640000.0,
+          "y": 1888000.0
+        }
+      ]
+    }
+  ],
+  "total_text_annotations": 2,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

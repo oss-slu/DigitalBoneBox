@@ -1,0 +1,11 @@
+{
+  "slide": 23,
+  "name": "Scapula",
+  "id": "scapula",
+  "description": [
+    "The scapula is sometimes referred to as the \u201cshoulder blade.\u201d",
+    "It is a large, triangular, flat bone situated in the superior part of the posterior thoracic wall.",
+    "It lies between the levels of the second and seventh ribs."
+  ],
+  "images": ["Scapula_Left_Image.jpg", "Scapula_Right_Image.jpg"]
+}

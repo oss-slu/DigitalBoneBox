@@ -1,0 +1,8 @@
+{
+  "name": "Ethmoid bone",
+  "id": "ethmoid_bone",
+  "description": [
+    "The ethmoid bone forms part of the medial wall of the orbit."
+  ],
+  "images": ["lateral_ethmoid_bone_image.jpg"]
+}

@@ -1,0 +1,10 @@
+{
+    "name": "Triquetrum",
+    "id": "triquetrum",
+    "description": [
+        "A pyramidal-shaped bone.",
+        "Articulates with the hamate and the lunate bones.",
+        "Is the only bone that articulates with the pisiform bone."
+    ],
+    "images": ["hand_left_image.jpg", "hand_right_image.jpg"]
+}

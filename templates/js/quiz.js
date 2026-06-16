@@ -1,6 +1,4 @@
-// quiz.js - Quiz functionality for Digital Bone Box
-
-import {fetchBoneData, fetchCombinedData} from "./api.js";
+import {fetchBoneData} from "./api.js";
 import {displayColoredRegions} from "./coloredRegionsOverlay.js";
 
 /**
@@ -14,7 +12,6 @@ class QuizManager {
         this.questions = [];
         this.currentQuestionIndex = 0;
         this.score = 0;
-        this.isQuizActive = false;
         this.totalQuestions = 10;
         this.allBones = [];
         this.allSubbones = [];
@@ -28,28 +25,18 @@ class QuizManager {
      * @returns {Promise<boolean>} Resolves to `true` if initialisation succeeded,
      *   `false` if there was an error or too few items to form a quiz.
      */
-    async initialize() {
-        try {
-            // Fetch bone data
-            const data = await fetchCombinedData();
-            this.allBones = data.bones || [];
-            this.allSubbones = data.subbones || [];
+    async initialize(data) {
+        this.allBones = data.bones || [];
+        this.allSubbones = data.subbones || [];
 
-            // Create master question pool from bones + subbones
-            this.createMasterQuestionPool();
+        this.createMasterQuestionPool();
 
-            if (this.masterQuestionPool.length < 4) {
-                console.error("Not enough items to create a quiz. Need at least 4 items.");
-                return false;
-            }
-
-            // Setup event listeners
-            this.setupEventListeners();
-            return true;
-        } catch (error) {
-            console.error("Error initializing quiz:", error);
-            return false;
+        if (this.masterQuestionPool.length < 4) {
+            throw new Error(`Not enough items to create a quiz. Need at least 4 items. (Quiz pool length: ${this.masterQuestionPool.length})`);
         }
+
+        this.setupEventListeners();
+        return true;
     }
 
     /**
@@ -193,66 +180,66 @@ class QuizManager {
      * @returns {Promise<void>}
      */
     async fetchBoneImage(itemId, container) {
-    try {
-        const data = await fetchBoneData(itemId);
-        
-        console.log(`Bone data for ${itemId}:`, data); // DEBUG
-        
-        // Check if image exists in the response
-        if (data.images && data.images.length > 0) {
-            // Create image element with error handling
-            let imageUrl = data.images[0].url;
-            const img = document.createElement("img");
-            img.src = imageUrl;
-            img.alt = itemId;
-            img.style.maxWidth = "100%";
-            img.style.maxHeight = "400px";
-            img.style.objectFit = "contain";
-            img.style.borderRadius = "8px";
-            
-            img.onerror = () => {
-                console.error(`Failed to load image from: ${imageUrl}`);
+        try {
+            const data = await fetchBoneData(itemId);
+
+            console.debug(`Bone data for ${itemId}:`, data);
+
+            // Check if image exists in the response
+            if (data.images && data.images.length > 0) {
+                // Create image element with error handling
+                let imageUrl = data.images[0].url;
+                const img = document.createElement("img");
+                img.src = imageUrl;
+                img.alt = "Bone image for quiz question";
+                img.style.maxWidth = "100%";
+                img.style.maxHeight = "400px";
+                img.style.objectFit = "contain";
+                img.style.borderRadius = "8px";
+
+                img.onerror = () => {
+                    console.error(`Failed to load image from: ${imageUrl}`);
+                    container.innerHTML = `
+                        <div class="quiz-image-placeholder">
+                            <p style="font-size: 4rem;">🦴</p>
+                            <p style="color: #666;">Image failed to load</p>
+                            <p style="color: #999; font-size: 0.8rem;">${itemId}</p>
+                        </div>
+                    `;
+                };
+
+                img.onload = () => {
+                    displayColoredRegions(img, itemId, 0).catch(err => {
+                        console.warn(`Could not display colored regions for ${itemId}:`, err);
+                    });
+                    console.log(`Image loaded successfully for ${itemId}`);
+                };
+
+                container.innerHTML = "";
+                container.appendChild(img);
+            } else {
+                console.warn(`No images found for ${itemId}`);
+                // No image available - show placeholder
                 container.innerHTML = `
                     <div class="quiz-image-placeholder">
                         <p style="font-size: 4rem;">🦴</p>
-                        <p style="color: #666;">Image failed to load</p>
+                        <p style="color: #666;">Image not available</p>
                         <p style="color: #999; font-size: 0.8rem;">${itemId}</p>
                     </div>
                 `;
-            };
-            
-            img.onload = () => {
-                displayColoredRegions(img, itemId, 0).catch(err => {
-                    console.warn(`Could not display colored regions for ${itemId}:`, err);
-                });
-                console.log(`Image loaded successfully for ${itemId}`);
-            };
-            
-            container.innerHTML = "";
-            container.appendChild(img);
-        } else {
-            console.warn(`No images found for ${itemId}`);
-            // No image available - show placeholder
+            }
+        } catch (error) {
+            console.error(`Error fetching image for ${itemId}:`, error);
+            // Show error placeholder
             container.innerHTML = `
                 <div class="quiz-image-placeholder">
                     <p style="font-size: 4rem;">🦴</p>
-                    <p style="color: #666;">Image not available</p>
-                    <p style="color: #999; font-size: 0.8rem;">${itemId}</p>
+                    <p style="color: #666;">Unable to load image</p>
+                    <p style="color: #999; font-size: 0.8rem;">${error.message}</p>
                 </div>
             `;
         }
-    } catch (error) {
-        console.error(`Error fetching image for ${itemId}:`, error);
-        // Show error placeholder
-        container.innerHTML = `
-            <div class="quiz-image-placeholder">
-                <p style="font-size: 4rem;">🦴</p>
-                <p style="color: #666;">Unable to load image</p>
-                <p style="color: #999; font-size: 0.8rem;">${error.message}</p>
-            </div>
-        `;
     }
-}
 
     /**
      * Generates a fresh set of questions, resets state, switches the UI to
@@ -260,64 +247,63 @@ class QuizManager {
      * @returns {void}
      */
     startQuiz() {
-    // Generate questions
-    this.generateQuestions();
+        // Generate questions
+        this.generateQuestions();
 
-    if (this.questions.length === 0) {
-        alert("Unable to generate quiz questions. Please try again.");
-        return;
-    }
+        if (this.questions.length === 0) {
+            alert("Unable to generate quiz questions. Please try again.");
+            return;
+        }
 
-    // Reset quiz state
-    this.currentQuestionIndex = 0;
-    this.score = 0;
-    this.isQuizActive = true;
-    this.answered = false;
+        // Reset quiz state
+        this.currentQuestionIndex = 0;
+        this.score = 0;
+        this.answered = false;
 
-    // Show quiz container, hide main content
-    this.showQuizMode();
+        // Show quiz container, hide main content
+        this.showQuizMode();
 
-    // CRITICAL: Restore the quiz structure (in case we're coming from results screen)
-    const quizContainer = document.getElementById("quiz-container");
-    if (quizContainer) {
-        quizContainer.innerHTML = `
-            <div class="quiz-header">
-                <div class="quiz-info">
-                    <span id="quiz-progress">Question 1 of ${this.questions.length}</span>
-                    <span id="quiz-score">Score: 0/${this.questions.length}</span>
+        // Restore the quiz structure (in case we're coming from results screen)
+        const quizContainer = document.getElementById("quiz-container");
+        if (quizContainer) {
+            quizContainer.innerHTML = `
+                <div class="quiz-header">
+                    <div class="quiz-info">
+                        <span id="quiz-progress">Question 1 of ${this.questions.length}</span>
+                        <span id="quiz-score">Score: 0/${this.questions.length}</span>
+                    </div>
+                    <button id="exit-quiz-btn">EXIT QUIZ</button>
                 </div>
-                <button id="exit-quiz-btn">EXIT QUIZ</button>
-            </div>
-            
-            <div class="quiz-content">
-                <h2 id="quiz-question-text">What bone or bone part is this?</h2>
-                <div id="quiz-bone-image"></div>
-                <div id="quiz-choices"></div>
-            </div>
-            
-            <div id="quiz-feedback" style="display: none;"></div>
-            
-            <div class="quiz-actions">
-                <button id="next-question-btn" style="display: none;">NEXT QUESTION</button>
-            </div>
-        `;
+                
+                <div class="quiz-content">
+                    <h2 id="quiz-question-text">What bone or bone part is this?</h2>
+                    <div id="quiz-bone-image"></div>
+                    <div id="quiz-choices"></div>
+                </div>
+                
+                <div id="quiz-feedback" style="display: none;"></div>
+                
+                <div class="quiz-actions">
+                    <button id="next-question-btn" style="display: none;">NEXT QUESTION</button>
+                </div>
+            `;
 
-        // Re-attach exit button listener
-        const exitBtn = document.getElementById("exit-quiz-btn");
-        if (exitBtn) {
-            exitBtn.onclick = () => this.exitQuiz();
+            // Re-attach exit button listener
+            const exitBtn = document.getElementById("exit-quiz-btn");
+            if (exitBtn) {
+                exitBtn.onclick = () => this.exitQuiz();
+            }
+
+            // Re-attach next button listener
+            const nextBtn = document.getElementById("next-question-btn");
+            if (nextBtn) {
+                nextBtn.onclick = () => this.nextQuestion();
+            }
         }
 
-        // Re-attach next button listener
-        const nextBtn = document.getElementById("next-question-btn");
-        if (nextBtn) {
-            nextBtn.onclick = () => this.nextQuestion();
-        }
+        // Display first question
+        this.displayQuestion();
     }
-
-    // Display first question
-    this.displayQuestion();
-}
 
     /**
      * Renders the current question (image, answer choices, progress) in the
@@ -394,7 +380,7 @@ class QuizManager {
 
         choicesContainer.innerHTML = "";
 
-        question.allAnswers.forEach((answer, index) => {
+        question.allAnswers.forEach(answer => {
             const button = document.createElement("button");
             button.className = "quiz-choice-btn";
             button.textContent = answer;
@@ -538,17 +524,17 @@ class QuizManager {
         </div>
     `;
 
-    // CRITICAL: Wait for DOM to be ready, then add event listeners with arrow functions
+    // Wait for DOM to be ready, then add event listeners with arrow functions
     requestAnimationFrame(() => {
         const retryBtn = document.getElementById("retry-quiz-btn");
         const exitBtn = document.getElementById("exit-results-btn");
 
-        console.log("Retry button found:", retryBtn); // Debug
-        console.log("Exit button found:", exitBtn); // Debug
+        console.debug("Retry button found:", retryBtn);
+        console.debug("Exit button found:", exitBtn);
 
         if (retryBtn) {
             retryBtn.onclick = () => {
-                console.log("TRY AGAIN CLICKED!"); // Debug
+                console.debug("TRY AGAIN CLICKED!");
                 this.startQuiz();
             };
         }
@@ -594,6 +580,5 @@ class QuizManager {
     }
 }
 
-// Create and export singleton instance
 const quizManager = new QuizManager();
 export default quizManager;

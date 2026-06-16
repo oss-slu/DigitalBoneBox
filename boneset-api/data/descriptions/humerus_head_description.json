@@ -1,0 +1,9 @@
+{
+    "name": "Humerus Head",
+    "id": "humerus_head",
+    "description": [
+        "Smooth articular surface covered with hyaline cartilage.",
+        "Articulates with Glenoid fossa of scapula."
+    ],
+    "images": ["humerus_head_left_image.jpg","humerus_head_right_image.jpg"]
+}

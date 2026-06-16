@@ -1,0 +1,12 @@
+{
+    "name": "Lateral cuneiform",
+    "id": "lateral_cuneiform",
+    "description": [
+        "Articulates with intermediate cuneiform, navicular, 3rd metatarsal, and cuboid.",
+        "Receives attachment from part of tendon of tibialis posterior and part of flexor hallucis brevis muscles"
+    ],
+    "images": [
+        "foot_image.png",
+        "foot_image2.png"
+    ]
+}

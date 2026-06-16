@@ -1,0 +1,9 @@
+{
+  "name": "First Rib",
+  "id": "first_rib",
+  "subBones": [
+    "first_rib_head_and_neck",
+    "first_rib_tubercles",
+    "first_rib_grooves_for_subclavian_vessels"
+  ]
+}

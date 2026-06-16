@@ -1,0 +1,131 @@
+{
+  "slide_number": 7,
+  "images": [
+    {
+      "index": 0,
+      "name": "pelvis_lat_blk.psd",
+      "width": 2236557,
+      "height": 3535362,
+      "colored_regions": [
+        {
+          "anatomical_name": "Posterior Inferior Iliac Spine - Left",
+          "color": "FF00E6",
+          "path_data": [
+            {
+              "path_width": 227455,
+              "path_height": 195875,
+              "commands": [
+                {
+                  "type": "moveTo",
+                  "x": 227455,
+                  "y": 0
+                },
+                {
+                  "type": "lineTo",
+                  "x": 126364,
+                  "y": 25274
+                },
+                {
+                  "type": "lineTo",
+                  "x": 56864,
+                  "y": 75822
+                },
+                {
+                  "type": "lineTo",
+                  "x": 0,
+                  "y": 151645
+                },
+                {
+                  "type": "lineTo",
+                  "x": 0,
+                  "y": 170601
+                },
+                {
+                  "type": "lineTo",
+                  "x": 63182,
+                  "y": 195875
+                },
+                {
+                  "type": "lineTo",
+                  "x": 183228,
+                  "y": 151645
+                },
+                {
+                  "type": "lineTo",
+                  "x": 221137,
+                  "y": 151645
+                },
+                {
+                  "type": "lineTo",
+                  "x": 227455,
+                  "y": 0
+                },
+                {
+                  "type": "close"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "pelvis_med_blk.psd",
+      "width": 2554738,
+      "height": 3429000,
+      "colored_regions": [
+        {
+          "anatomical_name": "Posterior Inferior Iliac Spine - Right",
+          "color": "FF00E6",
+          "path_data": [
+            {
+              "path_width": 259045,
+              "path_height": 189556,
+              "commands": [
+                {
+                  "type": "moveTo",
+                  "x": 12636,
+                  "y": 25274
+                },
+                {
+                  "type": "lineTo",
+                  "x": 0,
+                  "y": 126371
+                },
+                {
+                  "type": "lineTo",
+                  "x": 151636,
+                  "y": 189556
+                },
+                {
+                  "type": "lineTo",
+                  "x": 259045,
+                  "y": 183238
+                },
+                {
+                  "type": "lineTo",
+                  "x": 246409,
+                  "y": 31593
+                },
+                {
+                  "type": "lineTo",
+                  "x": 101091,
+                  "y": 0
+                },
+                {
+                  "type": "lineTo",
+                  "x": 12636,
+                  "y": 25274
+                },
+                {
+                  "type": "close"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

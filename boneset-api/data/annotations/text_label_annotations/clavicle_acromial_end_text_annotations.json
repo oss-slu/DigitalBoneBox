@@ -1,0 +1,46 @@
+{
+  "slide_number": 11,
+  "text_annotations": [
+    {
+      "annotation_id": "annot_1",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Clavicle (superior aspect)",
+      "text_content": "Clavicle (superior aspect)",
+      "text_box": {
+        "x": 4968787.0,
+        "y": 3001418.0,
+        "width": 1237037.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "374"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [],
+      "target_regions": []
+    },
+    {
+      "annotation_id": "annot_2",
+      "bone_name": "Bony Pelvis",
+      "subbone_name": "Clavicle (inferior aspect)",
+      "text_content": "Clavicle (inferior aspect)",
+      "text_box": {
+        "x": 5145025.0,
+        "y": 5453087.0,
+        "width": 1197864.0,
+        "height": 215444.0,
+        "rotation_emu": 0.0,
+        "shape_id": "379"
+      },
+      "has_hyperlink": false,
+      "hyperlink": {},
+      "pointer_lines": [],
+      "target_regions": []
+    }
+  ],
+  "total_text_annotations": 2,
+  "config": {
+    "padding_emu": 4000.0,
+    "snap_emu": 8000.0
+  }
+}

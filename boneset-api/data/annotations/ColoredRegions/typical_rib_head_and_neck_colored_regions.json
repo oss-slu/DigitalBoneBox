@@ -1,0 +1,349 @@
+{
+  "slide_number": 20,
+  "image_dimensions": {
+    "width": 12192000,
+    "height": 6858000
+  },
+  "colored_regions": [
+    {
+      "anatomical_name": "Pubis_and_Obturator_foramen",
+      "color": "008000",
+      "color_name": "green_variant",
+      "shape_id": "625",
+      "path_data": [
+        {
+          "path_width": 393911,
+          "path_height": 354868,
+          "commands": [
+            {
+              "type": "moveTo",
+              "x": 5103158,
+              "y": 1663986
+            },
+            {
+              "type": "lineTo",
+              "x": 5062409,
+              "y": 1697945
+            },
+            {
+              "type": "lineTo",
+              "x": 5205032,
+              "y": 1772655
+            },
+            {
+              "type": "lineTo",
+              "x": 5279739,
+              "y": 1888115
+            },
+            {
+              "type": "lineTo",
+              "x": 5286531,
+              "y": 1969616
+            },
+            {
+              "type": "lineTo",
+              "x": 5381613,
+              "y": 1989992
+            },
+            {
+              "type": "lineTo",
+              "x": 5422362,
+              "y": 1989992
+            },
+            {
+              "type": "lineTo",
+              "x": 5442737,
+              "y": 1989992
+            },
+            {
+              "type": "lineTo",
+              "x": 5456320,
+              "y": 1922074
+            },
+            {
+              "type": "lineTo",
+              "x": 5456320,
+              "y": 1820197
+            },
+            {
+              "type": "lineTo",
+              "x": 5374821,
+              "y": 1704737
+            },
+            {
+              "type": "lineTo",
+              "x": 5272948,
+              "y": 1650403
+            },
+            {
+              "type": "cubicBezTo",
+              "x1": 5244616,
+              "y1": 1650602,
+              "x2": 5216283,
+              "y2": 1634926,
+              "x": 5187951,
+              "y": 1635125
+            },
+            {
+              "type": "lineTo",
+              "x": 5103158,
+              "y": 1663986
+            },
+            {
+              "type": "close"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "anatomical_name": "Pubis_and_Obturator_foramen",
+      "color": "008000",
+      "color_name": "green_variant",
+      "shape_id": "626",
+      "path_data": [
+        {
+          "path_width": 406438,
+          "path_height": 342900,
+          "commands": [
+            {
+              "type": "moveTo",
+              "x": 5902326,
+              "y": 1812925
+            },
+            {
+              "type": "lineTo",
+              "x": 5902326,
+              "y": 1812925
+            },
+            {
+              "type": "lineTo",
+              "x": 5883276,
+              "y": 1889125
+            },
+            {
+              "type": "lineTo",
+              "x": 5864226,
+              "y": 1955800
+            },
+            {
+              "type": "lineTo",
+              "x": 5842001,
+              "y": 2000250
+            },
+            {
+              "type": "lineTo",
+              "x": 5842001,
+              "y": 2000250
+            },
+            {
+              "type": "lineTo",
+              "x": 5924551,
+              "y": 2044700
+            },
+            {
+              "type": "lineTo",
+              "x": 5988051,
+              "y": 2035175
+            },
+            {
+              "type": "lineTo",
+              "x": 6051551,
+              "y": 2012950
+            },
+            {
+              "type": "lineTo",
+              "x": 6096001,
+              "y": 2000250
+            },
+            {
+              "type": "lineTo",
+              "x": 6248401,
+              "y": 1920875
+            },
+            {
+              "type": "cubicBezTo",
+              "x1": 6249459,
+              "y1": 1883833,
+              "x2": 6228293,
+              "y2": 1853142,
+              "x": 6229351,
+              "y": 1816100
+            },
+            {
+              "type": "lineTo",
+              "x": 6229351,
+              "y": 1701800
+            },
+            {
+              "type": "lineTo",
+              "x": 6108701,
+              "y": 1724025
+            },
+            {
+              "type": "lineTo",
+              "x": 6000751,
+              "y": 1765300
+            },
+            {
+              "type": "lineTo",
+              "x": 5902326,
+              "y": 1812925
+            },
+            {
+              "type": "close"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "anatomical_name": "Ischium",
+      "color": "FF00E6",
+      "color_name": "magenta",
+      "shape_id": "627",
+      "path_data": [
+        {
+          "path_width": 339725,
+          "path_height": 292100,
+          "commands": [
+            {
+              "type": "moveTo",
+              "x": 5054601,
+              "y": 1704975
+            },
+            {
+              "type": "lineTo",
+              "x": 5203826,
+              "y": 1768475
+            },
+            {
+              "type": "lineTo",
+              "x": 5270501,
+              "y": 1876425
+            },
+            {
+              "type": "lineTo",
+              "x": 5276851,
+              "y": 1971675
+            },
+            {
+              "type": "lineTo",
+              "x": 5165726,
+              "y": 1997075
+            },
+            {
+              "type": "lineTo",
+              "x": 5118101,
+              "y": 1949450
+            },
+            {
+              "type": "lineTo",
+              "x": 5057776,
+              "y": 1860550
+            },
+            {
+              "type": "lineTo",
+              "x": 4968876,
+              "y": 1816100
+            },
+            {
+              "type": "lineTo",
+              "x": 4937126,
+              "y": 1806575
+            },
+            {
+              "type": "lineTo",
+              "x": 5019676,
+              "y": 1762125
+            },
+            {
+              "type": "lineTo",
+              "x": 5054601,
+              "y": 1704975
+            },
+            {
+              "type": "close"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "anatomical_name": "Ischium",
+      "color": "FF00E6",
+      "color_name": "magenta",
+      "shape_id": "628",
+      "path_data": [
+        {
+          "path_width": 320675,
+          "path_height": 241300,
+          "commands": [
+            {
+              "type": "moveTo",
+              "x": 6556376,
+              "y": 1730375
+            },
+            {
+              "type": "lineTo",
+              "x": 6499226,
+              "y": 1851025
+            },
+            {
+              "type": "lineTo",
+              "x": 6480176,
+              "y": 1914525
+            },
+            {
+              "type": "lineTo",
+              "x": 6334126,
+              "y": 1924050
+            },
+            {
+              "type": "lineTo",
+              "x": 6257926,
+              "y": 1930400
+            },
+            {
+              "type": "lineTo",
+              "x": 6242051,
+              "y": 1851025
+            },
+            {
+              "type": "cubicBezTo",
+              "x1": 6240993,
+              "y1": 1813983,
+              "x2": 6239934,
+              "y2": 1776942,
+              "x": 6238876,
+              "y": 1739900
+            },
+            {
+              "type": "lineTo",
+              "x": 6235701,
+              "y": 1689100
+            },
+            {
+              "type": "lineTo",
+              "x": 6416676,
+              "y": 1714500
+            },
+            {
+              "type": "lineTo",
+              "x": 6464301,
+              "y": 1743075
+            },
+            {
+              "type": "lineTo",
+              "x": 6556376,
+              "y": 1730375
+            },
+            {
+              "type": "close"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+    "name": "Sacral promontory",
+    "id": "sacrum_and_coccyx_sacral_promontory",
+    "description": [
+        "A projecting anterior edge at the base of the sacrum.",
+        "Marks part of the border of the pelvic inlet.",
+        "Articulates with the fifth lumbar vertebra to form the lumbosacral joint."
+    ],
+    "images": ["sacrum_(anterior_aspect)_image.png"]
+}

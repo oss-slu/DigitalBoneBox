@@ -1,0 +1,11 @@
+{
+    "name": "Anterior border",
+    "id": "anterior_border",
+    "description": [
+        "Separates lateral surface from medial surface"
+    ],
+    "images": [
+        "fibula_image.jpeg",
+        "fibula_image2.png"
+    ]
+}
