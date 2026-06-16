@@ -184,24 +184,6 @@ export function drawAnnotations(container, annotationsJson) {
 }
 
 /**
- * Fetches annotation JSON from a URL, draws it onto the container,
- * and attaches a ResizeObserver so annotations redraw when the container resizes.
- * @param {HTMLElement} container - The element to draw annotations into.
- * @param {string} jsonUrl - URL of the annotation JSON file.
- * @returns {Promise<void>}
- */
-export async function loadAndDrawAnnotations(container, jsonUrl) {
-  if (!container || !jsonUrl) return;
-  const res = await fetch(jsonUrl);
-  if (!res.ok) return;
-  const data = await res.json();
-
-  // The backend provides data in the structure expected by drawAnnotations
-  drawAnnotations(container, data);
-  attachAutoscale(container); // keep aligned on resize
-}
-
-/**
  * Attaches a ResizeObserver to the container that redraws annotations whenever
  * the container's dimensions change. Does nothing if an observer is already attached.
  * @param {HTMLElement} container - The container to watch for size changes.
