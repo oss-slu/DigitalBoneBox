@@ -89,9 +89,7 @@ export function clearImages() {
  * @param {Array<{url?: string, src?: string, alt?: string, filename?: string}>} images - Array of image objects to
  *   display.
  * @param {Object} [options={}] - Optional display configuration.
- * @param {string} [options.annotationsUrl] - API URL for text annotations JSON.
  * @param {string} [options.boneId] - Bone ID used for colored region overlays.
- * @param {boolean} [options.isBonesetSelection] - True when displaying the full boneset view.
  * @returns {void}
  */
 export function displayBoneImages(images, options = {}) {
@@ -139,7 +137,6 @@ export function displayBoneImages(images, options = {}) {
  * Renders a single bone image with its colored region overlay and text annotations.
  * @param {{url?: string, src?: string, alt?: string, filename?: string}} image - The image object to display.
  * @param {HTMLElement} container - The image container element.
- * @param {Object} [options={}] - Options forwarded from `displayBoneImages`.
  * @returns {void}
  */
 function displaySingleImage(image, container) {

@@ -22,8 +22,11 @@ class QuizManager {
     /**
      * Loads bone data from the API, builds the master question pool, and
      * attaches UI event listeners. Must be called before starting a quiz.
-     * @returns {Promise<boolean>} Resolves to `true` if initialisation succeeded,
-     *   `false` if there was an error or too few items to form a quiz.
+     * @param {Object} data - Bone and bone part data.
+     * @param {Object[]} [data.bones] - Bone objects.
+     * @param {Object[]} [data.subbones] - Bone part objects.
+     * @returns {Promise<boolean>} Resolves to `true` if initialisation succeeded
+     *   and fails if there was an error or too few items to form a quiz.
      */
     async initialize(data) {
         this.allBones = data.bones || [];
