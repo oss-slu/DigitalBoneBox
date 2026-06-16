@@ -1,3 +1,9 @@
+/**
+ * Ensures the annotation stage (overlay container) exists inside the given container,
+ * creating it if necessary. The stage holds both the SVG line layer and the label div.
+ * @param {HTMLElement} container - The parent element to attach the stage to.
+ * @returns {HTMLElement} The existing or newly created annotation stage element.
+ */
 function ensureStage(container) {
   let stage = container.querySelector(".annotation-stage");
   if (!stage) {
@@ -12,6 +18,11 @@ function ensureStage(container) {
   return stage;
 }
 
+/**
+ * Removes the annotation stage and all its contents from the given container.
+ * @param {HTMLElement} container - The container whose annotation stage should be removed.
+ * @returns {void}
+ */
 export function clearAnnotations(container) {
   if (!container) return;
   const stage = container.querySelector(".annotation-stage");
@@ -66,8 +77,14 @@ function normalizedPointToPx(pt, box, norm) { // <--- RENAMED to reflect change
 }
 
 /**
- * Draw labels + lines from a JSON object:
- * { annotations: [...], normalized_geometry: { normX, normY, normW, normH } }
+ * Draws text annotation labels and pointer lines onto the given container.
+ * Uses normalized geometry from the annotation payload to map the label and
+ * pointer coordinates onto the displayed pixel size of the container.
+ * @param {HTMLElement} container - The element to draw annotations into.
+ * @param {Object} annotationsJson - Text annotation payload from the API.
+ * @param {Array<Object>} annotationsJson.annotations - Array of text annotation objects.
+ * @param {Object} annotationsJson.normalized_geometry - Normalized geometry for the slide crop.
+ * @returns {void}
  */
 export function drawAnnotations(container, annotationsJson) {
   if (!container || !annotationsJson) return;
@@ -95,7 +112,7 @@ export function drawAnnotations(container, annotationsJson) {
   };
 
   // Get the list of annotations.
-  const list = annotationsJson.annotations || annotationsJson.text_annotations || [];
+  const list = annotationsJson.annotations || [];
 
   list.forEach((a) => {
     if (!a || !a.text_box) return;
@@ -130,7 +147,7 @@ export function drawAnnotations(container, annotationsJson) {
 
     if (validateEvent.detail.isValid) {
         el.classList.add("valid-link");
-        
+
         el.addEventListener("click", () => {
             const clickEvent = new CustomEvent("annotationSelected", {
                 detail: { text: a.text_content, annotationData: a },
@@ -166,7 +183,12 @@ export function drawAnnotations(container, annotationsJson) {
   stage.__lastJson = annotationsJson;
 }
 
-/** Re-draw on container resize using the last JSON used. */
+/**
+ * Attaches a ResizeObserver to the container that redraws annotations whenever
+ * the container's dimensions change. Does nothing if an observer is already attached.
+ * @param {HTMLElement} container - The container to watch for size changes.
+ * @returns {void}
+ */
 export function attachAutoscale(container) {
   const stage = ensureStage(container);
   if (stage.__resizeObs) return; // already attached

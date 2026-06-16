@@ -1,3 +1,8 @@
+/**
+ * Wires up the sidebar toggle button to lazily load `sidebar.html` and
+ * slide the sidebar panel in and out.
+ * @returns {Promise<void>}
+ */
 export async function initializeSidebar() {
     const toggleButton = document.getElementById("toggle-sidebar");
     const sidebarContainer = document.getElementById("sidebar-container");

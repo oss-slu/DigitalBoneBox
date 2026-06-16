@@ -1,5 +1,13 @@
 // Image captions for bone images, extracted from PowerPoint slides
 
+/**
+ * A lookup map of image captions keyed by bone/subbone ID.
+ * Each entry provides caption strings for up to two images (`image1`, `image2`).
+ * Captions describe the anatomical view shown in the corresponding image
+ * (e.g. lateral aspect, medial aspect).
+ *
+ * @type {Object.<string, {image1: string|null, image2: string|null}>}
+ */
 export const imageCaptions = {
   // Bony Pelvis (main boneset)
   "bony_pelvis": {

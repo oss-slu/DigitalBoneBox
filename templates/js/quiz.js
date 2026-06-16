@@ -1,6 +1,12 @@
 import {fetchBoneData} from "./api.js";
 import {displayColoredRegions} from "./coloredRegionsOverlay.js";
 
+/**
+ * Manages the interactive bone-identification quiz.
+ * Fetches bones and subbones from the API, generates randomised questions,
+ * handles answer scoring, and controls quiz UI visibility.
+ * @class
+ */
 class QuizManager {
     constructor() {
         this.questions = [];
@@ -14,7 +20,13 @@ class QuizManager {
     }
 
     /**
-     * Initialize the quiz system
+     * Loads bone data from the API, builds the master question pool, and
+     * attaches UI event listeners. Must be called before starting a quiz.
+     * @param {Object} data - Bone and bone part data.
+     * @param {Object[]} [data.bones] - Bone objects.
+     * @param {Object[]} [data.subbones] - Bone part objects.
+     * @returns {Promise<boolean>} Resolves to `true` if initialisation succeeded
+     *   and fails if there was an error or too few items to form a quiz.
      */
     async initialize(data) {
         this.allBones = data.bones || [];
@@ -31,7 +43,9 @@ class QuizManager {
     }
 
     /**
-     * Create a master pool of all bones and subbones
+     * Populates {@link QuizManager#masterQuestionPool} by combining all bones
+     * and subbones fetched during initialisation.
+     * @returns {void}
      */
     createMasterQuestionPool() {
         this.masterQuestionPool = [];
@@ -58,7 +72,9 @@ class QuizManager {
     }
 
     /**
-     * Setup event listeners for quiz UI
+     * Attaches click handlers to the start-quiz, exit-quiz, and next-question
+     * buttons in the DOM.
+     * @returns {void}
      */
     setupEventListeners() {
         const quizButton = document.getElementById("start-quiz-btn");
@@ -79,7 +95,10 @@ class QuizManager {
     }
 
     /**
-     * Generate quiz questions using the master pool
+     * Randomly selects items from the master pool to build
+     * {@link QuizManager#questions}, each with one correct answer and three
+     * distractors.
+     * @returns {void}
      */
     generateQuestions() {
         this.questions = [];
@@ -117,7 +136,11 @@ class QuizManager {
     }
 
     /**
-     * Generate wrong answer choices from the master pool
+     * Generates the wrong answer choices for a quiz question by selecting
+     * names from the master pool, excluding the correct item.
+     * @param {string} correctItemId - The ID of the correct answer item to exclude.
+     * @param {number} count - Number of wrong answer choices to generate.
+     * @returns {string[]} Array of wrong answer choice strings.
      */
     generateWrongAnswers(correctItemId, count) {
         const wrongAnswers = [];
@@ -136,7 +159,11 @@ class QuizManager {
     }
 
     /**
-     * Shuffle array using Fisher-Yates algorithm
+     * Returns a new array with the same elements in a random order using the
+     * Fisher-Yates algorithm.
+     * @template T
+     * @param {T[]} array - The array to shuffle.
+     * @returns {T[]} A new shuffled array (the original is not mutated).
      */
     shuffleArray(array) {
         const shuffled = [...array];
@@ -148,137 +175,144 @@ class QuizManager {
     }
 
     /**
- * Fetch and display bone image from API
- */
-async fetchBoneImage(itemId, container) {
-    try {
-        const data = await fetchBoneData(itemId);
+     * Fetches bone data from the API and renders the primary image into
+     * `container`. Falls back to a placeholder on missing or failed images.
+     * Also attempts to overlay coloured regions once the image loads.
+     * @param {string} itemId - The bone or subbone ID whose image to display.
+     * @param {HTMLElement} container - The DOM element to render the image into.
+     * @returns {Promise<void>}
+     */
+    async fetchBoneImage(itemId, container) {
+        try {
+            const data = await fetchBoneData(itemId);
 
-        console.debug(`Bone data for ${itemId}:`, data);
-        
-        // Check if image exists in the response
-        if (data.images && data.images.length > 0) {
-            // Create image element with error handling
-            let imageUrl = data.images[0].url;
-            const img = document.createElement("img");
-            img.src = imageUrl;
-            img.alt = "Bone image for quiz question";
-            img.style.maxWidth = "100%";
-            img.style.maxHeight = "400px";
-            img.style.objectFit = "contain";
-            img.style.borderRadius = "8px";
-            
-            img.onerror = () => {
-                console.error(`Failed to load image from: ${imageUrl}`);
+            console.debug(`Bone data for ${itemId}:`, data);
+
+            // Check if image exists in the response
+            if (data.images && data.images.length > 0) {
+                // Create image element with error handling
+                let imageUrl = data.images[0].url;
+                const img = document.createElement("img");
+                img.src = imageUrl;
+                img.alt = "Bone image for quiz question";
+                img.style.maxWidth = "100%";
+                img.style.maxHeight = "400px";
+                img.style.objectFit = "contain";
+                img.style.borderRadius = "8px";
+
+                img.onerror = () => {
+                    console.error(`Failed to load image from: ${imageUrl}`);
+                    container.innerHTML = `
+                        <div class="quiz-image-placeholder">
+                            <p style="font-size: 4rem;">🦴</p>
+                            <p style="color: #666;">Image failed to load</p>
+                            <p style="color: #999; font-size: 0.8rem;">${itemId}</p>
+                        </div>
+                    `;
+                };
+
+                img.onload = () => {
+                    displayColoredRegions(img, itemId, 0).catch(err => {
+                        console.warn(`Could not display colored regions for ${itemId}:`, err);
+                    });
+                    console.log(`Image loaded successfully for ${itemId}`);
+                };
+
+                container.innerHTML = "";
+                container.appendChild(img);
+            } else {
+                console.warn(`No images found for ${itemId}`);
+                // No image available - show placeholder
                 container.innerHTML = `
                     <div class="quiz-image-placeholder">
                         <p style="font-size: 4rem;">🦴</p>
-                        <p style="color: #666;">Image failed to load</p>
+                        <p style="color: #666;">Image not available</p>
                         <p style="color: #999; font-size: 0.8rem;">${itemId}</p>
                     </div>
                 `;
-            };
-            
-            img.onload = () => {
-                displayColoredRegions(img, itemId, 0).catch(err => {
-                    console.warn(`Could not display colored regions for ${itemId}:`, err);
-                });
-                console.log(`Image loaded successfully for ${itemId}`);
-            };
-            
-            container.innerHTML = "";
-            container.appendChild(img);
-        } else {
-            console.warn(`No images found for ${itemId}`);
-            // No image available - show placeholder
+            }
+        } catch (error) {
+            console.error(`Error fetching image for ${itemId}:`, error);
+            // Show error placeholder
             container.innerHTML = `
                 <div class="quiz-image-placeholder">
                     <p style="font-size: 4rem;">🦴</p>
-                    <p style="color: #666;">Image not available</p>
-                    <p style="color: #999; font-size: 0.8rem;">${itemId}</p>
+                    <p style="color: #666;">Unable to load image</p>
+                    <p style="color: #999; font-size: 0.8rem;">${error.message}</p>
                 </div>
             `;
         }
-    } catch (error) {
-        console.error(`Error fetching image for ${itemId}:`, error);
-        // Show error placeholder
-        container.innerHTML = `
-            <div class="quiz-image-placeholder">
-                <p style="font-size: 4rem;">🦴</p>
-                <p style="color: #666;">Unable to load image</p>
-                <p style="color: #999; font-size: 0.8rem;">${error.message}</p>
-            </div>
-        `;
     }
-}
 
     /**
-     * Start the quiz
+     * Generates a fresh set of questions, resets state, switches the UI to
+     * quiz mode, and displays the first question.
+     * @returns {void}
      */
-    /**
- * Start the quiz
- */
-startQuiz() {
-    // Generate questions
-    this.generateQuestions();
+    startQuiz() {
+        // Generate questions
+        this.generateQuestions();
 
-    if (this.questions.length === 0) {
-        alert("Unable to generate quiz questions. Please try again.");
-        return;
-    }
+        if (this.questions.length === 0) {
+            alert("Unable to generate quiz questions. Please try again.");
+            return;
+        }
 
-    // Reset quiz state
-    this.currentQuestionIndex = 0;
-    this.score = 0;
-    this.answered = false;
+        // Reset quiz state
+        this.currentQuestionIndex = 0;
+        this.score = 0;
+        this.answered = false;
 
-    // Show quiz container, hide main content
-    this.showQuizMode();
+        // Show quiz container, hide main content
+        this.showQuizMode();
 
         // Restore the quiz structure (in case we're coming from results screen)
-    const quizContainer = document.getElementById("quiz-container");
-    if (quizContainer) {
-        quizContainer.innerHTML = `
-            <div class="quiz-header">
-                <div class="quiz-info">
-                    <span id="quiz-progress">Question 1 of ${this.questions.length}</span>
-                    <span id="quiz-score">Score: 0/${this.questions.length}</span>
+        const quizContainer = document.getElementById("quiz-container");
+        if (quizContainer) {
+            quizContainer.innerHTML = `
+                <div class="quiz-header">
+                    <div class="quiz-info">
+                        <span id="quiz-progress">Question 1 of ${this.questions.length}</span>
+                        <span id="quiz-score">Score: 0/${this.questions.length}</span>
+                    </div>
+                    <button id="exit-quiz-btn">EXIT QUIZ</button>
                 </div>
-                <button id="exit-quiz-btn">EXIT QUIZ</button>
-            </div>
-            
-            <div class="quiz-content">
-                <h2 id="quiz-question-text">What bone or bone part is this?</h2>
-                <div id="quiz-bone-image"></div>
-                <div id="quiz-choices"></div>
-            </div>
-            
-            <div id="quiz-feedback" style="display: none;"></div>
-            
-            <div class="quiz-actions">
-                <button id="next-question-btn" style="display: none;">NEXT QUESTION</button>
-            </div>
-        `;
+                
+                <div class="quiz-content">
+                    <h2 id="quiz-question-text">What bone or bone part is this?</h2>
+                    <div id="quiz-bone-image"></div>
+                    <div id="quiz-choices"></div>
+                </div>
+                
+                <div id="quiz-feedback" style="display: none;"></div>
+                
+                <div class="quiz-actions">
+                    <button id="next-question-btn" style="display: none;">NEXT QUESTION</button>
+                </div>
+            `;
 
-        // Re-attach exit button listener
-        const exitBtn = document.getElementById("exit-quiz-btn");
-        if (exitBtn) {
-            exitBtn.onclick = () => this.exitQuiz();
+            // Re-attach exit button listener
+            const exitBtn = document.getElementById("exit-quiz-btn");
+            if (exitBtn) {
+                exitBtn.onclick = () => this.exitQuiz();
+            }
+
+            // Re-attach next button listener
+            const nextBtn = document.getElementById("next-question-btn");
+            if (nextBtn) {
+                nextBtn.onclick = () => this.nextQuestion();
+            }
         }
 
-        // Re-attach next button listener
-        const nextBtn = document.getElementById("next-question-btn");
-        if (nextBtn) {
-            nextBtn.onclick = () => this.nextQuestion();
-        }
+        // Display first question
+        this.displayQuestion();
     }
 
-    // Display first question
-    this.displayQuestion();
-}
-
     /**
-     * Display current question
+     * Renders the current question (image, answer choices, progress) in the
+     * quiz UI. Calls {@link QuizManager#showResults} when all questions are
+     * exhausted.
+     * @returns {void}
      */
     displayQuestion() {
         if (this.currentQuestionIndex >= this.questions.length) {
@@ -337,7 +371,11 @@ startQuiz() {
     }
 
     /**
-     * Display answer choice buttons
+     * Renders the answer choice buttons for the given question.
+     * @param {Object} question - The current question object.
+     * @param {string[]} question.allAnswers - All answer choices to display.
+     * @param {string} question.correctAnswer - The correct answer text.
+     * @returns {void}
      */
     displayAnswerChoices(question) {
         const choicesContainer = document.getElementById("quiz-choices");
@@ -356,7 +394,12 @@ startQuiz() {
     }
 
     /**
-     * Handle answer selection
+     * Processes a user's answer selection: updates the score, highlights
+     * correct/incorrect buttons, shows feedback, and reveals the next-question
+     * button.
+     * @param {string} selectedAnswer - The answer text the user clicked.
+     * @param {string} correctAnswer - The correct answer text for this question.
+     * @returns {void}
      */
     handleAnswerClick(selectedAnswer, correctAnswer) {
         if (this.answered) return; // Prevent multiple answers
@@ -399,7 +442,11 @@ startQuiz() {
     }
 
     /**
-     * Show feedback after answer
+     * Displays a correct/incorrect feedback banner below the answer choices.
+     * @param {boolean} isCorrect - Whether the selected answer was correct.
+     * @param {string} correctAnswer - The correct answer text, shown on
+     *   incorrect responses.
+     * @returns {void}
      */
     showFeedback(isCorrect, correctAnswer) {
         const feedback = document.getElementById("quiz-feedback");
@@ -423,7 +470,8 @@ startQuiz() {
     }
 
     /**
-     * Move to next question
+     * Advances to the next question in the sequence.
+     * @returns {void}
      */
     nextQuestion() {
         this.currentQuestionIndex++;
@@ -432,12 +480,11 @@ startQuiz() {
 
   
     /**
-     * Show quiz results
+     * Replaces the quiz container with a results summary showing the final
+     * score and a contextual message. Attaches retry and exit handlers.
+     * @returns {void}
      */
-/**
- * Show quiz results
- */
-showResults() {
+    showResults() {
     const percentage = Math.round((this.score / this.questions.length) * 100);
     
     let message = "";
@@ -487,14 +534,14 @@ showResults() {
 
         console.debug("Retry button found:", retryBtn);
         console.debug("Exit button found:", exitBtn);
-        
+
         if (retryBtn) {
             retryBtn.onclick = () => {
                 console.debug("TRY AGAIN CLICKED!");
                 this.startQuiz();
             };
         }
-        
+
         if (exitBtn) {
             exitBtn.onclick = () => {
                 console.log("EXIT CLICKED!"); // Debug
@@ -505,7 +552,8 @@ showResults() {
 }
 
     /**
-     * Show quiz mode (hide main content)
+     * Hides the main page content and shows the quiz modal overlay.
+     * @returns {void}
      */
     showQuizMode() {
         const mainContent = document.querySelector(".container");
@@ -516,7 +564,8 @@ showResults() {
     }
 
     /**
-     * Exit quiz and return to main view
+     * Ends the active quiz, restores the main view, and resets all quiz state.
+     * @returns {void}
      */
     exitQuiz() {
         this.isQuizActive = false;

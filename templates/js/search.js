@@ -4,7 +4,11 @@ let selectedIndex = -1;
 let searchTimeout;
 let isInitialized = false;
 
-// Handle search result clicks and keyboard navigation
+/**
+ * Sets up the search bar's input, keyboard navigation, and outside-click
+ * handlers. Should be called once after the DOM is ready.
+ * @returns {void}
+ */
 export function initializeSearch() {
     if (isInitialized) return;
     const searchBar = document.getElementById("search-bar");
@@ -69,6 +73,12 @@ export function initializeSearch() {
     });
 }
 
+/**
+ * Sends a search query to the API and renders the resulting HTML into
+ * the search-results container.
+ * @param {string} query - The search string typed by the user.
+ * @returns {Promise<void>}
+ */
 async function performSearch(query) {
     const searchResultsContainer = document.getElementById("search-results");
     const searchLoading = document.getElementById("search-loading");
@@ -89,6 +99,11 @@ async function performSearch(query) {
     }
 }
 
+/**
+ * Attaches click-event listeners to every `.search-result` element currently
+ * in the DOM so that clicking one triggers {@link selectSearchResult}.
+ * @returns {void}
+ */
 function attachClickHandlers() {
     const results = document.querySelectorAll(".search-result");
     results.forEach(result => {
@@ -99,6 +114,12 @@ function attachClickHandlers() {
     });
 }
 
+/**
+ * Highlights the result at `selectedIndex` and removes highlighting from all
+ * others, scrolling the highlighted item into view.
+ * @param {NodeListOf<HTMLElement>} results - The current set of result elements.
+ * @returns {void}
+ */
 function updateSelection(results) {
     results.forEach((result, index) => {
         if (index === selectedIndex) {
@@ -110,6 +131,14 @@ function updateSelection(results) {
     });
 }
 
+/**
+ * Reads the data attributes from a result element and delegates to
+ * {@link updateDropdowns} to navigate the main viewer to that bone.
+ * @param {HTMLElement} resultElement - The clicked or keyboard-selected result
+ *   element carrying `data-type`, `data-boneset`, `data-bone`, and optionally
+ *   `data-subbone` attributes.
+ * @returns {void}
+ */
 function selectSearchResult(resultElement) {
     const type = resultElement.dataset.type;
     const bonesetId = resultElement.dataset.boneset;
@@ -125,6 +154,16 @@ function selectSearchResult(resultElement) {
     clearSearch();
 }
 
+/**
+ * Cascades selection through the boneset → bone → subbone dropdowns by
+ * dispatching `change` events with short timeouts between each tier.
+ * @param {string} type - The type of result: `'boneset'`, `'bone'`, or `'subbone'`.
+ * @param {string} bonesetId - The boneset ID to set on the boneset dropdown.
+ * @param {string} boneId - The bone ID to set on the bone dropdown (when relevant).
+ * @param {string} subboneId - The subbone ID to set on the subbone dropdown
+ *   (only used when `type` is `'subbone'`).
+ * @returns {void}
+ */
 function updateDropdowns(type, bonesetId, boneId, subboneId) {
     const bonesetSelect = document.getElementById("boneset-select");
     const boneSelect = document.getElementById("bone-select");
@@ -159,12 +198,21 @@ function updateDropdowns(type, bonesetId, boneId, subboneId) {
     }
 }
 
+/**
+ * Clears the search bar input and removes all results.
+ * @returns {void}
+ */
 function clearSearch() {
     const searchBar = document.getElementById("search-bar");
     searchBar.value = "";
     clearSearchResults();
 }
 
+/**
+ * Empties the search-results container, hides the loading indicator, and
+ * resets the keyboard-navigation index.
+ * @returns {void}
+ */
 function clearSearchResults() {
     const searchResults = document.getElementById("search-results");
     const searchLoading = document.getElementById("search-loading");

@@ -8,17 +8,27 @@ document.addEventListener("DOMContentLoaded", () => {
   showPlaceholder();
 });
 
+/**
+ * Returns the `#bone-image-container` element, which serves as the host for
+ * displayed bone images and their annotation overlays.
+ * @returns {HTMLElement|null} The image container element, or null if not found.
+ */
 function getImageStage() {
   return (document.getElementById("bone-image-container"));
 }
 
-/** Helper: fetch images for a bone/sub-bone and render them */
+
+/** Helper: fetch images for a bone/sub-bone and render them.
+ * @param {string} boneId - The bone or subbone ID to load images for.
+ * @param {Object} [options={}] - Options forwarded to `displayBoneImages`.
+ * @returns {Promise<void>}
+ */
 async function loadBoneImages(boneId, options = {}) {
   const stage = getImageStage();
 
   if (stage) {
-      clearAnnotations(stage);
-      stage.classList.remove("with-annotations");
+    clearAnnotations(stage);
+    stage.classList.remove("with-annotations");
   }
 
   if (!boneId) {
@@ -43,6 +53,12 @@ async function loadBoneImages(boneId, options = {}) {
   }
 }
 
+/**
+ * Populates the boneset `<select>` element with options from the provided array.
+ * Disables the dropdown if no bonesets are available.
+ * @param {Array<{id: string, name: string}>} bonesets - Array of boneset objects.
+ * @returns {void}
+ */
 export function populateBonesetDropdown(bonesets) {
   const bonesetSelect = document.getElementById("boneset-select");
   if (!bonesetSelect) {
@@ -64,6 +80,15 @@ export function populateBonesetDropdown(bonesets) {
   bonesetSelect.disabled = false;
 }
 
+/**
+ * Wires up change event listeners on the boneset, bone, and subbone `<select>` elements.
+ * Each listener loads images, descriptions, and annotations appropriate to the selection.
+ * @param {Object} combinedData - The full application data set.
+ * @param {Array<Object>} combinedData.bonesets - Array of boneset objects.
+ * @param {Array<Object>} combinedData.bones - Array of bone objects.
+ * @param {Array<Object>} combinedData.subbones - Array of subbone objects.
+ * @returns {void}
+ */
 export function setupDropdownListeners(combinedData) {
   const bonesetSelect  = document.getElementById("boneset-select");
   const boneSelect     = document.getElementById("bone-select");

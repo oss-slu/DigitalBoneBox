@@ -33,7 +33,8 @@ export function displayAnnotations(annotations) {
 
 /**
  * Main function to display complete bone data (annotations only - images handled by imageDisplay.js)
- * @param {Object} boneData - The complete bone object
+ * @param {Object} boneData - The complete bone object.
+ * @returns {void}
  */
 export function displayBoneData(boneData) {
     if (!boneData) {
@@ -46,6 +47,7 @@ export function displayBoneData(boneData) {
 
 /**
  * Clears the viewer display (annotations only - images handled by imageDisplay.js)
+ * @returns {void}
  */
 export function clearViewer() {
     // Images are cleared by imageDisplay.js

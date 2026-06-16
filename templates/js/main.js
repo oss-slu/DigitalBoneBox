@@ -9,12 +9,6 @@ import quizManager from "./quiz.js";
 
 let combinedData = { bonesets: [], bones: [], subbones: [] };
 
-/**
- * Handles bone selection from dropdown
- * @param {string} boneId - The ID of the selected bone
- */
-// handleBoneSelection is defined inside DOMContentLoaded after DOM elements are known
-
 document.addEventListener("DOMContentLoaded", async () => {
     initializeSearch();
     await initializeSidebar();
@@ -90,6 +84,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     clearViewer();
 });
 
+/**
+ * Populates the subbone `<select>` element with options for the given subbone IDs.
+ * Inserts a placeholder option and disables the dropdown if no subbones are provided.
+ * @param {HTMLSelectElement} dropdown - The subbone select element to populate.
+ * @param {string[]} subbones - Array of subbone ID strings.
+ * @returns {void}
+ */
 function populateSubboneDropdown(dropdown, subbones) {
     // Leave a placeholder option so the user must explicitly select a subbone
     dropdown.innerHTML = "";
