@@ -135,7 +135,6 @@ export function displayBoneImages(images, options = {}) {
   }
 }
 
-/* Single image */
 /**
  * Renders a single bone image with its colored region overlay and text annotations.
  * @param {{url?: string, src?: string, alt?: string, filename?: string}} image - The image object to display.
@@ -305,7 +304,6 @@ function displayTwoImages(images, container) {
   }
 }
 
-/** 3+ images grid */
 /**
  * Renders three or more bone images in a wrapping grid layout.
  * Does not load colored regions or annotations (used for supplementary views).

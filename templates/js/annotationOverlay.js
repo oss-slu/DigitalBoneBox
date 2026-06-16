@@ -82,7 +82,7 @@ function normalizedPointToPx(pt, box, norm) { // <--- RENAMED to reflect change
  * pointer coordinates onto the displayed pixel size of the container.
  * @param {HTMLElement} container - The element to draw annotations into.
  * @param {Object} annotationsJson - Text annotation payload from the API.
- * @param {Array<Object>} annotationsJson.text_annotations - Array of text annotation objects.
+ * @param {Array<Object>} annotationsJson.annotations - Array of text annotation objects.
  * @param {Object} annotationsJson.normalized_geometry - Normalized geometry for the slide crop.
  * @returns {void}
  */

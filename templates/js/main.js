@@ -9,12 +9,6 @@ import quizManager from "./quiz.js";
 
 let combinedData = { bonesets: [], bones: [], subbones: [] };
 
-/**
- * Handles bone selection from dropdown
- * @param {string} boneId - The ID of the selected bone
- */
-// handleBoneSelection is defined inside DOMContentLoaded after DOM elements are known
-
 document.addEventListener("DOMContentLoaded", async () => {
     initializeSearch();
     await initializeSidebar();
