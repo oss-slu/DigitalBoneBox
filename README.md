@@ -79,7 +79,7 @@ The older dual-process scripts (`npm start` / `npm run dev`) still start Express
 
 ## Deploy (Vercel)
 
-The app deploys through a single Express entrypoint at `api/index.cjs` (see `vercel.json`).
+The app deploys through a single Express entrypoint at `api/index.js` (see `vercel.json`).
 
 - Preview: from a linked Git branch or `npx vercel`
 - Production: `npx vercel --prod` or merge to the production branch after the Vercel project is connected
