@@ -358,6 +358,28 @@ body {
     z-index: 9999 !important;
 }
 
+
+/* Application Footer */
+.app-footer {
+    width: 100%;
+    text-align: center;
+    padding: var(--space-4);
+    margin-top: var(--space-4);
+    box-sizing: border-box;
+}
+
+.app-footer p {
+    margin: var(--space-1) 0;
+}
+
+/* Responsive footer */
+@media (max-width: 480px) {
+    .app-footer {
+        padding: var(--space-3);
+        font-size: 0.9rem;
+    }
+}
+
 /* Help Modal */
 .help-modal {
     position: fixed;
