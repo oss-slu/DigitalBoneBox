@@ -79,10 +79,12 @@ The older dual-process scripts (`npm start` / `npm run dev`) still start Express
 
 ## Deploy (Vercel)
 
-The app deploys as a single Express entrypoint (`server.cjs`).
+The app deploys through a single Express entrypoint at `api/index.cjs` (see `vercel.json`).
 
 - Preview: from a linked Git branch or `npx vercel`
 - Production: `npx vercel --prod` or merge to the production branch after the Vercel project is connected
+
+Static UI assets and bone images are copied into `public/` during install so Vercel can serve them on the CDN. JSON data under `boneset-api/data/` is included in the function bundle.
 
 No application environment variables are required for the current build.
 
