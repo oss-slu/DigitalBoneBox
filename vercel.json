@@ -5,5 +5,10 @@
       "source": "/(.*)",
       "destination": "/api"
     }
-  ]
+  ],
+  "functions": {
+    "api/index.js": {
+      "includeFiles": "{boneset-api/data/**,templates/**}"
+    }
+  }
 }
