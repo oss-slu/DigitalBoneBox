@@ -1,9 +1,9 @@
 {
   "installCommand": "npm install && npm install --prefix boneset-api && rm -rf public && mkdir -p public/api && cp -R templates/. public/ && cp -R boneset-api/data/images public/api/images",
-  "rewrites": [{ "source": "/(.*)", "destination": "/api" }],
-  "functions": {
-    "api/index.cjs": {
-      "includeFiles": "boneset-api/data/**"
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/api"
     }
-  }
+  ]
 }
