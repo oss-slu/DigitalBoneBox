@@ -1,3 +1,9 @@
 {
-  "installCommand": "npm install && npm install --prefix boneset-api && rm -rf public && mkdir -p public/api && cp -R templates/. public/ && cp -R boneset-api/data/images public/api/images"
+  "installCommand": "npm install && npm install --prefix boneset-api && rm -rf public && mkdir -p public/api && cp -R templates/. public/ && cp templates/boneset.html public/index.html && cp -R boneset-api/data/images public/api/images",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/api"
+    }
+  ]
 }
