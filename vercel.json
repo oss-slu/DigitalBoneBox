@@ -1,0 +1,8 @@
+{
+  "installCommand": "npm install && npm install --prefix boneset-api",
+  "functions": {
+    "server.cjs": {
+      "includeFiles": "{boneset-api/data/**,templates/**}"
+    }
+  }
+}

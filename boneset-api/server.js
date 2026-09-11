@@ -12,8 +12,6 @@ const PORT = process.env.PORT || 8000;
 app.use(cors());
 app.use(express.json());
 
-const API_BASE_URL = `http://127.0.0.1:${PORT}`;
-
 const LOCAL_DATA_DIR = path.join(__dirname, "data");
 const BONESET_DIR = path.join(LOCAL_DATA_DIR, "boneset");
 const BONES_DIR = path.join(LOCAL_DATA_DIR, "bones");
@@ -22,6 +20,7 @@ const TEXT_LABEL_ANNOTATIONS_DIR = path.join(LOCAL_DATA_DIR, "annotations", "tex
 const ROTATIONS_TEMPLATE_DIR = path.join(LOCAL_DATA_DIR, "annotations", "rotations annotations");
 const DESCRIPTIONS_DIR = path.join(LOCAL_DATA_DIR, "descriptions");
 const IMAGES_DIR = path.join(LOCAL_DATA_DIR, "images");
+const TEMPLATES_DIR = path.join(__dirname, "../templates");
 
 const BONESET_NAMES = ["bony_pelvis", "skull", "thorax", "vertebrae", "upper_limb", "lower_limb"];
 
@@ -183,7 +182,7 @@ function searchItems(query, limit = 20) {
 }
 
 // Routes
-app.get("/", (_req, res) => {
+app.get("/health", (_req, res) => {
     res.json({ message: "Welcome to the Boneset API" });
 });
 
@@ -312,7 +311,7 @@ app.get("/api/bone-data/", async (req, res) => {
     const imagesArray = descriptionData.images || [];
     const images = imagesArray.map((filename) => ({
         filename,
-        url: `${API_BASE_URL}/api/images/${encodeURIComponent(filename)}`,
+        url: `/api/images/${encodeURIComponent(filename)}`,
     }));
 
     res.json({
@@ -463,6 +462,13 @@ app.get("/api/search", searchLimiter, (req, res) => {
         console.error("Search error:", error);
         res.status(500).send("<li class='search-error'>Search error occurred</li>");
     }
+});
+
+// Serve the frontend from the same origin as the API.
+app.use(express.static(TEMPLATES_DIR));
+
+app.get("/", (_req, res) => {
+    res.sendFile(path.join(TEMPLATES_DIR, "boneset.html"));
 });
 
 async function startServer() {
