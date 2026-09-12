@@ -17,6 +17,7 @@ describe("Initial configuration tests 263", () => {
         expect(response.statusCode).toBe(200);
         expect(response.headers["content-type"]).toMatch(/html/);
         expect(response.text).toContain("Digital Bone Box");
+    });
 });
 
 // Unit tests for Issue 267: GET /api/annotations/:boneId
