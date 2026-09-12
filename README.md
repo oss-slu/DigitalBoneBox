@@ -45,7 +45,7 @@ Designed for use on iPads, laptops, or other devices commonly used by students.
 
 ## Setup
 
-To run this project locally, you will need to have Node.js installed. The application consists of a backend API and a frontend client, which can be run together with a single command.
+To run this project locally, you will need to have Node.js installed.
 
 1. Clone the repository:
 
@@ -55,28 +55,38 @@ cd DigitalBonesBox
 ```
 
 2. Install dependencies:
-This command will install the necessary packages for both the root project and the boneset-api server.
 
 ```bash
 npm install
 npm install --prefix boneset-api
 ```
 
-3. Run the application:
+3. Run the application (recommended — one origin):
 
-To start both the backend API server and the frontend server concurrently, with the server automatically reloaded each time changes are made, run
-
-```bash
-npm run dev
-```
-
-Or, to run without live server reloading, run
+Express serves both the API and the frontend. Open [http://127.0.0.1:8000/](http://127.0.0.1:8000/).
 
 ```bash
-npm start
+npm start --prefix boneset-api
 ```
 
-Your browser should automatically open to the application.
+Alternatively, for API-only development with nodemon:
+
+```bash
+npm run dev:api
+```
+
+The older dual-process scripts (`npm start` / `npm run dev`) still start Express plus `http-server`, but the UI must be opened via the Express origin (`http://127.0.0.1:8000/`) because API calls use same-origin relative URLs.
+
+## Deploy (Vercel)
+
+The app deploys through a single Express entrypoint at `api/index.js` (see `vercel.json`).
+
+- Preview: from a linked Git branch or `npx vercel`
+- Production: `npx vercel --prod` or merge to the production branch after the Vercel project is connected
+
+Static UI assets and bone images are copied into `public/` during install so Vercel can serve them on the CDN.
+
+No application environment variables are required for the current build.
 
 ## Contributing
 
