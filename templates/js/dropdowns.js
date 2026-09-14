@@ -161,6 +161,8 @@ boneSelect.addEventListener("change", (e) => {
     const stage = getImageStage();
     if (stage) { clearAnnotations(stage); stage.classList.remove("with-annotations"); }
 
+    // Deselecting the bone shouldn't blank the display if a boneset is still
+    // selected (Issue #248) - fall back to showing that boneset's info.
     const selectedBonesetId = bonesetSelect.value;
     if (selectedBonesetId) {
       loadDescription(selectedBonesetId);
@@ -191,6 +193,8 @@ subboneSelect.addEventListener("change", (e) => {
 
     loadBoneImages(selectedSubboneId, opts);
   } else {
+    // Same fallback as the bone-change listener above, one level down:
+    // deselecting the sub-bone should reveal the parent bone's info, not go blank.
     const selectedBoneId = boneSelect.value;
     if (selectedBoneId) {
       loadDescription(selectedBoneId);
