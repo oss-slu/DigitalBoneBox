@@ -155,12 +155,19 @@ boneSelect.addEventListener("change", (e) => {
     loadDescription(selectedBoneId);
 
     const opts = { boneId: selectedBoneId };
-    
+
     loadBoneImages(selectedBoneId, opts);
   } else {
     const stage = getImageStage();
     if (stage) { clearAnnotations(stage); stage.classList.remove("with-annotations"); }
-    showPlaceholder();
+
+    const selectedBonesetId = bonesetSelect.value;
+    if (selectedBonesetId) {
+      loadDescription(selectedBonesetId);
+      loadBoneImages(selectedBonesetId, { boneId: selectedBonesetId });
+    } else {
+      showPlaceholder();
+    }
   }
 });
 
@@ -184,7 +191,13 @@ subboneSelect.addEventListener("change", (e) => {
 
     loadBoneImages(selectedSubboneId, opts);
   } else {
-    showPlaceholder();
+    const selectedBoneId = boneSelect.value;
+    if (selectedBoneId) {
+      loadDescription(selectedBoneId);
+      loadBoneImages(selectedBoneId, { boneId: selectedBoneId });
+    } else {
+      showPlaceholder();
+    }
   }
 });
 
