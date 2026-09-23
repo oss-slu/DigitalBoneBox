@@ -5,12 +5,13 @@ const rateLimit = require("express-rate-limit");
 
 const fs = require("fs").promises; // Use promises for async/await file reading
 const path = require("path");
+const { createScenesRouter } = require("./scenes");
 
 const app = express();
 const PORT = process.env.PORT || 8000;
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "2mb" }));
 
 const LOCAL_DATA_DIR = path.join(__dirname, "data");
 const BONESET_DIR = path.join(LOCAL_DATA_DIR, "boneset");
@@ -25,6 +26,7 @@ const TEMPLATES_DIR = path.join(__dirname, "../templates");
 const BONESET_NAMES = ["bony_pelvis", "skull", "thorax", "vertebrae", "upper_limb", "lower_limb"];
 
 app.use("/api/images", express.static(IMAGES_DIR));
+app.use("/api/scenes", createScenesRouter());
 
 // Rate limiter for search endpoint
 const searchLimiter = rateLimit({
