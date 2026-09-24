@@ -65,8 +65,11 @@ function resetToInitialState() {
 }
 
 /**
- * Sets the currently active bone and its associated subbones for navigation,
- * resetting the index to the first subbone.
+ * Sets the currently active bone and its associated subbones for navigation.
+ * The index resets to -1 (nothing shown yet) rather than 0, since the subbone
+ * dropdown itself still shows its placeholder at this point - starting at 0
+ * would make the first "Next" click skip subbones[0] and jump straight to
+ * subbones[1], because nextSubbone() would treat index 0 as already displayed.
  * @param {string} bone - The ID of the currently selected bone.
  * @param {string[]} boneSubbones - Array of subbone IDs belonging to that bone.
  * @returns {void}
@@ -74,7 +77,7 @@ function resetToInitialState() {
 export function setBoneAndSubbones(bone, boneSubbones) {
   currentBone = bone;
   subbones = boneSubbones || [];
-  currentSubboneIndex = subbones.length > 0 ? 0 : -1;
+  currentSubboneIndex = -1;
 }
 
 /**
