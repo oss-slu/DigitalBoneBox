@@ -1,5 +1,5 @@
 // boneset-api/scenes.js
-// Scene Editor Workspace API (big rock #420) and scene persistence (big rock #451).
+// Scene Editor Workspace API (big rock #420).
 const express = require("express");
 const rateLimit = require("express-rate-limit");
 const crypto = require("crypto");
@@ -8,7 +8,6 @@ const path = require("path");
 
 const DEFAULT_SCENE_NAME = "Untitled Scene";
 const MAX_SCENE_NAME_LENGTH = 100;
-const MAX_SCENE_OBJECTS = 1000;
 const SCENE_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 class SceneStorageUnavailableError extends Error {}
@@ -29,23 +28,6 @@ function normalizeSceneName(name) {
         return { error: `Scene name cannot exceed ${MAX_SCENE_NAME_LENGTH} characters` };
     }
     return { name: trimmed };
-}
-
-function isPlainObject(value) {
-    return value !== null && typeof value === "object" && !Array.isArray(value);
-}
-
-function validateObjectList(list, field) {
-    if (!Array.isArray(list)) {
-        return `${field} must be an array`;
-    }
-    if (list.length > MAX_SCENE_OBJECTS) {
-        return `${field} cannot contain more than ${MAX_SCENE_OBJECTS} items`;
-    }
-    if (!list.every(isPlainObject)) {
-        return `Every item in ${field} must be an object`;
-    }
-    return null;
 }
 
 function toSummary(scene) {
@@ -260,7 +242,7 @@ function createScenesRouter(store = resolveSceneStore()) {
     });
 
     /**
-     * Returns a full scene (images and annotations) to open in the workspace. Issues #422, #425, #453.
+     * Returns a full scene (images and annotations) to open in the workspace. Issues #422, #425.
      */
     router.get("/:sceneId", async (req, res) => {
         try {
@@ -271,57 +253,6 @@ function createScenesRouter(store = resolveSceneStore()) {
             res.json(scene);
         } catch (error) {
             sendStoreError(res, error, "Failed to load scene");
-        }
-    });
-
-    /**
-     * Saves edited scene contents. Replaces the scene's images and annotations with
-     * the ones sent; name is optional. id and createdAt are kept from the stored scene.
-     * Issues #452, #454.
-     */
-    router.put("/:sceneId", async (req, res) => {
-        try {
-            const body = req.body;
-            if (!isPlainObject(body)) {
-                return res.status(400).json({ error: "Request body must be a JSON object" });
-            }
-            const contentError =
-                validateObjectList(body.images, "images") ||
-                validateObjectList(body.annotations, "annotations");
-            if (contentError) {
-                return res.status(400).json({ error: contentError });
-            }
-
-            let name;
-            if (body.name !== undefined) {
-                const result = normalizeSceneName(body.name);
-                if (result.error) {
-                    return res.status(400).json({ error: result.error });
-                }
-                name = result.name;
-            }
-
-            const { sceneId } = req.params;
-            const scene = await store.get(sceneId);
-            if (!scene) {
-                return res.status(404).json({ error: "Scene not found" });
-            }
-
-            if (name !== undefined && name !== scene.name) {
-                const scenes = await store.list();
-                if (isNameTaken(scenes, name, sceneId)) {
-                    return res.status(409).json({ error: `A scene named "${name}" already exists` });
-                }
-                scene.name = name;
-            }
-
-            scene.images = body.images;
-            scene.annotations = body.annotations;
-            scene.updatedAt = new Date().toISOString();
-            await store.save(scene);
-            res.json(scene);
-        } catch (error) {
-            sendStoreError(res, error, "Failed to save scene");
         }
     });
 
@@ -384,5 +315,4 @@ module.exports = {
     isValidSceneId,
     normalizeSceneName,
     DEFAULT_SCENE_NAME,
-    MAX_SCENE_OBJECTS,
 };

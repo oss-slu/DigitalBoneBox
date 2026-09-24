@@ -8,7 +8,6 @@ const {
     createFileSceneStore,
     createRedisSceneStore,
     resolveSceneStore,
-    MAX_SCENE_OBJECTS,
 } = require("./scenes");
 
 // In-memory stand-in for the subset of the @upstash/redis client the store uses.
@@ -143,6 +142,20 @@ describe.each(backends)("Scenes API ($name)", (backend) => {
             });
         });
 
+        it("opens a stored scene without losing object positions or styles", async () => {
+            const created = await createScene({ name: "Bony Pelvis" });
+            const stored = {
+                ...created.body,
+                images: [{ id: "img1", src: "/api/images/ilium.png", x: 10, y: 20, width: 300, height: 400, rotation: 15, flipX: true }],
+                annotations: [{ id: "a1", type: "polygon", points: [[0, 0], [1, 0], [1, 1]], fill: "#ff000055" }],
+            };
+            await env.newStore().save(stored);
+
+            const reopened = await request(buildApp(env.newStore())).get(`/api/scenes/${created.body.id}`);
+            expect(reopened.statusCode).toBe(200);
+            expect(reopened.body).toEqual(stored);
+        });
+
         it("returns 404 for an unknown scene", async () => {
             const response = await request(app).get(`/api/scenes/${UNKNOWN_ID}`);
             expect(response.statusCode).toBe(404);
@@ -151,105 +164,6 @@ describe.each(backends)("Scenes API ($name)", (backend) => {
         it("returns 400 for a malformed scene id", async () => {
             const response = await request(app).get("/api/scenes/..%2F..%2Fserver");
             expect(response.statusCode).toBe(400);
-        });
-    });
-
-    // Issues #452, #453, #454: Save, load, and update scene contents
-    describe("PUT /api/scenes/:sceneId - Issues 452, 453, 454", () => {
-        const content = {
-            images: [{ id: "img1", src: "/api/images/ilium.png", x: 10, y: 20, width: 300, height: 400, rotation: 15, flipX: true }],
-            annotations: [
-                { id: "a1", type: "text", text: "Ilium", x: 0.2, y: 0.1 },
-                { id: "a2", type: "polygon", points: [[0, 0], [1, 0], [1, 1]], fill: "#ff000055" },
-            ],
-        };
-
-        it("saves contents through the API and reopens them unchanged", async () => {
-            const created = await createScene({ name: "Bony Pelvis" });
-
-            const saved = await request(app).put(`/api/scenes/${created.body.id}`).send(content);
-            expect(saved.statusCode).toBe(200);
-            expect(saved.body.images).toEqual(content.images);
-            expect(saved.body.annotations).toEqual(content.annotations);
-
-            const reopened = await request(app).get(`/api/scenes/${created.body.id}`);
-            expect(reopened.statusCode).toBe(200);
-            expect(reopened.body).toEqual(saved.body);
-            expect(reopened.body.id).toBe(created.body.id);
-            expect(reopened.body.createdAt).toBe(created.body.createdAt);
-        });
-
-        it("keeps saved contents for a separate server instance using the same storage", async () => {
-            const created = await createScene();
-            await request(app).put(`/api/scenes/${created.body.id}`).send(content);
-
-            const otherInstance = buildApp(env.newStore());
-            const reopened = await request(otherInstance).get(`/api/scenes/${created.body.id}`);
-            expect(reopened.statusCode).toBe(200);
-            expect(reopened.body.annotations).toEqual(content.annotations);
-        });
-
-        it("replaces earlier contents on a later save and updates the list counts", async () => {
-            const created = await createScene();
-            await request(app).put(`/api/scenes/${created.body.id}`).send(content);
-            const second = await request(app)
-                .put(`/api/scenes/${created.body.id}`)
-                .send({ images: [], annotations: [content.annotations[0]] });
-
-            expect(second.body.images).toEqual([]);
-            expect(second.body.annotations).toEqual([content.annotations[0]]);
-
-            const list = await request(app).get("/api/scenes");
-            expect(list.body.scenes[0]).toMatchObject({ imageCount: 0, annotationCount: 1 });
-        });
-
-        it("ignores id and createdAt sent by the client", async () => {
-            const created = await createScene();
-            const response = await request(app)
-                .put(`/api/scenes/${created.body.id}`)
-                .send({ ...content, id: UNKNOWN_ID, createdAt: "1999-01-01T00:00:00.000Z" });
-
-            expect(response.body.id).toBe(created.body.id);
-            expect(response.body.createdAt).toBe(created.body.createdAt);
-        });
-
-        it("can rename while saving, and rejects a duplicate name", async () => {
-            await createScene({ name: "Taken" });
-            const created = await createScene({ name: "Mine" });
-
-            const renamed = await request(app)
-                .put(`/api/scenes/${created.body.id}`)
-                .send({ ...content, name: "Renamed" });
-            expect(renamed.body.name).toBe("Renamed");
-
-            const dup = await request(app)
-                .put(`/api/scenes/${created.body.id}`)
-                .send({ ...content, name: "taken" });
-            expect(dup.statusCode).toBe(409);
-        });
-
-        it("rejects missing or malformed contents without changing the scene", async () => {
-            const created = await createScene();
-            const url = `/api/scenes/${created.body.id}`;
-
-            const missing = await request(app).put(url).send({ images: [] });
-            expect(missing.statusCode).toBe(400);
-
-            const notObjects = await request(app).put(url).send({ images: ["x"], annotations: [] });
-            expect(notObjects.statusCode).toBe(400);
-
-            const tooMany = await request(app)
-                .put(url)
-                .send({ images: [], annotations: Array.from({ length: MAX_SCENE_OBJECTS + 1 }, () => ({})) });
-            expect(tooMany.statusCode).toBe(400);
-
-            const unchanged = await request(app).get(url);
-            expect(unchanged.body).toEqual(created.body);
-        });
-
-        it("returns 404 when saving an unknown scene", async () => {
-            const response = await request(app).put(`/api/scenes/${UNKNOWN_ID}`).send(content);
-            expect(response.statusCode).toBe(404);
         });
     });
 

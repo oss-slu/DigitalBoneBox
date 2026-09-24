@@ -64,15 +64,6 @@ function createFakeBackend() {
             scene.updatedAt = now;
             return respond(200, scene);
         }
-        if (method === "PUT") {
-            if (!Array.isArray(body.images) || !Array.isArray(body.annotations)) {
-                return respond(400, { error: "images must be an array" });
-            }
-            scene.images = body.images;
-            scene.annotations = body.annotations;
-            scene.updatedAt = now;
-            return respond(200, scene);
-        }
         if (method === "DELETE") {
             scenes.delete(id);
             return { ok: true, status: 204, json: async () => null };
@@ -350,54 +341,12 @@ describe("Scene editor: delete (#424)", () => {
     });
 });
 
-describe("Scene editor: saving (#452, #454)", () => {
-    beforeEach(async () => {
-        backend.seed({
-            name: "Editable",
-            images: [{ id: "i1", src: "/x.png", x: 0, y: 0, width: 10, height: 10, customField: "keep me" }],
-        });
-        await enterEditor();
-        await openByName("Editable");
-    });
-
-    it("sends both arrays with unrecognized fields preserved", async () => {
-        const scene = scenesModule.getActiveScene();
-        scene.annotations.push({ id: "a1", type: "text", text: "New", x: 1, y: 1 });
-        scenesModule.markSceneChanged();
-        expect($("scene-save-status").textContent).toBe("Unsaved changes");
-
-        click("scene-save");
-        await waitFor(() => expect($("scene-save-status").textContent).toBe("All changes saved"));
-        const put = backend.calls.find((c) => c.method === "PUT");
-        expect(Object.keys(put.body).sort()).toEqual(["annotations", "images"]);
-        expect(put.body.images[0].customField).toBe("keep me");
-        expect(listButton("Editable").textContent).toMatch(/1 annotation/);
-    });
-
-    it("keeps the canvas and offers a retry when saving fails", async () => {
-        const scene = scenesModule.getActiveScene();
-        scene.annotations.push({ id: "a1", type: "text", text: "New", x: 1, y: 1 });
-        scenesModule.markSceneChanged();
-        const canvasBefore = $("scene-canvas").innerHTML;
-
-        backend.fail("PUT", 500);
-        click("scene-save");
-        await waitFor(() => expect($("scene-save-status").textContent).toBe("Save failed"));
-        expect($("scene-save").textContent).toBe("Retry save");
-        expect($("scene-canvas").innerHTML).toBe(canvasBefore);
-        expect(scenesModule.getActiveScene().annotations).toHaveLength(1);
-
-        click("scene-save");
-        await waitFor(() => expect($("scene-save-status").textContent).toBe("All changes saved"));
-    });
-});
-
 describe("describeError", () => {
     it("maps each status to a user-facing message", () => {
         const { describeError, SceneApiError } = scenesModule;
         expect(describeError(new SceneApiError(429, "x"), "open")).toMatch(/Too many requests/);
-        expect(describeError(new SceneApiError(503, "x"), "save")).toMatch(/Scene storage is not configured/);
+        expect(describeError(new SceneApiError(503, "x"), "create")).toMatch(/Scene storage is not configured/);
         expect(describeError(new SceneApiError(0, "x"), "load")).toMatch(/Couldn't reach the server/);
-        expect(describeError(new SceneApiError(500, "x"), "save")).toMatch(/Try again/);
+        expect(describeError(new SceneApiError(500, "x"), "delete")).toMatch(/Try again/);
     });
 });

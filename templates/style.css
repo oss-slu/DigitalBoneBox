@@ -2818,26 +2818,6 @@ button:disabled {
     gap: var(--space-2);
 }
 
-.scene-save-status {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    margin-right: var(--space-2);
-}
-
-.scene-save-status[data-state="saved"]::before { content: "✓ "; }
-.scene-save-status[data-state="dirty"]::before { content: "● "; }
-.scene-save-status[data-state="saving"]::before { content: "… "; }
-.scene-save-status[data-state="failed"]::before { content: "⚠ "; }
-
-.scene-save-status[data-state="dirty"] {
-    color: #92400e;
-}
-
-.scene-save-status[data-state="failed"] {
-    color: #b91c1c;
-    font-weight: 600;
-}
-
 .scene-canvas-frame {
     border: 2px solid var(--border);
     border-radius: var(--radius);

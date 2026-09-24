@@ -53,10 +53,6 @@ export function renameScene(sceneId, name) {
     return request(scenePath(sceneId), { method: "PATCH", body: JSON.stringify({ name }) });
 }
 
-export function saveScene(sceneId, { images, annotations }) {
-    return request(scenePath(sceneId), { method: "PUT", body: JSON.stringify({ images, annotations }) });
-}
-
 export function deleteScene(sceneId) {
     return request(scenePath(sceneId), { method: "DELETE" });
 }
@@ -64,7 +60,7 @@ export function deleteScene(sceneId) {
 /**
  * Turns an API error into a message a user can act on.
  * @param {Error} error
- * @param {"rename"|"save"|"load"|"open"|"create"|"delete"} context
+ * @param {"rename"|"load"|"open"|"create"|"delete"} context
  */
 export function describeError(error, context) {
     const status = error instanceof SceneApiError ? error.status : 0;
@@ -74,7 +70,7 @@ export function describeError(error, context) {
         case 400:
             return context === "rename"
                 ? "Enter a scene name (up to 100 characters)."
-                : `The scene couldn't be saved: ${error.message}.`;
+                : `The request was rejected: ${error.message}.`;
         case 404:
             return "This scene is no longer available. It may have been deleted.";
         case 409:
@@ -88,18 +84,10 @@ export function describeError(error, context) {
     }
 }
 
-const SAVE_LABELS = {
-    saved: "All changes saved",
-    dirty: "Unsaved changes",
-    saving: "Saving…",
-    failed: "Save failed",
-};
-
 const state = {
     scenes: [],
     active: null,
     openRequest: 0,
-    saveStatus: "saved",
     fitToWidth: true,
     busy: false,
 };
@@ -182,14 +170,6 @@ function renderLibrary() {
     }
 }
 
-function renderSaveStatus() {
-    dom.saveStatus.textContent = SAVE_LABELS[state.saveStatus];
-    dom.saveStatus.dataset.state = state.saveStatus;
-    dom.saveButton.hidden = !(state.saveStatus === "dirty" || state.saveStatus === "failed");
-    dom.saveButton.textContent = state.saveStatus === "failed" ? "Retry save" : "Save";
-    dom.saveButton.disabled = state.saveStatus === "saving";
-}
-
 function renderCanvas() {
     const scene = state.active;
     dom.canvas.replaceChildren();
@@ -214,7 +194,7 @@ function renderCanvas() {
     if (unsupported > 0) {
         dom.canvasNote.hidden = false;
         dom.canvasNote.textContent =
-            `${plural(unsupported, "object")} can't be displayed yet but will be kept when the scene is saved.`;
+            `${plural(unsupported, "object")} can't be displayed yet but are still stored with this scene.`;
     }
 }
 
@@ -229,14 +209,12 @@ function renderWorkspace() {
 
     dom.sceneTitle.textContent = scene.name;
     dom.sceneMeta.textContent = `${plural(scene.images.length, "image")} · ${plural(scene.annotations.length, "annotation")}`;
-    renderSaveStatus();
     renderCanvas();
 }
 
 function clearActiveScene() {
     state.active = null;
     state.openRequest += 1;
-    state.saveStatus = "saved";
     dom.workspace.removeAttribute("aria-busy");
     dom.workspaceLoading.hidden = true;
     renderWorkspace();
@@ -265,10 +243,6 @@ async function loadLibrary() {
 
 async function openScene(sceneId) {
     if (state.active && state.active.id === sceneId) return;
-    if (state.saveStatus === "dirty" || state.saveStatus === "failed") {
-        const leave = window.confirm(`"${state.active.name}" has unsaved changes. Open another scene and discard them?`);
-        if (!leave) return;
-    }
 
     const requestId = ++state.openRequest;
     hideWorkspaceError();
@@ -280,7 +254,6 @@ async function openScene(sceneId) {
         const scene = await getScene(sceneId);
         if (requestId !== state.openRequest) return;
         state.active = scene;
-        state.saveStatus = "saved";
         renderWorkspace();
         renderLibrary();
         announce(`Opened ${scene.name}.`);
@@ -311,7 +284,6 @@ async function handleCreate() {
         const scene = await createScene();
         state.openRequest += 1;
         state.active = scene;
-        state.saveStatus = "saved";
         await loadLibrary();
         setBusy(false);
         renderWorkspace();
@@ -426,49 +398,6 @@ async function handleDelete() {
     }
 }
 
-/**
- * Marks the open scene as changed. Editing tools call this after modifying
- * `state.active.images` or `state.active.annotations` in place.
- */
-export function markSceneChanged() {
-    if (!state.active) return;
-    state.saveStatus = "dirty";
-    renderSaveStatus();
-}
-
-/**
- * Saves the open scene's full images and annotations arrays. On failure the
- * in-memory scene and canvas are left untouched so the user can retry.
- */
-export async function saveActiveScene() {
-    if (!state.active || state.saveStatus === "saving") return;
-    const scene = state.active;
-    state.saveStatus = "saving";
-    renderSaveStatus();
-    announce("Saving…");
-    try {
-        const saved = await saveScene(scene.id, { images: scene.images, annotations: scene.annotations });
-        if (state.active !== scene) return;
-        scene.updatedAt = saved.updatedAt;
-        state.saveStatus = "saved";
-        const summary = state.scenes.find((s) => s.id === scene.id);
-        if (summary) {
-            summary.imageCount = saved.images.length;
-            summary.annotationCount = saved.annotations.length;
-        }
-        renderSaveStatus();
-        renderLibrary();
-        announce("Saved.");
-    } catch (error) {
-        if (state.active !== scene) return;
-        state.saveStatus = "failed";
-        renderSaveStatus();
-        const message = describeError(error, "save");
-        showWorkspaceError(message);
-        announce(`Save failed. ${message}`);
-    }
-}
-
 export function getActiveScene() {
     return state.active;
 }
@@ -527,8 +456,6 @@ export function initializeSceneEditor(root = document) {
         renameSubmit: $("scene-rename-submit"),
         renameCancel: $("scene-rename-cancel"),
         renameError: $("scene-rename-error"),
-        saveStatus: $("scene-save-status"),
-        saveButton: $("scene-save"),
         fitToggle: $("scene-fit-toggle"),
         canvas: $("scene-canvas"),
         canvasEmpty: $("scene-canvas-empty"),
@@ -558,7 +485,6 @@ export function initializeSceneEditor(root = document) {
         }
     });
     dom.deleteButton.addEventListener("click", handleDelete);
-    dom.saveButton.addEventListener("click", saveActiveScene);
     dom.fitToggle.addEventListener("click", () => setFitToWidth(!state.fitToWidth));
 
     renderWorkspace();
