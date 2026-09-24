@@ -82,7 +82,23 @@ function renderImage(image) {
         opacity: isNumber(image.opacity) ? image.opacity : undefined,
         transform: transforms.length ? transforms.join(" ") : undefined,
     });
-    return { node, bounds: [[image.x, image.y], [image.x + image.width, image.y + image.height]] };
+    const corners = [
+        [image.x, image.y],
+        [image.x + image.width, image.y],
+        [image.x + image.width, image.y + image.height],
+        [image.x, image.y + image.height],
+    ];
+    return { node, bounds: isNumber(image.rotation) ? rotatePoints(corners, image.rotation, cx, cy) : corners };
+}
+
+function rotatePoints(points, degrees, cx, cy) {
+    const radians = (degrees * Math.PI) / 180;
+    const cos = Math.cos(radians);
+    const sin = Math.sin(radians);
+    return points.map(([x, y]) => [
+        cx + (x - cx) * cos - (y - cy) * sin,
+        cy + (x - cx) * sin + (y - cy) * cos,
+    ]);
 }
 
 function renderText(annotation) {
