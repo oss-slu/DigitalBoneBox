@@ -484,11 +484,12 @@ async function startServer() {
     }
 }
 
-startServer();
+const serverReady = startServer();
 
 // Export for tests or other modules if needed
 module.exports = {
   app,
+  serverReady,
   escapeHtml,
   searchItems,
   initializeSearchCache,

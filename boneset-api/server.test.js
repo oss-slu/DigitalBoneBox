@@ -1,5 +1,7 @@
 const request = require("supertest");
-const { app } = require("./server");
+const { app, serverReady } = require("./server");
+
+beforeAll(() => serverReady);
 
 describe("Initial configuration tests 263", () => {
     it("should return 200 OK from health", async () => {

@@ -315,7 +315,10 @@ describe.each(backends)("Scenes API ($name)", (backend) => {
 
 describe("resolveSceneStore", () => {
     it("refuses to store scenes on Vercel when Redis is not configured", async () => {
+        const consoleError = jest.spyOn(console, "error").mockImplementation(() => {});
         const app = buildApp(resolveSceneStore({ VERCEL: "1" }));
+        expect(consoleError).toHaveBeenCalledWith(expect.stringContaining("Scene storage is not configured"));
+        consoleError.mockRestore();
 
         const list = await request(app).get("/api/scenes");
         expect(list.statusCode).toBe(503);
