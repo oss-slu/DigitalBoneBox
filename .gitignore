@@ -19,6 +19,9 @@ build/
 .DS_Store
 Thumbs.db
 
+# Locally created editor scenes
+boneset-api/data/scenes/
+
 # Cache files
 __pycache__/
 *.pyc
