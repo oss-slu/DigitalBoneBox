@@ -29,6 +29,7 @@
                 <button id="text-button-Tutor" type="button" >Tutor</button>
                 <button id="text-button-Study" type="button" >Study</button>
                 <button id="start-quiz-btn" type="button" aria-haspopup="dialog" aria-controls="quiz-modal" >Quiz Me </button>
+                <button id="text-button-SceneEditor" type="button" aria-controls="scene-editor-view" aria-pressed="false">Scene Editor</button>
                 <button id="text-button-Help" type="button" aria-haspopup="dialog" aria-controls="new-help-modal" onclick="document.getElementById('new-help-modal').style.display='flex';">Help</button>
             </nav>
         </div>
@@ -150,6 +151,93 @@
         </div>
     </main>
 
+    <!-- Scene Editor (kept separate from the bone viewer above) -->
+    <main id="scene-editor-view" class="scene-editor" aria-labelledby="scene-editor-heading" hidden>
+        <div class="container scene-editor-container">
+            <div class="scene-editor-header">
+                <div>
+                    <h1 id="scene-editor-heading" tabindex="-1">Scene Editor</h1>
+                    <p class="subtitle">Create and organize bone-image scenes</p>
+                </div>
+                <button id="scene-editor-back" type="button" class="scene-btn scene-btn-secondary">&larr; Back to Bone Viewer</button>
+            </div>
+
+            <p id="scene-editor-status" class="scene-visually-hidden" role="status" aria-live="polite"></p>
+
+            <div class="scene-editor-layout">
+                <section class="scene-library" aria-labelledby="scene-library-heading">
+                    <div class="scene-library-header">
+                        <h2 id="scene-library-heading">Scenes</h2>
+                        <button id="scene-new" type="button" class="scene-btn scene-btn-primary">+ New scene</button>
+                    </div>
+
+                    <div id="scene-library-message" class="scene-library-message" hidden>
+                        <p id="scene-library-message-text"></p>
+                        <button id="scene-library-retry" type="button" class="scene-btn scene-btn-secondary" hidden>Retry</button>
+                    </div>
+
+                    <div id="scene-library-empty" class="scene-empty" hidden>
+                        <p><strong>No scenes yet.</strong></p>
+                        <p>A scene is a workspace for arranging bone images and annotations.</p>
+                        <button id="scene-empty-new" type="button" class="scene-btn scene-btn-primary">Create your first scene</button>
+                    </div>
+
+                    <ul id="scene-list" class="scene-list" aria-label="Saved scenes"></ul>
+                </section>
+
+                <section id="scene-workspace" class="scene-workspace" aria-labelledby="scene-workspace-heading">
+                    <h2 id="scene-workspace-heading" class="scene-visually-hidden">Workspace</h2>
+
+                    <div id="scene-workspace-error" class="scene-alert" role="alert" hidden>
+                        <p><strong>Problem:</strong> <span id="scene-workspace-error-text"></span></p>
+                        <button id="scene-workspace-retry" type="button" class="scene-btn scene-btn-secondary" hidden>Try again</button>
+                    </div>
+
+                    <p id="scene-workspace-loading" class="scene-loading" hidden>Opening scene…</p>
+
+                    <div id="scene-workspace-empty" class="scene-empty">
+                        <p><strong>No scene open.</strong></p>
+                        <p>Choose a scene from the list, or create a new one.</p>
+                    </div>
+
+                    <div id="scene-workspace-scene" hidden>
+                        <div class="scene-toolbar">
+                            <div id="scene-title-row" class="scene-title-row">
+                                <h3 id="scene-title" tabindex="-1"></h3>
+                                <p id="scene-meta" class="scene-meta"></p>
+                            </div>
+
+                            <form id="scene-rename-form" class="scene-rename-form" novalidate hidden>
+                                <label for="scene-rename-input">Scene name</label>
+                                <div class="scene-rename-row">
+                                    <input id="scene-rename-input" type="text" maxlength="100" autocomplete="off" required aria-describedby="scene-rename-error" />
+                                    <button id="scene-rename-submit" type="submit" class="scene-btn scene-btn-primary">Save name</button>
+                                    <button id="scene-rename-cancel" type="button" class="scene-btn scene-btn-secondary">Cancel</button>
+                                </div>
+                                <p id="scene-rename-error" class="scene-field-error" hidden></p>
+                            </form>
+
+                            <div class="scene-actions">
+                                <button id="scene-fit-toggle" type="button" class="scene-btn scene-btn-secondary">Show actual size</button>
+                                <button id="scene-rename" type="button" class="scene-btn scene-btn-secondary">Rename</button>
+                                <button id="scene-delete" type="button" class="scene-btn scene-btn-danger">Delete</button>
+                            </div>
+                        </div>
+
+                        <div class="scene-canvas-frame">
+                            <div id="scene-canvas-empty" class="scene-empty scene-canvas-empty">
+                                <p><strong>This scene is blank.</strong></p>
+                                <p>Images and annotations added to this scene will appear here.</p>
+                            </div>
+                            <div id="scene-canvas" class="scene-canvas" role="region" aria-label="Scene canvas" tabindex="0" hidden></div>
+                        </div>
+                        <p id="scene-canvas-note" class="scene-canvas-note" hidden></p>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
     <!-- Application Footer -->
     <footer class="app-footer">
         <p>&copy; 2026 Digital Bone Box</p>
@@ -250,6 +338,7 @@
     <script type="module" src="js/imageDisplay.js"></script>
     <script type="module" src="js/annotationOverlay.js"></script>
     <script type="module" src="js/imageCaptions.js"></script>
+    <script type="module" src="js/scenes.js"></script>
     
     <!-- Simple Escape Key Handler -->
     <script>
