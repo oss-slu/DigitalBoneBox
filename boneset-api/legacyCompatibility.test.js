@@ -1,61 +1,27 @@
-/**
- * Legacy Content Compatibility Tests
- *
- * Issue:  484 - [Small Rock] Test Legacy Content Compatibility
- * Parent: 477 - [Feature] Test and Release the Scene Editor
- *
- * Purpose:
- *   Verify that the original Digital Bone Box content (extracted from the
- *   PowerPoint slides) is still served correctly now that the Scene Editor
- *   is part of the same application.
- *
- * Acceptance criteria covered:
- *   1. Existing viewer tests continue to pass (this suite runs alongside them).
- *   2. Representative legacy content remains available.
- *   3. Migrated (scene) and non-migrated (legacy) content can be used in the
- *      same release.
- *
- * Terminology:
- *   - "Legacy content": bonesets, bones, sub-bones, descriptions, images, and
- *     colored regions stored as JSON files in boneset-api/data/.
- *   - "Scene content": scenes created in the Scene Editor and saved by the
- *     scene store (see boneset-api/scenes.js). Scenes reference legacy images
- *     by URL, e.g. /api/images/ilium_image1.jpg.
- */
 
-// Node's built-in file system module, used to create and delete a temporary folder.
 const fs = require("fs");
 
-// Node's built-in OS module, used to find the system's temporary directory.
 const os = require("os");
 
-// Node's built-in path module, used to build file paths that work on any OS.
 const path = require("path");
 
-// Supertest sends HTTP requests to the Express app in memory,
-// so no real server or network port is needed during tests.
 const request = require("supertest");
 
 // ---------------------------------------------------------------------------
 // Test environment setup
 // ---------------------------------------------------------------------------
 
-// Create a unique, empty temporary folder for scenes created by these tests.
 // This keeps test data out of the real boneset-api/data/scenes folder.
 const scenesDir = fs.mkdtempSync(path.join(os.tmpdir(), "bonebox-legacy-test-"));
 
 // Tell the scene store to use the temporary folder.
-// This MUST happen before server.js is loaded, because the server chooses
-// its scene storage location at load time.
+
 process.env.SCENES_DIR = scenesDir;
 
-// Load the Express app and a promise that resolves once the search cache is ready.
 const { app, serverReady } = require("./server");
 
-// Load the file-based scene store so tests can save a scene with images directly.
 const { createFileSceneStore } = require("./scenes");
 
-// Wait for the server's search cache to finish building before any test runs.
 beforeAll(() => serverReady);
 
 // Remove the temporary scenes folder after all tests finish, leaving no files behind.
@@ -83,7 +49,8 @@ const EXPECTED_BONESETS = ["bony_pelvis", "skull", "thorax", "vertebrae", "upper
 //   - bony_pelvis is included because server.js applies a special alignment
 //     workaround to it, which makes it a higher-risk item.
 //   - anterior_mandible represents the Skull boneset, because the Skull
-//     boneset and its four view-level bones currently have no description files.
+//     boneset and its four view-level bones currently have no description
+//     files (reported separately in issue 488).
 const REPRESENTATIVE_ITEMS = [
     { id: "bony_pelvis", name: "Bony Pelvis", type: "boneset", coloredRegions: false },
     { id: "ilium", name: "Ilium", type: "bone", coloredRegions: false },
@@ -140,7 +107,7 @@ describe("Legacy content compatibility - Issue 484", () => {
             }
         );
 
-        // KNOWN ISSUE (reported separately in #___):
+        // KNOWN ISSUE (reported separately in #487):
         // boneset-api/data/bones/axis.json is wrapped in an array ([ ... ])
         // instead of being a single object ({ ... }) like every other bone file.
         // As a result, the Axis bone is served without an id or name, and its
