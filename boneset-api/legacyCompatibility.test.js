@@ -58,7 +58,9 @@ const REPRESENTATIVE_ITEMS = [
     { id: "anterior_mandible", name: "Mandible", type: "subbone", coloredRegions: true },
     { id: "sternum", name: "Sternum", type: "bone", coloredRegions: false },
     { id: "atlas", name: "Atlas", type: "bone", coloredRegions: true },
-    { id: "cervical_body", name: "Body", type: "subbone", coloredRegions: true },
+    { id: "cervical_body", name: "Body", type: "subbone", coloredRegions: true },      
+    { id: "axis", name: "Axis", type: "bone", coloredRegions: false },
+    { id: "axis_body", name: "Body (Dens)", type: "subbone", coloredRegions: true },
     { id: "humerus", name: "Humerus", type: "bone", coloredRegions: false },
     { id: "humerus_head", name: "Humerus Head", type: "subbone", coloredRegions: true },
     { id: "femur", name: "Femur", type: "bone", coloredRegions: false },
@@ -107,16 +109,10 @@ describe("Legacy content compatibility - Issue 484", () => {
             }
         );
 
-        // KNOWN ISSUE (reported separately in #487):
-        // boneset-api/data/bones/axis.json is wrapped in an array ([ ... ])
-        // instead of being a single object ({ ... }) like every other bone file.
-        // As a result, the Axis bone is served without an id or name, and its
-        // seven sub-bones never appear in the dropdowns or search.
-        //
-        // it.failing() passes only while this test fails. Once the data file is
-        // fixed, Jest will report this test as unexpectedly passing, signaling
-        // that it should be changed back to a normal it().
-        it.failing("serves every bone with an id and a name", async () => {
+        // Confirms every bone can be displayed in the dropdown.
+        // Regression test for #487, where axis.json was wrapped in an array and
+        // the Axis bone was served without an id or name.
+        it("serves every bone with an id and a name", async () => {
             // Request the combined dropdown data from the API.
             const response = await request(app).get("/combined-data");
 
