@@ -5,14 +5,13 @@ const rateLimit = require("express-rate-limit");
 
 const fs = require("fs").promises; // Use promises for async/await file reading
 const path = require("path");
+const { createScenesRouter } = require("./scenes");
 
 const app = express();
 const PORT = process.env.PORT || 8000;
 
 app.use(cors());
 app.use(express.json());
-
-const API_BASE_URL = `http://127.0.0.1:${PORT}`;
 
 const LOCAL_DATA_DIR = path.join(__dirname, "data");
 const BONESET_DIR = path.join(LOCAL_DATA_DIR, "boneset");
@@ -22,10 +21,12 @@ const TEXT_LABEL_ANNOTATIONS_DIR = path.join(LOCAL_DATA_DIR, "annotations", "tex
 const ROTATIONS_TEMPLATE_DIR = path.join(LOCAL_DATA_DIR, "annotations", "rotations annotations");
 const DESCRIPTIONS_DIR = path.join(LOCAL_DATA_DIR, "descriptions");
 const IMAGES_DIR = path.join(LOCAL_DATA_DIR, "images");
+const TEMPLATES_DIR = path.join(__dirname, "../templates");
 
 const BONESET_NAMES = ["bony_pelvis", "skull", "thorax", "vertebrae", "upper_limb", "lower_limb"];
 
 app.use("/api/images", express.static(IMAGES_DIR));
+app.use("/api/scenes", createScenesRouter());
 
 // Rate limiter for search endpoint
 const searchLimiter = rateLimit({
@@ -183,7 +184,7 @@ function searchItems(query, limit = 20) {
 }
 
 // Routes
-app.get("/", (_req, res) => {
+app.get("/health", (_req, res) => {
     res.json({ message: "Welcome to the Boneset API" });
 });
 
@@ -312,7 +313,7 @@ app.get("/api/bone-data/", async (req, res) => {
     const imagesArray = descriptionData.images || [];
     const images = imagesArray.map((filename) => ({
         filename,
-        url: `${API_BASE_URL}/api/images/${encodeURIComponent(filename)}`,
+        url: `/api/images/${encodeURIComponent(filename)}`,
     }));
 
     res.json({
@@ -465,6 +466,13 @@ app.get("/api/search", searchLimiter, (req, res) => {
     }
 });
 
+// Serve the frontend from the same origin as the API.
+app.use(express.static(TEMPLATES_DIR));
+
+app.get("/", (_req, res) => {
+    res.sendFile(path.join(TEMPLATES_DIR, "boneset.html"));
+});
+
 async function startServer() {
     await initializeSearchCache();
     
@@ -476,11 +484,12 @@ async function startServer() {
     }
 }
 
-startServer();
+const serverReady = startServer();
 
 // Export for tests or other modules if needed
 module.exports = {
   app,
+  serverReady,
   escapeHtml,
   searchItems,
   initializeSearchCache,

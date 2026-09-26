@@ -2,7 +2,6 @@ import { fetchCombinedData, fetchBoneData } from "./api.js";
 import { populateBonesetDropdown, setupDropdownListeners } from "./dropdowns.js";
 import {initializeSidebar} from "./sidebar.js";
 import { setupNavigation, setBoneAndSubbones, disableButtons } from "./navigation.js";
-import { loadDescription } from "./description.js";
 import { displayBoneData, clearViewer } from "./viewer.js";
 import { initializeSearch } from "./search.js";
 import quizManager from "./quiz.js";
@@ -47,7 +46,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Log fetched data for troubleshooting when dropdowns are empty
     console.debug("combinedData:", combinedData);
 
-    setupNavigation(prevButton, nextButton, subboneDropdown, loadDescription);
+    setupNavigation(prevButton, nextButton, subboneDropdown);
     // Initialize button states
     disableButtons(prevButton, nextButton);
 

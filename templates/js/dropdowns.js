@@ -155,12 +155,21 @@ boneSelect.addEventListener("change", (e) => {
     loadDescription(selectedBoneId);
 
     const opts = { boneId: selectedBoneId };
-    
+
     loadBoneImages(selectedBoneId, opts);
   } else {
     const stage = getImageStage();
     if (stage) { clearAnnotations(stage); stage.classList.remove("with-annotations"); }
-    showPlaceholder();
+
+    // Deselecting the bone shouldn't blank the display if a boneset is still
+    // selected (Issue #248) - fall back to showing that boneset's info.
+    const selectedBonesetId = bonesetSelect.value;
+    if (selectedBonesetId) {
+      loadDescription(selectedBonesetId);
+      loadBoneImages(selectedBonesetId, { boneId: selectedBonesetId });
+    } else {
+      showPlaceholder();
+    }
   }
 });
 
@@ -184,7 +193,15 @@ subboneSelect.addEventListener("change", (e) => {
 
     loadBoneImages(selectedSubboneId, opts);
   } else {
-    showPlaceholder();
+    // Same fallback as the bone-change listener above, one level down:
+    // deselecting the sub-bone should reveal the parent bone's info, not go blank.
+    const selectedBoneId = boneSelect.value;
+    if (selectedBoneId) {
+      loadDescription(selectedBoneId);
+      loadBoneImages(selectedBoneId, { boneId: selectedBoneId });
+    } else {
+      showPlaceholder();
+    }
   }
 });
 

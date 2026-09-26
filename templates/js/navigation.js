@@ -7,20 +7,16 @@ let subbones = [];
  * @param {HTMLButtonElement} prevButton - The "previous" navigation button.
  * @param {HTMLButtonElement} nextButton - The "next" navigation button.
  * @param {HTMLSelectElement} subboneDropdown - The subbone `<select>` element to keep in sync.
- * @param {function(string): void} updateDescription - Callback invoked with the selected subbone ID
- *   whenever the navigation changes.
  * @returns {void}
  */
-export function setupNavigation(prevButton, nextButton, subboneDropdown, updateDescription) {
+export function setupNavigation(prevButton, nextButton, subboneDropdown) {
   // Setup Previous/Next button navigation
   prevButton.addEventListener("click", () => {
-    prevSubbone();
-    updateUI(subboneDropdown, updateDescription);
+    if (prevSubbone()) updateUI(subboneDropdown);
   });
 
   nextButton.addEventListener("click", () => {
-    nextSubbone();
-    updateUI(subboneDropdown, updateDescription);
+    if (nextSubbone()) updateUI(subboneDropdown);
   });
 
   disableButtons(prevButton, nextButton);
@@ -83,37 +79,45 @@ export function setBoneAndSubbones(bone, boneSubbones) {
 
 /**
  * Decrements the current subbone index (moves to the previous subbone), if greater than 0.
- * @returns {void}
+ * @returns {boolean} True if the index moved, false if already at the first subbone.
  */
 function prevSubbone() {
   if (currentSubboneIndex > 0) {
     currentSubboneIndex--;
+    return true;
   }
+  return false;
 }
 
 /**
  * Increments the current subbone index (moves to the next subbone), if less than the array of subbones.
- * @returns {void}
+ * @returns {boolean} True if the index moved, false if already at the last subbone.
  */
 function nextSubbone() {
   if (currentSubboneIndex < subbones.length - 1) {
     currentSubboneIndex++;
+    return true;
   }
+  return false;
 }
 
 /**
- * Syncs the subbone dropdown to the current index and invokes the description callback.
- * Does nothing if no subbones are loaded.
+ * Syncs the subbone dropdown to the current index and dispatches a native "change"
+ * event so the same listeners that handle a manual dropdown selection (description,
+ * image, and annotation loading) also run for Prev/Next navigation. Setting
+ * `selectedIndex` alone does not fire "change", which is why those listeners were
+ * previously skipped. The dropdown is set by `.value` rather than `.selectedIndex`
+ * because the real `<select>` has a placeholder option before the subbone options,
+ * so `currentSubboneIndex` (0-based into `subbones`) does not match the option's
+ * position in the dropdown. Does nothing if no subbones are loaded.
  * @param {HTMLSelectElement} subboneDropdown - The subbone select element to update.
- * @param {function(string): void} updateDescription - Callback invoked with the selected subbone ID.
  * @returns {void}
  */
-function updateUI(subboneDropdown, updateDescription) {
+function updateUI(subboneDropdown) {
   if (subbones.length === 0 || currentSubboneIndex === -1) return;
 
-  subboneDropdown.selectedIndex = currentSubboneIndex;
-  const selectedSubbone = subbones[currentSubboneIndex];
-  updateDescription(selectedSubbone);
+  subboneDropdown.value = subbones[currentSubboneIndex];
+  subboneDropdown.dispatchEvent(new Event("change"));
 }
 
 /**
