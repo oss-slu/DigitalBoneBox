@@ -107,16 +107,9 @@ describe("Legacy content compatibility - Issue 484", () => {
             }
         );
 
-        // KNOWN ISSUE (reported separately in #487):
-        // boneset-api/data/bones/axis.json is wrapped in an array ([ ... ])
-        // instead of being a single object ({ ... }) like every other bone file.
-        // As a result, the Axis bone is served without an id or name, and its
-        // seven sub-bones never appear in the dropdowns or search.
-        //
-        // it.failing() passes only while this test fails. Once the data file is
-        // fixed, Jest will report this test as unexpectedly passing, signaling
-        // that it should be changed back to a normal it().
-        it.failing("serves every bone with an id and a name", async () => {
+        // Regression coverage for issue #487: every bone must be served with
+        // an id and name so it can appear correctly in the dropdowns and search.
+        it("serves every bone with an id and a name", async () => {
             // Request the combined dropdown data from the API.
             const response = await request(app).get("/combined-data");
 
