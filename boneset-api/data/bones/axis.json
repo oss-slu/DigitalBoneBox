@@ -3,6 +3,7 @@
     "id": "axis",
     "subBones": [
         "axis_body",
+        "axis_body_(dens)",
         "axis_transverse_process",
         "axis_transverse_foramen",
         "axis_pedicle",
