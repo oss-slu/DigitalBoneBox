@@ -109,9 +109,8 @@ describe("Legacy content compatibility - Issue 484", () => {
             }
         );
 
-        // Confirms every bone can be displayed in the dropdown.
-        // Regression test for #487, where axis.json was wrapped in an array and
-        // the Axis bone was served without an id or name.
+        // Regression coverage for issue #487: every bone must be served with
+        // an id and name so it can appear correctly in the dropdowns and search.
         it("serves every bone with an id and a name", async () => {
             // Request the combined dropdown data from the API.
             const response = await request(app).get("/combined-data");
