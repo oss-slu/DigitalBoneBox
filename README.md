@@ -77,7 +77,7 @@ npm run dev:api
 
 The older dual-process scripts (`npm start` / `npm run dev`) still start Express plus `http-server`, but the UI must be opened via the Express origin (`http://127.0.0.1:8000/`) because API calls use same-origin relative URLs.
 
-## Deploy (Vercel)
+## Deployment (Vercel)
 
 The app deploys through a single Express entrypoint at `api/index.js` (see `vercel.json`).
 
