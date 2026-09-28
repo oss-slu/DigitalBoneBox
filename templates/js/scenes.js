@@ -53,6 +53,17 @@ export function renameScene(sceneId, name) {
     return request(scenePath(sceneId), { method: "PATCH", body: JSON.stringify({ name }) });
 }
 
+/**
+ * Persists one newly imported image on a scene (Issue #412). The server upserts
+ * by `image.id`, so retrying this call for the same image is always safe.
+ * @param {string} sceneId
+ * @param {{id: string, src: string, x: number, y: number, width: number, height: number}} image
+ * @returns {Promise<object>} The updated scene.
+ */
+export function saveImageToScene(sceneId, image) {
+    return request(scenePath(sceneId), { method: "PATCH", body: JSON.stringify({ image }) });
+}
+
 export function deleteScene(sceneId) {
     return request(scenePath(sceneId), { method: "DELETE" });
 }
@@ -90,9 +101,46 @@ const state = {
     openRequest: 0,
     fitToWidth: true,
     busy: false,
+    selectedImageIndex: null,
 };
 
 let dom = null;
+
+// Issues #411/#412: importing an image into a scene and persisting it. The
+// image is read as a base64 data: URL - that same string is both the immediate
+// preview `src` and what gets saved to the scene document, so there's only one
+// representation to reason about (see saveImageToScene in the API section above).
+const SUPPORTED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/gif", "image/webp", "image/svg+xml"];
+const MAX_IMPORT_DIMENSION = 320;
+const IMPORT_OFFSET_STEP = 24;
+// Kept comfortably under the backend's MAX_IMAGE_SRC_LENGTH cap (boneset-api/scenes.js)
+// once base64's ~4/3 overhead is applied - checked client-side for immediate feedback,
+// but the server independently re-checks its own cap too (never trust the client alone).
+const MAX_IMPORT_FILE_SIZE = 2 * 1024 * 1024;
+
+function readFileAsDataUrl(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error("Could not read file"));
+        reader.readAsDataURL(file);
+    });
+}
+
+function loadImageDimensions(src) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight });
+        img.onerror = () => reject(new Error("Could not read image dimensions"));
+        img.src = src;
+    });
+}
+
+function scaleToFit(width, height, max) {
+    if (width <= max && height <= max) return { width, height };
+    const scale = Math.min(max / width, max / height);
+    return { width: width * scale, height: height * scale };
+}
 
 function announce(message) {
     dom.status.textContent = "";
@@ -180,7 +228,7 @@ function renderCanvas() {
     dom.canvasNote.hidden = true;
     if (isEmpty) return;
 
-    const { svg, unsupported, width, height } = renderScene(scene);
+    const { svg, unsupported, width, height } = renderScene(scene, { selectedIndex: state.selectedImageIndex });
     svg.setAttribute("aria-label", `Scene canvas for ${scene.name}`);
     if (state.fitToWidth) {
         svg.style.width = "100%";
@@ -214,6 +262,7 @@ function renderWorkspace() {
 
 function clearActiveScene() {
     state.active = null;
+    state.selectedImageIndex = null;
     state.openRequest += 1;
     dom.workspace.removeAttribute("aria-busy");
     dom.workspaceLoading.hidden = true;
@@ -254,6 +303,7 @@ async function openScene(sceneId) {
         const scene = await getScene(sceneId);
         if (requestId !== state.openRequest) return;
         state.active = scene;
+        state.selectedImageIndex = null;
         renderWorkspace();
         renderLibrary();
         announce(`Opened ${scene.name}.`);
@@ -284,6 +334,7 @@ async function handleCreate() {
         const scene = await createScene();
         state.openRequest += 1;
         state.active = scene;
+        state.selectedImageIndex = null;
         await loadLibrary();
         setBusy(false);
         renderWorkspace();
@@ -398,6 +449,91 @@ async function handleDelete() {
     }
 }
 
+/**
+ * Retries persisting images that previously failed to save (Issue #412). Safe
+ * to call repeatedly - the server upserts by image id, so a partially-succeeded
+ * previous attempt is never double-saved.
+ * @param {string} sceneId - The scene these images belong to, captured at
+ *   import time so a later retry targets the right scene even if the user has
+ *   since opened a different one.
+ * @param {object[]} images
+ * @returns {Promise<void>}
+ */
+async function retryImageSaves(sceneId, images) {
+    const stillFailing = [];
+    for (const image of images) {
+        try {
+            await saveImageToScene(sceneId, image);
+        } catch {
+            stillFailing.push(image);
+        }
+    }
+
+    if (stillFailing.length === 0) {
+        hideWorkspaceError();
+        return;
+    }
+    showWorkspaceError(
+        `${plural(stillFailing.length, "image")} could not be saved and will be lost if you reload.`,
+        { retry: () => retryImageSaves(sceneId, stillFailing) }
+    );
+}
+
+/**
+ * Imports one or more image files into the currently open scene as new,
+ * unselected image objects, and persists each one (Issues #411/#412).
+ * Unsupported or oversized files are skipped with a combined error message
+ * rather than aborting the whole import.
+ * @param {FileList|File[]} fileList - Files chosen via the import input.
+ * @returns {Promise<void>}
+ */
+async function handleImportFiles(fileList) {
+    if (!state.active || !fileList || fileList.length === 0) return;
+    const sceneId = state.active.id;
+
+    dom.importError.hidden = true;
+    dom.importError.textContent = "";
+
+    const skipped = [];
+    const added = [];
+
+    for (const file of fileList) {
+        if (!SUPPORTED_IMAGE_TYPES.includes(file.type)) {
+            skipped.push(`${file.name} (unsupported type)`);
+            continue;
+        }
+        if (file.size > MAX_IMPORT_FILE_SIZE) {
+            skipped.push(`${file.name} (too large, max 2MB)`);
+            continue;
+        }
+
+        try {
+            const dataUrl = await readFileAsDataUrl(file);
+            const natural = await loadImageDimensions(dataUrl);
+            const { width, height } = scaleToFit(natural.width, natural.height, MAX_IMPORT_DIMENSION);
+            const offset = IMPORT_OFFSET_STEP * (state.active.images.length + 1);
+            const image = { id: crypto.randomUUID(), src: dataUrl, x: offset, y: offset, width, height };
+            state.active.images.push(image);
+            added.push(image);
+        } catch {
+            skipped.push(`${file.name} (could not be read)`);
+        }
+    }
+
+    if (skipped.length > 0) {
+        const addedPart = added.length > 0 ? `${plural(added.length, "image")} added. ` : "";
+        dom.importError.hidden = false;
+        dom.importError.textContent =
+            `${addedPart}${plural(skipped.length, "file")} skipped: ${skipped.join(", ")}.`;
+    }
+
+    if (added.length > 0) {
+        renderWorkspace();
+        announce(`${plural(added.length, "image")} added to the scene.`);
+        await retryImageSaves(sceneId, added);
+    }
+}
+
 export function getActiveScene() {
     return state.active;
 }
@@ -460,6 +596,10 @@ export function initializeSceneEditor(root = document) {
         canvas: $("scene-canvas"),
         canvasEmpty: $("scene-canvas-empty"),
         canvasNote: $("scene-canvas-note"),
+        importButton: $("scene-import-image"),
+        importButtonEmpty: $("scene-canvas-empty-import"),
+        importInput: $("scene-import-input"),
+        importError: $("scene-import-error"),
     };
     if (!dom.editorView || !dom.enterButton) return;
 
@@ -486,6 +626,25 @@ export function initializeSceneEditor(root = document) {
     });
     dom.deleteButton.addEventListener("click", handleDelete);
     dom.fitToggle.addEventListener("click", () => setFitToWidth(!state.fitToWidth));
+
+    dom.importButton.addEventListener("click", () => dom.importInput.click());
+    dom.importButtonEmpty.addEventListener("click", () => dom.importInput.click());
+    dom.importInput.addEventListener("change", (event) => {
+        handleImportFiles(event.target.files);
+        event.target.value = "";
+    });
+    dom.canvas.addEventListener("click", (event) => {
+        const target = event.target.closest("[data-scene-image-index]");
+        const index = target ? Number(target.dataset.sceneImageIndex) : null;
+        state.selectedImageIndex = state.selectedImageIndex === index ? null : index;
+        renderCanvas();
+    });
+    dom.canvas.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && state.selectedImageIndex !== null) {
+            state.selectedImageIndex = null;
+            renderCanvas();
+        }
+    });
 
     renderWorkspace();
 }

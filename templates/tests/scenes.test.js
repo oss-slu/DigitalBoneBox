@@ -57,10 +57,19 @@ function createFakeBackend() {
         if (!scene) return respond(404, { error: "Scene not found" });
         if (method === "GET") return respond(200, scene);
         if (method === "PATCH") {
-            const name = (body.name || "").trim();
-            if (!name) return respond(400, { error: "Scene name cannot be empty" });
-            if (nameTaken(name, id)) return respond(409, { error: "Name taken" });
-            scene.name = name;
+            if (!body || (body.name === undefined && body.image === undefined)) {
+                return respond(400, { error: "name or image is required" });
+            }
+            if (body.name !== undefined) {
+                const name = (body.name || "").trim();
+                if (!name) return respond(400, { error: "Scene name cannot be empty" });
+                if (nameTaken(name, id)) return respond(409, { error: "Name taken" });
+                scene.name = name;
+            }
+            if (body.image !== undefined) {
+                const alreadyPresent = scene.images.some((img) => img.id === body.image.id);
+                if (!alreadyPresent) scene.images.push(body.image);
+            }
             scene.updatedAt = now;
             return respond(200, scene);
         }
@@ -348,5 +357,184 @@ describe("describeError", () => {
         expect(describeError(new SceneApiError(503, "x"), "create")).toMatch(/Scene storage is not configured/);
         expect(describeError(new SceneApiError(0, "x"), "load")).toMatch(/Couldn't reach the server/);
         expect(describeError(new SceneApiError(500, "x"), "delete")).toMatch(/Try again/);
+    });
+});
+
+// Issues #411/#412: importing an image into a scene, selecting it once rendered,
+// and persisting it.
+describe("Scene editor: importing images - Issue 411", () => {
+    let originalImage;
+    let originalFileReader;
+
+    beforeEach(() => {
+        // jsdom doesn't implement real file reading or image loading, so both are
+        // stubbed: FileReader "reads" a fixed data URL and Image "loads" fixed
+        // dimensions, both asynchronously via a real setTimeout (fake timers are
+        // not enabled in this suite, so this resolves naturally).
+        originalFileReader = window.FileReader;
+        window.FileReader = class {
+            readAsDataURL(_file) {
+                setTimeout(() => {
+                    this.result = "data:image/png;base64,AAAA";
+                    if (this.onload) this.onload();
+                }, 0);
+            }
+        };
+
+        originalImage = window.Image;
+        window.Image = class {
+            constructor() {
+                this.naturalWidth = 800;
+                this.naturalHeight = 400;
+            }
+            set src(_value) {
+                setTimeout(() => this.onload && this.onload(), 0);
+            }
+        };
+    });
+
+    afterEach(() => {
+        window.Image = originalImage;
+        window.FileReader = originalFileReader;
+    });
+
+    function setFiles(files) {
+        const input = $("scene-import-input");
+        Object.defineProperty(input, "files", { value: files, configurable: true });
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+
+    async function openNewScene() {
+        await enterEditor();
+        click("scene-new");
+        await waitFor(() => expect($("scene-workspace-scene").hidden).toBe(false));
+    }
+
+    it("adds a supported image to the scene and renders it as a selectable object", async () => {
+        await openNewScene();
+
+        setFiles([{ name: "ilium.png", type: "image/png" }]);
+        await waitFor(() => expect($("scene-meta").textContent).toContain("1 image"));
+
+        const nodes = document.querySelectorAll(".scene-image-object");
+        expect(nodes).toHaveLength(1);
+        expect(nodes[0].getAttribute("data-scene-image-index")).toBe("0");
+        expect($("scene-canvas").hidden).toBe(false);
+        expect($("scene-canvas-empty").hidden).toBe(true);
+    });
+
+    it("shows a clear message and adds nothing for an unsupported file type", async () => {
+        await openNewScene();
+
+        setFiles([{ name: "notes.pdf", type: "application/pdf" }]);
+        await waitFor(() => expect($("scene-import-error").hidden).toBe(false));
+
+        expect($("scene-import-error").textContent).toMatch(/notes\.pdf/);
+        expect($("scene-import-error").textContent).toMatch(/unsupported/i);
+        expect(document.querySelectorAll(".scene-image-object")).toHaveLength(0);
+        expect($("scene-meta").textContent).toContain("0 images");
+    });
+
+    it("still adds the supported files when a multi-file import includes an unsupported one", async () => {
+        await openNewScene();
+
+        setFiles([
+            { name: "ilium.png", type: "image/png" },
+            { name: "notes.pdf", type: "application/pdf" },
+        ]);
+        await waitFor(() => expect($("scene-import-error").hidden).toBe(false));
+
+        expect($("scene-meta").textContent).toContain("1 image");
+        expect(document.querySelectorAll(".scene-image-object")).toHaveLength(1);
+        expect($("scene-import-error").textContent).toMatch(/notes\.pdf/);
+    });
+
+    it("selects an image on click and deselects it on a second click", async () => {
+        await openNewScene();
+        setFiles([{ name: "ilium.png", type: "image/png" }]);
+        await waitFor(() => expect(document.querySelectorAll(".scene-image-object")).toHaveLength(1));
+
+        document.querySelector(".scene-image-object").dispatchEvent(new MouseEvent("click", { bubbles: true }));
+        await waitFor(() => expect(document.querySelectorAll(".scene-selection-outline")).toHaveLength(1));
+
+        document.querySelector(".scene-image-object").dispatchEvent(new MouseEvent("click", { bubbles: true }));
+        expect(document.querySelectorAll(".scene-selection-outline")).toHaveLength(0);
+    });
+
+    it("clears the selection when clicking empty canvas background", async () => {
+        await openNewScene();
+        setFiles([{ name: "ilium.png", type: "image/png" }]);
+        await waitFor(() => expect(document.querySelectorAll(".scene-image-object")).toHaveLength(1));
+
+        document.querySelector(".scene-image-object").dispatchEvent(new MouseEvent("click", { bubbles: true }));
+        await waitFor(() => expect(document.querySelectorAll(".scene-selection-outline")).toHaveLength(1));
+
+        $("scene-canvas").dispatchEvent(new MouseEvent("click", { bubbles: true }));
+        expect(document.querySelectorAll(".scene-selection-outline")).toHaveLength(0);
+    });
+
+    it("resets the selection when a different scene is opened", async () => {
+        // Seeded with its own pre-existing image so the assertion below proves the
+        // selection was actually reset, not just that the other scene is empty.
+        backend.seed({
+            name: "Other",
+            images: [{ src: "/images/other.png", x: 0, y: 0, width: 100, height: 100 }],
+        });
+        await openNewScene();
+        setFiles([{ name: "ilium.png", type: "image/png" }]);
+        await waitFor(() => expect(document.querySelectorAll(".scene-image-object")).toHaveLength(1));
+        document.querySelector(".scene-image-object").dispatchEvent(new MouseEvent("click", { bubbles: true }));
+        await waitFor(() => expect(document.querySelectorAll(".scene-selection-outline")).toHaveLength(1));
+
+        await openByName("Other");
+
+        expect(document.querySelectorAll(".scene-image-object")).toHaveLength(1);
+        expect(document.querySelectorAll(".scene-selection-outline")).toHaveLength(0);
+    });
+
+    // Issue #412: persisting an imported image so it survives a reload.
+    it("persists an imported image by PATCHing the scene", async () => {
+        await openNewScene();
+
+        setFiles([{ name: "ilium.png", type: "image/png" }]);
+        await waitFor(() =>
+            expect(backend.calls.some((c) => c.method === "PATCH" && c.body && c.body.image)).toBe(true)
+        );
+
+        const patchCall = backend.calls.find((c) => c.method === "PATCH" && c.body && c.body.image);
+        expect(patchCall.body.image).toMatchObject({ src: "data:image/png;base64,AAAA" });
+        expect(typeof patchCall.body.image.id).toBe("string");
+
+        const storedScene = [...backend.scenes.values()][0];
+        expect(storedScene.images).toHaveLength(1);
+    });
+
+    it("rejects a file over the size cap client-side without contacting the server", async () => {
+        await openNewScene();
+
+        setFiles([{ name: "huge.png", type: "image/png", size: 3 * 1024 * 1024 }]);
+        await waitFor(() => expect($("scene-import-error").hidden).toBe(false));
+
+        expect($("scene-import-error").textContent).toMatch(/huge\.png/);
+        expect($("scene-import-error").textContent).toMatch(/too large/i);
+        expect(document.querySelectorAll(".scene-image-object")).toHaveLength(0);
+        expect(backend.calls.some((c) => c.method === "PATCH")).toBe(false);
+    });
+
+    it("keeps a save-failed image visible and lets the user retry", async () => {
+        await openNewScene();
+        backend.fail("PATCH", 500);
+
+        setFiles([{ name: "ilium.png", type: "image/png" }]);
+        await waitFor(() => expect($("scene-workspace-error").hidden).toBe(false));
+
+        // Still visible locally even though persistence failed.
+        expect(document.querySelectorAll(".scene-image-object")).toHaveLength(1);
+        expect($("scene-workspace-error-text").textContent).toMatch(/could not be saved/i);
+
+        click("scene-workspace-retry");
+        await waitFor(() => expect($("scene-workspace-error").hidden).toBe(true));
+
+        expect(backend.calls.filter((c) => c.method === "PATCH" && c.body && c.body.image)).toHaveLength(2);
     });
 });

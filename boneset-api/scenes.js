@@ -9,6 +9,10 @@ const path = require("path");
 const DEFAULT_SCENE_NAME = "Untitled Scene";
 const MAX_SCENE_NAME_LENGTH = 100;
 const SCENE_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+// 2MB raw file * ~4/3 base64 overhead, rounded down slightly for headroom under
+// the express.json() body limit once the surrounding JSON is added (Issue #412).
+const MAX_IMAGE_SRC_LENGTH = 2_800_000;
+const SAFE_IMAGE_SRC_PREFIX = /^data:image\//i;
 
 class SceneStorageUnavailableError extends Error {}
 
@@ -28,6 +32,42 @@ function normalizeSceneName(name) {
         return { error: `Scene name cannot exceed ${MAX_SCENE_NAME_LENGTH} characters` };
     }
     return { name: trimmed };
+}
+
+function isFiniteNumber(value) {
+    return typeof value === "number" && Number.isFinite(value);
+}
+
+/**
+ * Validates an image object submitted for persistence via PATCH (Issue #412).
+ * The `id` reuses the same UUID shape as scene ids (isValidSceneId) since both
+ * are just crypto.randomUUID() values identifying different kinds of records.
+ * @param {object} image
+ * @returns {{ error: string } | { image: object }}
+ */
+function normalizeImage(image) {
+    if (!image || typeof image !== "object") {
+        return { error: "image must be an object" };
+    }
+    if (!isValidSceneId(image.id)) {
+        return { error: "image.id must be a valid id" };
+    }
+    if (typeof image.src !== "string" || !SAFE_IMAGE_SRC_PREFIX.test(image.src)) {
+        return { error: "image.src must be a data:image/ URL" };
+    }
+    if (image.src.length > MAX_IMAGE_SRC_LENGTH) {
+        return { error: "Image is too large (max 2MB)" };
+    }
+    if (![image.x, image.y, image.width, image.height].every(isFiniteNumber)) {
+        return { error: "image.x, image.y, image.width, and image.height must be numbers" };
+    }
+    if (image.width <= 0 || image.height <= 0) {
+        return { error: "image.width and image.height must be greater than 0" };
+    }
+
+    return {
+        image: { id: image.id, src: image.src, x: image.x, y: image.y, width: image.width, height: image.height },
+    };
 }
 
 function toSummary(scene) {
@@ -257,16 +297,15 @@ function createScenesRouter(store = resolveSceneStore()) {
     });
 
     /**
-     * Renames a scene. Empty names are rejected; duplicate names return 409. Issue #423.
+     * Updates a scene. Supports renaming (empty names rejected, duplicates return
+     * 409 - Issue #423) and/or adding one newly imported image (validated and
+     * upserted by id so a retried request can't create a duplicate - Issue #412).
+     * At least one of `name`/`image` must be present in the body.
      */
     router.patch("/:sceneId", async (req, res) => {
         try {
-            if (!req.body || req.body.name === undefined) {
-                return res.status(400).json({ error: "name is required" });
-            }
-            const result = normalizeSceneName(req.body.name);
-            if (result.error) {
-                return res.status(400).json({ error: result.error });
+            if (!req.body || (req.body.name === undefined && req.body.image === undefined)) {
+                return res.status(400).json({ error: "name or image is required" });
             }
 
             const { sceneId } = req.params;
@@ -275,17 +314,40 @@ function createScenesRouter(store = resolveSceneStore()) {
                 return res.status(404).json({ error: "Scene not found" });
             }
 
-            const scenes = await store.list();
-            if (isNameTaken(scenes, result.name, sceneId)) {
-                return res.status(409).json({ error: `A scene named "${result.name}" already exists` });
+            let changed = false;
+
+            if (req.body.name !== undefined) {
+                const result = normalizeSceneName(req.body.name);
+                if (result.error) {
+                    return res.status(400).json({ error: result.error });
+                }
+                const scenes = await store.list();
+                if (isNameTaken(scenes, result.name, sceneId)) {
+                    return res.status(409).json({ error: `A scene named "${result.name}" already exists` });
+                }
+                scene.name = result.name;
+                changed = true;
             }
 
-            scene.name = result.name;
-            scene.updatedAt = new Date().toISOString();
-            await store.save(scene);
+            if (req.body.image !== undefined) {
+                const result = normalizeImage(req.body.image);
+                if (result.error) {
+                    return res.status(400).json({ error: result.error });
+                }
+                const alreadyPresent = scene.images.some((img) => img.id === result.image.id);
+                if (!alreadyPresent) {
+                    scene.images.push(result.image);
+                    changed = true;
+                }
+            }
+
+            if (changed) {
+                scene.updatedAt = new Date().toISOString();
+                await store.save(scene);
+            }
             res.json(scene);
         } catch (error) {
-            sendStoreError(res, error, "Failed to rename scene");
+            sendStoreError(res, error, "Failed to update scene");
         }
     });
 
@@ -314,5 +376,7 @@ module.exports = {
     resolveSceneStore,
     isValidSceneId,
     normalizeSceneName,
+    normalizeImage,
     DEFAULT_SCENE_NAME,
+    MAX_IMAGE_SRC_LENGTH,
 };

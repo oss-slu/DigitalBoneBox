@@ -2851,6 +2851,17 @@ button:disabled {
     color: #92400e;
 }
 
+.scene-image-object {
+    cursor: pointer;
+}
+
+.scene-selection-outline {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 2;
+    stroke-dasharray: 6 4;
+}
+
 @media (max-width: 900px) {
     .scene-editor-layout {
         grid-template-columns: 1fr;

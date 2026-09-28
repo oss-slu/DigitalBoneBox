@@ -1,6 +1,7 @@
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
+const crypto = require("crypto");
 const express = require("express");
 const request = require("supertest");
 const {
@@ -8,6 +9,7 @@ const {
     createFileSceneStore,
     createRedisSceneStore,
     resolveSceneStore,
+    MAX_IMAGE_SRC_LENGTH,
 } = require("./scenes");
 
 // In-memory stand-in for the subset of the @upstash/redis client the store uses.
@@ -45,7 +47,9 @@ function createFakeRedis() {
 
 function buildApp(store) {
     const app = express();
-    app.use(express.json({ limit: "2mb" }));
+    // Matches server.js's real limit (Issue #412) so tests near the image size
+    // cap are rejected by the route's own validation, not Express's raw limit.
+    app.use(express.json({ limit: "6mb" }));
     app.use("/api/scenes", createScenesRouter(store));
     return app;
 }
@@ -204,6 +208,136 @@ describe.each(backends)("Scenes API ($name)", (backend) => {
                 .patch(`/api/scenes/${UNKNOWN_ID}`)
                 .send({ name: "Nope" });
             expect(response.statusCode).toBe(404);
+        });
+    });
+
+    // Issue #412: Upload and Store an Imported Image
+    describe("PATCH /api/scenes/:sceneId with an image - Issue 412", () => {
+        function validImage(overrides = {}) {
+            return {
+                id: crypto.randomUUID(),
+                src: "data:image/png;base64,AAAA",
+                x: 10,
+                y: 20,
+                width: 100,
+                height: 50,
+                ...overrides,
+            };
+        }
+
+        it("adds a newly imported image to the scene", async () => {
+            const created = await createScene();
+            const image = validImage();
+
+            const response = await request(app)
+                .patch(`/api/scenes/${created.body.id}`)
+                .send({ image });
+
+            expect(response.statusCode).toBe(200);
+            expect(response.body.images).toEqual([image]);
+        });
+
+        it("keeps the image after the scene is reloaded", async () => {
+            const created = await createScene();
+            const image = validImage();
+            await request(app).patch(`/api/scenes/${created.body.id}`).send({ image });
+
+            const reloaded = await request(app).get(`/api/scenes/${created.body.id}`);
+
+            expect(reloaded.statusCode).toBe(200);
+            expect(reloaded.body.images).toEqual([image]);
+        });
+
+        it("does not create a duplicate record when the same image id is saved twice", async () => {
+            const created = await createScene();
+            const image = validImage();
+
+            await request(app).patch(`/api/scenes/${created.body.id}`).send({ image });
+            const second = await request(app)
+                .patch(`/api/scenes/${created.body.id}`)
+                .send({ image });
+
+            expect(second.statusCode).toBe(200);
+            expect(second.body.images).toHaveLength(1);
+        });
+
+        it("keeps existing images when a different image is added", async () => {
+            const created = await createScene();
+            const first = validImage();
+            const second = validImage();
+
+            await request(app).patch(`/api/scenes/${created.body.id}`).send({ image: first });
+            const response = await request(app)
+                .patch(`/api/scenes/${created.body.id}`)
+                .send({ image: second });
+
+            expect(response.body.images).toEqual([first, second]);
+        });
+
+        it("rejects an image whose src is not a data:image/ URL", async () => {
+            const created = await createScene();
+            const response = await request(app)
+                .patch(`/api/scenes/${created.body.id}`)
+                .send({ image: validImage({ src: "https://example.com/x.png" }) });
+
+            expect(response.statusCode).toBe(400);
+            expect(response.body.error).toMatch(/data:image/);
+        });
+
+        it("rejects an image whose src exceeds the size cap", async () => {
+            const created = await createScene();
+            const oversizedSrc = `data:image/png;base64,${"A".repeat(MAX_IMAGE_SRC_LENGTH + 1)}`;
+            const response = await request(app)
+                .patch(`/api/scenes/${created.body.id}`)
+                .send({ image: validImage({ src: oversizedSrc }) });
+
+            expect(response.statusCode).toBe(400);
+            expect(response.body.error).toMatch(/too large/i);
+        });
+
+        it("rejects an image with non-numeric position or size fields", async () => {
+            const created = await createScene();
+            const response = await request(app)
+                .patch(`/api/scenes/${created.body.id}`)
+                .send({ image: validImage({ width: "big" }) });
+
+            expect(response.statusCode).toBe(400);
+        });
+
+        it("rejects an image with a width of 0", async () => {
+            const created = await createScene();
+            const response = await request(app)
+                .patch(`/api/scenes/${created.body.id}`)
+                .send({ image: validImage({ width: 0 }) });
+
+            expect(response.statusCode).toBe(400);
+        });
+
+        it("returns 404 when adding an image to an unknown scene", async () => {
+            const response = await request(app)
+                .patch(`/api/scenes/${UNKNOWN_ID}`)
+                .send({ image: validImage() });
+
+            expect(response.statusCode).toBe(404);
+        });
+
+        it("returns 400 when the body has neither name nor image", async () => {
+            const created = await createScene();
+            const response = await request(app).patch(`/api/scenes/${created.body.id}`).send({});
+            expect(response.statusCode).toBe(400);
+        });
+
+        it("can rename and add an image in the same request", async () => {
+            const created = await createScene();
+            const image = validImage();
+
+            const response = await request(app)
+                .patch(`/api/scenes/${created.body.id}`)
+                .send({ name: "Renamed", image });
+
+            expect(response.statusCode).toBe(200);
+            expect(response.body.name).toBe("Renamed");
+            expect(response.body.images).toEqual([image]);
         });
     });
 

@@ -33,3 +33,41 @@ describe("renderScene bounds", () => {
         expect(box.y + box.height).toBeGreaterThanOrEqual(600);
     });
 });
+
+// Issue #411: images are tagged with their index and can be shown as selected.
+describe("renderScene selection support", () => {
+    it("tags each rendered image with its index in scene.images", () => {
+        const { svg } = renderScene({
+            images: [image({ x: 0 }), image({ x: 300 })],
+            annotations: [],
+        });
+        const nodes = svg.querySelectorAll(".scene-image-object");
+
+        expect(nodes).toHaveLength(2);
+        expect(nodes[0].getAttribute("data-scene-image-index")).toBe("0");
+        expect(nodes[1].getAttribute("data-scene-image-index")).toBe("1");
+    });
+
+    it("draws a selection outline for the image at selectedIndex", () => {
+        const { svg } = renderScene(
+            { images: [image(), image({ x: 300 })], annotations: [] },
+            { selectedIndex: 1 }
+        );
+
+        const outlines = svg.querySelectorAll(".scene-selection-outline");
+        expect(outlines).toHaveLength(1);
+    });
+
+    it("draws no selection outline when selectedIndex is omitted", () => {
+        const { svg } = renderScene({ images: [image()], annotations: [] });
+        expect(svg.querySelectorAll(".scene-selection-outline")).toHaveLength(0);
+    });
+
+    it("draws no selection outline for an out-of-range selectedIndex", () => {
+        const { svg } = renderScene(
+            { images: [image()], annotations: [] },
+            { selectedIndex: 5 }
+        );
+        expect(svg.querySelectorAll(".scene-selection-outline")).toHaveLength(0);
+    });
+});
