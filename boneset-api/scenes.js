@@ -106,7 +106,16 @@ function toSummary(scene) {
 
 // Local development only: one JSON file per scene.
 function createFileSceneStore(scenesDir = path.join(__dirname, "data", "scenes")) {
-    const scenePath = (sceneId) => path.join(scenesDir, `${sceneId}.json`);
+    // Re-validated here, not just trusted from the route's own check (CodeQL:
+    // "uncontrolled data used in path expression") - this function takes a bare
+    // sceneId and builds a filesystem path from it, so the guard has to live
+    // at the point the path is built, not in a caller it can't see.
+    const scenePath = (sceneId) => {
+        if (!isValidSceneId(sceneId)) {
+            throw new Error("Invalid sceneId");
+        }
+        return path.join(scenesDir, `${sceneId}.json`);
+    };
 
     async function ensureDir() {
         await fs.mkdir(scenesDir, { recursive: true });

@@ -420,6 +420,34 @@ describe.each(backends)("Scenes API ($name)", (backend) => {
     });
 });
 
+// CodeQL flagged the file store's path construction as taking uncontrolled
+// data: this proves it now re-validates the id itself rather than trusting a
+// caller, even though the route-level `router.param` check already blocks
+// malformed ids from ever reaching the store in normal operation.
+describe("createFileSceneStore path safety", () => {
+    let dir;
+    let store;
+
+    beforeEach(() => {
+        dir = fs.mkdtempSync(path.join(os.tmpdir(), "bonebox-scenes-pathsafety-"));
+        store = createFileSceneStore(dir);
+    });
+
+    afterEach(() => {
+        fs.rmSync(dir, { recursive: true, force: true });
+    });
+
+    it("rejects a traversal attempt instead of reading outside the scenes directory", async () => {
+        await expect(store.get("../../etc/passwd")).rejects.toThrow(/invalid sceneid/i);
+        await expect(store.remove("../../etc/passwd")).rejects.toThrow(/invalid sceneid/i);
+    });
+
+    it("rejects saving a scene with a malformed id", async () => {
+        await expect(store.save({ id: "../../evil", name: "x", images: [], annotations: [] }))
+            .rejects.toThrow(/invalid sceneid/i);
+    });
+});
+
 describe("resolveSceneStore", () => {
     it("refuses to store scenes on Vercel when Redis is not configured", async () => {
         const consoleError = jest.spyOn(console, "error").mockImplementation(() => {});
