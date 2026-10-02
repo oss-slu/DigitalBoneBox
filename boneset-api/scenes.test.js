@@ -12,6 +12,35 @@ const {
     MAX_IMAGE_SRC_LENGTH,
 } = require("./scenes");
 
+function validImage(overrides = {}) {
+    return {
+        id: crypto.randomUUID(),
+        src: "data:image/png;base64,AAAA",
+        x: 10,
+        y: 20,
+        width: 100,
+        height: 50,
+        ...overrides,
+    };
+}
+
+// Widens the read-save race window deterministically so a concurrency test
+// doesn't depend on machine speed or backend internals (PR #493 review).
+function withArtificialDelay(store, ms) {
+    return {
+        ...store,
+        async get(sceneId) {
+            const result = await store.get(sceneId);
+            await new Promise((resolve) => setTimeout(resolve, ms));
+            return result;
+        },
+        async save(scene) {
+            await new Promise((resolve) => setTimeout(resolve, ms));
+            return store.save(scene);
+        },
+    };
+}
+
 // In-memory stand-in for the subset of the @upstash/redis client the store uses.
 // Values round-trip through JSON like the real client's automatic serialization.
 function createFakeRedis() {
@@ -24,7 +53,8 @@ function createFakeRedis() {
         async mget(...keys) {
             return keys.map((key) => (strings.has(key) ? JSON.parse(strings.get(key)) : null));
         },
-        async set(key, value) {
+        async set(key, value, options = {}) {
+            if (options.nx && strings.has(key)) return null;
             strings.set(key, JSON.stringify(value));
             return "OK";
         },
@@ -213,18 +243,6 @@ describe.each(backends)("Scenes API ($name)", (backend) => {
 
     // Issue #412: Upload and Store an Imported Image
     describe("PATCH /api/scenes/:sceneId with an image - Issue 412", () => {
-        function validImage(overrides = {}) {
-            return {
-                id: crypto.randomUUID(),
-                src: "data:image/png;base64,AAAA",
-                x: 10,
-                y: 20,
-                width: 100,
-                height: 50,
-                ...overrides,
-            };
-        }
-
         it("adds a newly imported image to the scene", async () => {
             const created = await createScene();
             const image = validImage();
@@ -338,6 +356,47 @@ describe.each(backends)("Scenes API ($name)", (backend) => {
             expect(response.statusCode).toBe(200);
             expect(response.body.name).toBe("Renamed");
             expect(response.body.images).toEqual([image]);
+        });
+
+        // PR #493 review: a scene can have multiple images that each pass the
+        // per-image cap yet together exceed Vercel's 4.5MB request/response cap.
+        it("rejects an image that would push the scene over its total image size budget", async () => {
+            const created = await createScene();
+            const first = validImage({ src: `data:image/png;base64,${"A".repeat(MAX_IMAGE_SRC_LENGTH - 100)}` });
+            const firstResponse = await request(app).patch(`/api/scenes/${created.body.id}`).send({ image: first });
+            expect(firstResponse.statusCode).toBe(200);
+
+            const second = validImage({ src: `data:image/png;base64,${"A".repeat(MAX_IMAGE_SRC_LENGTH - 100)}` });
+            const response = await request(app).patch(`/api/scenes/${created.body.id}`).send({ image: second });
+
+            expect(response.statusCode).toBe(400);
+            expect(response.body.error).toMatch(/size limit/i);
+
+            const reloaded = await request(app).get(`/api/scenes/${created.body.id}`);
+            expect(reloaded.body.images).toEqual([first]);
+        });
+    });
+
+    // PR #493 review: a rename and an image save racing each other must not
+    // clobber one another. An artificial delay widens the read-save window so
+    // this reproduces deterministically instead of depending on real timing.
+    describe("PATCH /api/scenes/:sceneId concurrency - PR #493 review", () => {
+        it("does not lose a concurrent rename or image save", async () => {
+            const slowApp = buildApp(withArtificialDelay(env.newStore(), 30));
+            const created = await request(slowApp).post("/api/scenes").send({});
+            const image = validImage();
+
+            const [renameResponse, imageResponse] = await Promise.all([
+                request(slowApp).patch(`/api/scenes/${created.body.id}`).send({ name: "Renamed" }),
+                request(slowApp).patch(`/api/scenes/${created.body.id}`).send({ image }),
+            ]);
+
+            expect(renameResponse.statusCode).toBe(200);
+            expect(imageResponse.statusCode).toBe(200);
+
+            const final = await request(slowApp).get(`/api/scenes/${created.body.id}`);
+            expect(final.body.name).toBe("Renamed");
+            expect(final.body.images).toEqual([image]);
         });
     });
 

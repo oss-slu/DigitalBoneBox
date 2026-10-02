@@ -85,7 +85,9 @@ export function describeError(error, context) {
         case 404:
             return "This scene is no longer available. It may have been deleted.";
         case 409:
-            return "Another scene already uses that name. Choose a different name.";
+            return /busy/i.test(error.message)
+                ? "The scene is busy right now (another save is in progress). Try again in a moment."
+                : "Another scene already uses that name. Choose a different name.";
         case 429:
             return "Too many requests. Wait a moment and try again.";
         case 503:
@@ -117,6 +119,11 @@ const IMPORT_OFFSET_STEP = 24;
 // once base64's ~4/3 overhead is applied - checked client-side for immediate feedback,
 // but the server independently re-checks its own cap too (never trust the client alone).
 const MAX_IMPORT_FILE_SIZE = 2 * 1024 * 1024;
+// Mirrors the backend's MAX_SCENE_IMAGES_TOTAL_LENGTH (PR #493 review: two
+// individually-valid images can still combine to blow past Vercel's 4.5MB
+// request/response cap) - same "check and skip clearly before uploading"
+// philosophy as the per-file checks above; the server is the real enforcement.
+const MAX_SCENE_IMAGES_TOTAL_LENGTH = 3_800_000;
 
 function readFileAsDataUrl(file) {
     return new Promise((resolve, reject) => {
@@ -461,11 +468,25 @@ async function handleDelete() {
  */
 async function retryImageSaves(sceneId, images) {
     const stillFailing = [];
+    let savedCount = 0;
     for (const image of images) {
         try {
             await saveImageToScene(sceneId, image);
+            savedCount += 1;
         } catch {
             stillFailing.push(image);
+        }
+    }
+
+    // Reflects the scene list's count from what's actually confirmed saved
+    // (not the optimistic local count), regardless of whether this scene is
+    // still the one open - it was going stale until the next full reload
+    // otherwise (PR #493 review).
+    if (savedCount > 0) {
+        const summary = state.scenes.find((s) => s.id === sceneId);
+        if (summary) {
+            summary.imageCount += savedCount;
+            renderLibrary();
         }
     }
 
@@ -490,6 +511,11 @@ async function retryImageSaves(sceneId, images) {
 async function handleImportFiles(fileList) {
     if (!state.active || !fileList || fileList.length === 0) return;
     const sceneId = state.active.id;
+    // Captured once up front so later iterations don't depend on state.active,
+    // which can change mid-loop if the user opens a different scene while an
+    // earlier file is still being read (PR #493 review).
+    const baseImageCount = state.active.images.length;
+    let totalSrcLength = state.active.images.reduce((sum, img) => sum + img.src.length, 0);
 
     dom.importError.hidden = true;
     dom.importError.textContent = "";
@@ -509,12 +535,19 @@ async function handleImportFiles(fileList) {
 
         try {
             const dataUrl = await readFileAsDataUrl(file);
+            if (totalSrcLength + dataUrl.length > MAX_SCENE_IMAGES_TOTAL_LENGTH) {
+                skipped.push(`${file.name} (scene is near its image size limit)`);
+                continue;
+            }
             const natural = await loadImageDimensions(dataUrl);
             const { width, height } = scaleToFit(natural.width, natural.height, MAX_IMPORT_DIMENSION);
-            const offset = IMPORT_OFFSET_STEP * (state.active.images.length + 1);
+            const offset = IMPORT_OFFSET_STEP * (baseImageCount + added.length + 1);
             const image = { id: crypto.randomUUID(), src: dataUrl, x: offset, y: offset, width, height };
-            state.active.images.push(image);
             added.push(image);
+            totalSrcLength += dataUrl.length;
+            if (state.active && state.active.id === sceneId) {
+                state.active.images.push(image);
+            }
         } catch {
             skipped.push(`${file.name} (could not be read)`);
         }
@@ -528,8 +561,12 @@ async function handleImportFiles(fileList) {
     }
 
     if (added.length > 0) {
-        renderWorkspace();
-        announce(`${plural(added.length, "image")} added to the scene.`);
+        if (state.active && state.active.id === sceneId) {
+            renderWorkspace();
+            announce(`${plural(added.length, "image")} added to the scene.`);
+        }
+        // Always persists to the scene the import actually started on, even
+        // if the user has since switched to viewing a different one.
         await retryImageSaves(sceneId, added);
     }
 }

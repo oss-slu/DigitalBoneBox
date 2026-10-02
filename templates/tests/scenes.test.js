@@ -537,4 +537,49 @@ describe("Scene editor: importing images - Issue 411", () => {
 
         expect(backend.calls.filter((c) => c.method === "PATCH" && c.body && c.body.image)).toHaveLength(2);
     });
+
+    // PR #493 review: the scene list's image count was only ever refreshed by
+    // a full re-list, so it kept showing "0 images" after an import until the
+    // page was reloaded.
+    it("updates the scene list's image count after an import without waiting for a reload", async () => {
+        await openNewScene();
+        const title = $("scene-title").textContent;
+
+        setFiles([{ name: "ilium.png", type: "image/png" }]);
+        await waitFor(() => expect($("scene-meta").textContent).toContain("1 image"));
+
+        expect(listButton(title).textContent).toMatch(/1 image/);
+    });
+
+    // PR #493 review: switching scenes while an earlier file in the same
+    // import was still being read could land the image on whichever scene
+    // happened to be open when the read finished, not the one import started on.
+    it("does not add an imported image to the wrong scene when the user switches scenes mid-import", async () => {
+        backend.seed({ name: "Other" });
+        await openNewScene();
+        const originalTitle = $("scene-title").textContent;
+
+        // Slowed down so switching scenes reliably finishes first.
+        window.FileReader = class {
+            readAsDataURL(_file) {
+                setTimeout(() => {
+                    this.result = "data:image/png;base64,AAAA";
+                    if (this.onload) this.onload();
+                }, 30);
+            }
+        };
+
+        setFiles([{ name: "ilium.png", type: "image/png" }]);
+        await openByName("Other");
+
+        // Give the slow read time to finish while "Other" is the open scene,
+        // then check state directly - a DOM check alone wouldn't catch a push
+        // onto the wrong in-memory scene unless something happens to re-render
+        // it afterward, which isn't guaranteed.
+        await new Promise((resolve) => setTimeout(resolve, 60));
+        expect(scenesModule.getActiveScene().images).toHaveLength(0);
+
+        await openByName(originalTitle);
+        await waitFor(() => expect(document.querySelectorAll(".scene-image-object")).toHaveLength(1));
+    });
 });
