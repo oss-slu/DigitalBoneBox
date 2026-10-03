@@ -9,8 +9,35 @@ const path = require("path");
 const DEFAULT_SCENE_NAME = "Untitled Scene";
 const MAX_SCENE_NAME_LENGTH = 100;
 const SCENE_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+// 2MB raw file * ~4/3 base64 overhead, rounded down slightly for headroom under
+// the express.json() body limit once the surrounding JSON is added (Issue #412).
+const MAX_IMAGE_SRC_LENGTH = 2_800_000;
+// Vercel caps request/response bodies at 4.5MB. A single image can pass the
+// per-image cap above yet still combine with others to blow past that (PR #493
+// review: two 2MB images ~ 5.6MB of base64). This bounds the sum of every
+// image's `src` on one scene, leaving headroom for the rest of the JSON
+// (ids/positions/annotations/timestamps are tiny next to base64 image data).
+const MAX_SCENE_IMAGES_TOTAL_LENGTH = 3_800_000;
+const SAFE_IMAGE_SRC_PREFIX = /^data:image\//i;
 
 class SceneStorageUnavailableError extends Error {}
+class SceneLockTimeoutError extends Error {}
+
+/**
+ * Serializes concurrent operations that share the same key. Used to fix a
+ * lost-update race (PR #493 review): PATCH does read-the-whole-scene then
+ * write-the-whole-scene-back, so a rename and an image save racing each other
+ * would otherwise silently clobber one another depending on which wrote last.
+ */
+function createKeyedMutex() {
+    const tails = new Map();
+    return function withLock(key, fn) {
+        const tail = tails.get(key) || Promise.resolve();
+        const run = tail.then(fn, fn);
+        tails.set(key, run.catch(() => {}));
+        return run;
+    };
+}
 
 function isValidSceneId(sceneId) {
     return typeof sceneId === "string" && SCENE_ID_PATTERN.test(sceneId);
@@ -30,6 +57,42 @@ function normalizeSceneName(name) {
     return { name: trimmed };
 }
 
+function isFiniteNumber(value) {
+    return typeof value === "number" && Number.isFinite(value);
+}
+
+/**
+ * Validates an image object submitted for persistence via PATCH (Issue #412).
+ * The `id` reuses the same UUID shape as scene ids (isValidSceneId) since both
+ * are just crypto.randomUUID() values identifying different kinds of records.
+ * @param {object} image
+ * @returns {{ error: string } | { image: object }}
+ */
+function normalizeImage(image) {
+    if (!image || typeof image !== "object") {
+        return { error: "image must be an object" };
+    }
+    if (!isValidSceneId(image.id)) {
+        return { error: "image.id must be a valid id" };
+    }
+    if (typeof image.src !== "string" || !SAFE_IMAGE_SRC_PREFIX.test(image.src)) {
+        return { error: "image.src must be a data:image/ URL" };
+    }
+    if (image.src.length > MAX_IMAGE_SRC_LENGTH) {
+        return { error: "Image is too large (max 2MB)" };
+    }
+    if (![image.x, image.y, image.width, image.height].every(isFiniteNumber)) {
+        return { error: "image.x, image.y, image.width, and image.height must be numbers" };
+    }
+    if (image.width <= 0 || image.height <= 0) {
+        return { error: "image.width and image.height must be greater than 0" };
+    }
+
+    return {
+        image: { id: image.id, src: image.src, x: image.x, y: image.y, width: image.width, height: image.height },
+    };
+}
+
 function toSummary(scene) {
     return {
         id: scene.id,
@@ -43,7 +106,16 @@ function toSummary(scene) {
 
 // Local development only: one JSON file per scene.
 function createFileSceneStore(scenesDir = path.join(__dirname, "data", "scenes")) {
-    const scenePath = (sceneId) => path.join(scenesDir, `${sceneId}.json`);
+    // Re-validated here, not just trusted from the route's own check (CodeQL:
+    // "uncontrolled data used in path expression") - this function takes a bare
+    // sceneId and builds a filesystem path from it, so the guard has to live
+    // at the point the path is built, not in a caller it can't see.
+    const scenePath = (sceneId) => {
+        if (!isValidSceneId(sceneId)) {
+            throw new Error("Invalid sceneId");
+        }
+        return path.join(scenesDir, `${sceneId}.json`);
+    };
 
     async function ensureDir() {
         await fs.mkdir(scenesDir, { recursive: true });
@@ -91,14 +163,22 @@ function createFileSceneStore(scenesDir = path.join(__dirname, "data", "scenes")
         }
     }
 
-    return { list, get, save, remove };
+    return { list, get, save, remove, withLock: createKeyedMutex() };
 }
+
+// How long a PATCH will wait for another PATCH on the same scene before giving
+// up (returns 409 "busy" rather than hanging indefinitely), and how long a
+// held lock survives if its holder crashes before releasing it.
+const SCENE_LOCK_WAIT_MS = 3000;
+const SCENE_LOCK_POLL_MS = 50;
+const SCENE_LOCK_TTL_MS = 5000;
 
 // Durable shared storage for deployments. Each scene is stored under its own key,
 // and a set tracks every scene id so the list route doesn't need to scan keys.
 function createRedisSceneStore(redis, prefix = "bonebox") {
     const indexKey = `${prefix}:scenes`;
     const sceneKey = (sceneId) => `${prefix}:scene:${sceneId}`;
+    const lockKey = (sceneId) => `${prefix}:lock:${sceneId}`;
 
     async function get(sceneId) {
         return (await redis.get(sceneKey(sceneId))) || null;
@@ -123,14 +203,42 @@ function createRedisSceneStore(redis, prefix = "bonebox") {
         return deleted > 0;
     }
 
-    return { list, get, save, remove };
+    /**
+     * Distributed per-scene lock (PR #493 review fix) so a rename and an image
+     * save racing each other across serverless invocations can't clobber one
+     * another the way two unserialized read-modify-writes otherwise would. The
+     * TTL is a safety net if a holder crashes; the token check on release
+     * avoids deleting a lock we no longer own after it already expired.
+     */
+    async function withLock(sceneId, fn) {
+        const key = lockKey(sceneId);
+        const token = crypto.randomUUID();
+        const deadline = Date.now() + SCENE_LOCK_WAIT_MS;
+        for (;;) {
+            const acquired = await redis.set(key, token, { nx: true, px: SCENE_LOCK_TTL_MS });
+            if (acquired) {
+                try {
+                    return await fn();
+                } finally {
+                    const current = await redis.get(key);
+                    if (current === token) await redis.del(key);
+                }
+            }
+            if (Date.now() >= deadline) {
+                throw new SceneLockTimeoutError("Scene is busy, try again");
+            }
+            await new Promise((resolve) => setTimeout(resolve, SCENE_LOCK_POLL_MS));
+        }
+    }
+
+    return { list, get, save, remove, withLock };
 }
 
 function createUnavailableSceneStore(reason) {
     const fail = async () => {
         throw new SceneStorageUnavailableError(reason);
     };
-    return { list: fail, get: fail, save: fail, remove: fail };
+    return { list: fail, get: fail, save: fail, remove: fail, withLock: fail };
 }
 
 function hasRedisConfig(env) {
@@ -169,6 +277,9 @@ function nextDefaultName(scenes) {
 function sendStoreError(res, error, message) {
     if (error instanceof SceneStorageUnavailableError) {
         return res.status(503).json({ error: error.message });
+    }
+    if (error instanceof SceneLockTimeoutError) {
+        return res.status(409).json({ error: error.message });
     }
     console.error(`${message}:`, error.message);
     return res.status(500).json({ error: message });
@@ -257,35 +368,74 @@ function createScenesRouter(store = resolveSceneStore()) {
     });
 
     /**
-     * Renames a scene. Empty names are rejected; duplicate names return 409. Issue #423.
+     * Updates a scene. Supports renaming (empty names rejected, duplicates return
+     * 409 - Issue #423) and/or adding one newly imported image (validated and
+     * upserted by id so a retried request can't create a duplicate - Issue #412).
+     * At least one of `name`/`image` must be present in the body. The whole
+     * read-modify-write runs under a per-scene lock (PR #493 review) so a
+     * rename and an image save racing each other can't silently clobber one
+     * another - without it, both would read the same snapshot and whichever
+     * wrote back last would discard the other's change entirely.
      */
     router.patch("/:sceneId", async (req, res) => {
+        const { sceneId } = req.params;
         try {
-            if (!req.body || req.body.name === undefined) {
-                return res.status(400).json({ error: "name is required" });
-            }
-            const result = normalizeSceneName(req.body.name);
-            if (result.error) {
-                return res.status(400).json({ error: result.error });
+            if (!req.body || (req.body.name === undefined && req.body.image === undefined)) {
+                return res.status(400).json({ error: "name or image is required" });
             }
 
-            const { sceneId } = req.params;
-            const scene = await store.get(sceneId);
-            if (!scene) {
-                return res.status(404).json({ error: "Scene not found" });
-            }
+            await store.withLock(sceneId, async () => {
+                const scene = await store.get(sceneId);
+                if (!scene) {
+                    res.status(404).json({ error: "Scene not found" });
+                    return;
+                }
 
-            const scenes = await store.list();
-            if (isNameTaken(scenes, result.name, sceneId)) {
-                return res.status(409).json({ error: `A scene named "${result.name}" already exists` });
-            }
+                let changed = false;
 
-            scene.name = result.name;
-            scene.updatedAt = new Date().toISOString();
-            await store.save(scene);
-            res.json(scene);
+                if (req.body.name !== undefined) {
+                    const result = normalizeSceneName(req.body.name);
+                    if (result.error) {
+                        res.status(400).json({ error: result.error });
+                        return;
+                    }
+                    const scenes = await store.list();
+                    if (isNameTaken(scenes, result.name, sceneId)) {
+                        res.status(409).json({ error: `A scene named "${result.name}" already exists` });
+                        return;
+                    }
+                    scene.name = result.name;
+                    changed = true;
+                }
+
+                if (req.body.image !== undefined) {
+                    const result = normalizeImage(req.body.image);
+                    if (result.error) {
+                        res.status(400).json({ error: result.error });
+                        return;
+                    }
+                    const alreadyPresent = scene.images.some((img) => img.id === result.image.id);
+                    if (!alreadyPresent) {
+                        const existingTotal = scene.images.reduce((sum, img) => sum + img.src.length, 0);
+                        if (existingTotal + result.image.src.length > MAX_SCENE_IMAGES_TOTAL_LENGTH) {
+                            res.status(400).json({
+                                error: "This scene is near its total image size limit; remove an image before adding another",
+                            });
+                            return;
+                        }
+                        scene.images.push(result.image);
+                        changed = true;
+                    }
+                }
+
+                if (changed) {
+                    scene.updatedAt = new Date().toISOString();
+                    await store.save(scene);
+                }
+                res.json(scene);
+            });
         } catch (error) {
-            sendStoreError(res, error, "Failed to rename scene");
+            sendStoreError(res, error, "Failed to update scene");
         }
     });
 
@@ -314,5 +464,8 @@ module.exports = {
     resolveSceneStore,
     isValidSceneId,
     normalizeSceneName,
+    normalizeImage,
     DEFAULT_SCENE_NAME,
+    MAX_IMAGE_SRC_LENGTH,
+    MAX_SCENE_IMAGES_TOTAL_LENGTH,
 };

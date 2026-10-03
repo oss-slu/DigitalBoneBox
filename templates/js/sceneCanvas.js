@@ -16,7 +16,11 @@ const MIN_WIDTH = 960;
 const MIN_HEIGHT = 600;
 const PADDING = 40;
 const DEFAULT_STROKE = "#003366";
-const SAFE_IMAGE_SRC = /^(\/|\.\/|https?:\/\/|data:image\/)/i;
+// `blob:` is included alongside the existing schemes because Issue #411's image
+// import flow previews a freshly chosen file via `URL.createObjectURL(file)` -
+// the browser mints that URL itself from a real File/Blob, so it's exactly as
+// safe as the already-allowed `data:image/` scheme, never attacker-controllable.
+const SAFE_IMAGE_SRC = /^(\/|\.\/|https?:\/\/|data:image\/|blob:)/i;
 
 let markerCount = 0;
 
@@ -55,7 +59,7 @@ function el(name, attrs = {}) {
     return node;
 }
 
-function renderImage(image) {
+function renderImage(image, index) {
     if (typeof image.src !== "string" || !SAFE_IMAGE_SRC.test(image.src)) return null;
     if (![image.x, image.y, image.width, image.height].every(isNumber)) return null;
     if (image.width <= 0 || image.height <= 0) return null;
@@ -81,6 +85,8 @@ function renderImage(image) {
         preserveAspectRatio: "none",
         opacity: isNumber(image.opacity) ? image.opacity : undefined,
         transform: transforms.length ? transforms.join(" ") : undefined,
+        class: "scene-image-object",
+        "data-scene-image-index": index,
     });
     const corners = [
         [image.x, image.y],
@@ -178,16 +184,22 @@ function renderAnnotation(annotation, defs) {
 }
 
 /**
- * Renders a scene's images and annotations into an SVG element.
+ * Renders a scene's images and annotations into an SVG element. Optionally draws a
+ * non-interactive selection outline around one image, identified by its index in
+ * `scene.images` - the same index each rendered `<image>` carries as its
+ * `data-scene-image-index` attribute, letting a caller wire up click-to-select
+ * without this renderer owning any selection state itself.
  * @param {{ images: object[], annotations: object[] }} scene
+ * @param {{ selectedIndex?: number }} [options]
  * @returns {{ svg: SVGSVGElement, rendered: number, unsupported: number, width: number, height: number }}
  */
-export function renderScene(scene) {
+export function renderScene(scene, { selectedIndex } = {}) {
     const svg = el("svg", { class: "scene-svg", role: "img" });
     const defs = el("defs");
     const imageLayer = el("g", { class: "scene-layer-images" });
     const annotationLayer = el("g", { class: "scene-layer-annotations" });
-    svg.append(defs, imageLayer, annotationLayer);
+    const selectionLayer = el("g", { class: "scene-layer-selection" });
+    svg.append(defs, imageLayer, annotationLayer, selectionLayer);
 
     let minX = 0;
     let minY = 0;
@@ -199,7 +211,7 @@ export function renderScene(scene) {
     const place = (result, layer) => {
         if (!result) {
             unsupported += 1;
-            return;
+            return null;
         }
         layer.appendChild(result.node);
         rendered += 1;
@@ -209,9 +221,19 @@ export function renderScene(scene) {
             maxX = Math.max(maxX, x);
             maxY = Math.max(maxY, y);
         }
+        return result;
     };
 
-    for (const image of scene.images || []) place(renderImage(image), imageLayer);
+    (scene.images || []).forEach((image, index) => {
+        const result = place(renderImage(image, index), imageLayer);
+        if (result && index === selectedIndex) {
+            selectionLayer.appendChild(el("polygon", {
+                class: "scene-selection-outline",
+                points: result.bounds.map((p) => p.join(",")).join(" "),
+                "pointer-events": "none",
+            }));
+        }
+    });
     for (const annotation of scene.annotations || []) place(renderAnnotation(annotation, defs), annotationLayer);
 
     const x = minX < 0 ? minX - PADDING : 0;

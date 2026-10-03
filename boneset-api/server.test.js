@@ -1,5 +1,7 @@
 const request = require("supertest");
-const { app, serverReady } = require("./server");
+const fs = require("fs").promises;
+const path = require("path");
+const { app, serverReady, formatDescriptionText } = require("./server");
 
 beforeAll(() => serverReady);
 
@@ -78,5 +80,88 @@ describe("GET /api/annotations/:boneId - Issue 267", () => {
         // A boneId exceeding the maximum length should be rejected.
         expect(response.statusCode).toBe(400);
         expect(response.body.error).toBe("Invalid boneId format.");
+    });
+});
+
+// Unit tests for Issue 381: lightweight text formatting in bone descriptions
+describe("formatDescriptionText - Issue 381", () => {
+    it("leaves plain text with no markers unchanged", () => {
+        expect(formatDescriptionText("First cervical vertebra.")).toBe(
+            "First cervical vertebra."
+        );
+    });
+
+    it("converts **bold** markers to <strong>", () => {
+        expect(formatDescriptionText("This is **bold** text.")).toBe(
+            "This is <strong>bold</strong> text."
+        );
+    });
+
+    it("converts *italic* markers to <em>", () => {
+        expect(formatDescriptionText("This is *italic* text.")).toBe(
+            "This is <em>italic</em> text."
+        );
+    });
+
+    it("handles bold and italic together in the same string", () => {
+        expect(formatDescriptionText("**Bold** and *italic* together.")).toBe(
+            "<strong>Bold</strong> and <em>italic</em> together."
+        );
+    });
+
+    it("leaves an unmatched single marker as a literal asterisk", () => {
+        expect(formatDescriptionText("Trailing marker *")).toBe(
+            "Trailing marker *"
+        );
+    });
+
+    it("escapes HTML in the source text so it cannot be smuggled through as markup", () => {
+        expect(formatDescriptionText("<script>alert(1)</script>")).toBe(
+            "&lt;script&gt;alert(1)&lt;/script&gt;"
+        );
+    });
+
+    it("escapes HTML even when it appears alongside formatting markers", () => {
+        expect(formatDescriptionText("**<img src=x onerror=alert(1)>**")).toBe(
+            "<strong>&lt;img src=x onerror=alert(1)&gt;</strong>"
+        );
+    });
+});
+
+// Integration test for Issue 381: GET /api/description renders the formatting end-to-end
+describe("GET /api/description - Issue 381", () => {
+    const testBoneId = "__format_test_bone_381";
+    const descriptionsDir = path.join(__dirname, "data", "descriptions");
+    const fixturePath = path.join(descriptionsDir, `${testBoneId}_description.json`);
+
+    beforeAll(async () => {
+        await fs.writeFile(
+            fixturePath,
+            JSON.stringify({
+                name: "Format Test Bone",
+                id: testBoneId,
+                description: [
+                    "Plain sentence with no markers.",
+                    "A **bold** point and an *italic* point.",
+                ],
+                images: [],
+            })
+        );
+    });
+
+    afterAll(async () => {
+        await fs.unlink(fixturePath);
+    });
+
+    it("renders <strong>/<em> tags for a description that uses formatting markers", async () => {
+        const response = await request(app).get(
+            `/api/description/?boneId=${testBoneId}`
+        );
+
+        expect(response.statusCode).toBe(200);
+        expect(response.text).toContain("<li>Plain sentence with no markers.</li>");
+        expect(response.text).toContain(
+            "<li>A <strong>bold</strong> point and an <em>italic</em> point.</li>"
+        );
     });
 });

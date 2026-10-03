@@ -1,6 +1,7 @@
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
+const crypto = require("crypto");
 const express = require("express");
 const request = require("supertest");
 const {
@@ -8,7 +9,37 @@ const {
     createFileSceneStore,
     createRedisSceneStore,
     resolveSceneStore,
+    MAX_IMAGE_SRC_LENGTH,
 } = require("./scenes");
+
+function validImage(overrides = {}) {
+    return {
+        id: crypto.randomUUID(),
+        src: "data:image/png;base64,AAAA",
+        x: 10,
+        y: 20,
+        width: 100,
+        height: 50,
+        ...overrides,
+    };
+}
+
+// Widens the read-save race window deterministically so a concurrency test
+// doesn't depend on machine speed or backend internals (PR #493 review).
+function withArtificialDelay(store, ms) {
+    return {
+        ...store,
+        async get(sceneId) {
+            const result = await store.get(sceneId);
+            await new Promise((resolve) => setTimeout(resolve, ms));
+            return result;
+        },
+        async save(scene) {
+            await new Promise((resolve) => setTimeout(resolve, ms));
+            return store.save(scene);
+        },
+    };
+}
 
 // In-memory stand-in for the subset of the @upstash/redis client the store uses.
 // Values round-trip through JSON like the real client's automatic serialization.
@@ -22,7 +53,8 @@ function createFakeRedis() {
         async mget(...keys) {
             return keys.map((key) => (strings.has(key) ? JSON.parse(strings.get(key)) : null));
         },
-        async set(key, value) {
+        async set(key, value, options = {}) {
+            if (options.nx && strings.has(key)) return null;
             strings.set(key, JSON.stringify(value));
             return "OK";
         },
@@ -45,7 +77,9 @@ function createFakeRedis() {
 
 function buildApp(store) {
     const app = express();
-    app.use(express.json({ limit: "2mb" }));
+    // Matches server.js's real limit (Issue #412) so tests near the image size
+    // cap are rejected by the route's own validation, not Express's raw limit.
+    app.use(express.json({ limit: "6mb" }));
     app.use("/api/scenes", createScenesRouter(store));
     return app;
 }
@@ -207,6 +241,165 @@ describe.each(backends)("Scenes API ($name)", (backend) => {
         });
     });
 
+    // Issue #412: Upload and Store an Imported Image
+    describe("PATCH /api/scenes/:sceneId with an image - Issue 412", () => {
+        it("adds a newly imported image to the scene", async () => {
+            const created = await createScene();
+            const image = validImage();
+
+            const response = await request(app)
+                .patch(`/api/scenes/${created.body.id}`)
+                .send({ image });
+
+            expect(response.statusCode).toBe(200);
+            expect(response.body.images).toEqual([image]);
+        });
+
+        it("keeps the image after the scene is reloaded", async () => {
+            const created = await createScene();
+            const image = validImage();
+            await request(app).patch(`/api/scenes/${created.body.id}`).send({ image });
+
+            const reloaded = await request(app).get(`/api/scenes/${created.body.id}`);
+
+            expect(reloaded.statusCode).toBe(200);
+            expect(reloaded.body.images).toEqual([image]);
+        });
+
+        it("does not create a duplicate record when the same image id is saved twice", async () => {
+            const created = await createScene();
+            const image = validImage();
+
+            await request(app).patch(`/api/scenes/${created.body.id}`).send({ image });
+            const second = await request(app)
+                .patch(`/api/scenes/${created.body.id}`)
+                .send({ image });
+
+            expect(second.statusCode).toBe(200);
+            expect(second.body.images).toHaveLength(1);
+        });
+
+        it("keeps existing images when a different image is added", async () => {
+            const created = await createScene();
+            const first = validImage();
+            const second = validImage();
+
+            await request(app).patch(`/api/scenes/${created.body.id}`).send({ image: first });
+            const response = await request(app)
+                .patch(`/api/scenes/${created.body.id}`)
+                .send({ image: second });
+
+            expect(response.body.images).toEqual([first, second]);
+        });
+
+        it("rejects an image whose src is not a data:image/ URL", async () => {
+            const created = await createScene();
+            const response = await request(app)
+                .patch(`/api/scenes/${created.body.id}`)
+                .send({ image: validImage({ src: "https://example.com/x.png" }) });
+
+            expect(response.statusCode).toBe(400);
+            expect(response.body.error).toMatch(/data:image/);
+        });
+
+        it("rejects an image whose src exceeds the size cap", async () => {
+            const created = await createScene();
+            const oversizedSrc = `data:image/png;base64,${"A".repeat(MAX_IMAGE_SRC_LENGTH + 1)}`;
+            const response = await request(app)
+                .patch(`/api/scenes/${created.body.id}`)
+                .send({ image: validImage({ src: oversizedSrc }) });
+
+            expect(response.statusCode).toBe(400);
+            expect(response.body.error).toMatch(/too large/i);
+        });
+
+        it("rejects an image with non-numeric position or size fields", async () => {
+            const created = await createScene();
+            const response = await request(app)
+                .patch(`/api/scenes/${created.body.id}`)
+                .send({ image: validImage({ width: "big" }) });
+
+            expect(response.statusCode).toBe(400);
+        });
+
+        it("rejects an image with a width of 0", async () => {
+            const created = await createScene();
+            const response = await request(app)
+                .patch(`/api/scenes/${created.body.id}`)
+                .send({ image: validImage({ width: 0 }) });
+
+            expect(response.statusCode).toBe(400);
+        });
+
+        it("returns 404 when adding an image to an unknown scene", async () => {
+            const response = await request(app)
+                .patch(`/api/scenes/${UNKNOWN_ID}`)
+                .send({ image: validImage() });
+
+            expect(response.statusCode).toBe(404);
+        });
+
+        it("returns 400 when the body has neither name nor image", async () => {
+            const created = await createScene();
+            const response = await request(app).patch(`/api/scenes/${created.body.id}`).send({});
+            expect(response.statusCode).toBe(400);
+        });
+
+        it("can rename and add an image in the same request", async () => {
+            const created = await createScene();
+            const image = validImage();
+
+            const response = await request(app)
+                .patch(`/api/scenes/${created.body.id}`)
+                .send({ name: "Renamed", image });
+
+            expect(response.statusCode).toBe(200);
+            expect(response.body.name).toBe("Renamed");
+            expect(response.body.images).toEqual([image]);
+        });
+
+        // PR #493 review: a scene can have multiple images that each pass the
+        // per-image cap yet together exceed Vercel's 4.5MB request/response cap.
+        it("rejects an image that would push the scene over its total image size budget", async () => {
+            const created = await createScene();
+            const first = validImage({ src: `data:image/png;base64,${"A".repeat(MAX_IMAGE_SRC_LENGTH - 100)}` });
+            const firstResponse = await request(app).patch(`/api/scenes/${created.body.id}`).send({ image: first });
+            expect(firstResponse.statusCode).toBe(200);
+
+            const second = validImage({ src: `data:image/png;base64,${"A".repeat(MAX_IMAGE_SRC_LENGTH - 100)}` });
+            const response = await request(app).patch(`/api/scenes/${created.body.id}`).send({ image: second });
+
+            expect(response.statusCode).toBe(400);
+            expect(response.body.error).toMatch(/size limit/i);
+
+            const reloaded = await request(app).get(`/api/scenes/${created.body.id}`);
+            expect(reloaded.body.images).toEqual([first]);
+        });
+    });
+
+    // PR #493 review: a rename and an image save racing each other must not
+    // clobber one another. An artificial delay widens the read-save window so
+    // this reproduces deterministically instead of depending on real timing.
+    describe("PATCH /api/scenes/:sceneId concurrency - PR #493 review", () => {
+        it("does not lose a concurrent rename or image save", async () => {
+            const slowApp = buildApp(withArtificialDelay(env.newStore(), 30));
+            const created = await request(slowApp).post("/api/scenes").send({});
+            const image = validImage();
+
+            const [renameResponse, imageResponse] = await Promise.all([
+                request(slowApp).patch(`/api/scenes/${created.body.id}`).send({ name: "Renamed" }),
+                request(slowApp).patch(`/api/scenes/${created.body.id}`).send({ image }),
+            ]);
+
+            expect(renameResponse.statusCode).toBe(200);
+            expect(imageResponse.statusCode).toBe(200);
+
+            const final = await request(slowApp).get(`/api/scenes/${created.body.id}`);
+            expect(final.body.name).toBe("Renamed");
+            expect(final.body.images).toEqual([image]);
+        });
+    });
+
     // Issue #424: Delete a Scene
     describe("DELETE /api/scenes/:sceneId - Issue 424", () => {
         it("deletes only the requested scene", async () => {
@@ -224,6 +417,34 @@ describe.each(backends)("Scenes API ($name)", (backend) => {
             const response = await request(app).delete(`/api/scenes/${UNKNOWN_ID}`);
             expect(response.statusCode).toBe(404);
         });
+    });
+});
+
+// CodeQL flagged the file store's path construction as taking uncontrolled
+// data: this proves it now re-validates the id itself rather than trusting a
+// caller, even though the route-level `router.param` check already blocks
+// malformed ids from ever reaching the store in normal operation.
+describe("createFileSceneStore path safety", () => {
+    let dir;
+    let store;
+
+    beforeEach(() => {
+        dir = fs.mkdtempSync(path.join(os.tmpdir(), "bonebox-scenes-pathsafety-"));
+        store = createFileSceneStore(dir);
+    });
+
+    afterEach(() => {
+        fs.rmSync(dir, { recursive: true, force: true });
+    });
+
+    it("rejects a traversal attempt instead of reading outside the scenes directory", async () => {
+        await expect(store.get("../../etc/passwd")).rejects.toThrow(/invalid sceneid/i);
+        await expect(store.remove("../../etc/passwd")).rejects.toThrow(/invalid sceneid/i);
+    });
+
+    it("rejects saving a scene with a malformed id", async () => {
+        await expect(store.save({ id: "../../evil", name: "x", images: [], annotations: [] }))
+            .rejects.toThrow(/invalid sceneid/i);
     });
 });
 

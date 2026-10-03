@@ -11,7 +11,9 @@ const app = express();
 const PORT = process.env.PORT || 8000;
 
 app.use(cors());
-app.use(express.json());
+// Default 100kb is too small for a base64-encoded imported scene image (Issue #412);
+// the scenes route independently caps image size well under this ceiling too.
+app.use(express.json({ limit: "6mb" }));
 
 const LOCAL_DATA_DIR = path.join(__dirname, "data");
 const BONESET_DIR = path.join(LOCAL_DATA_DIR, "boneset");
@@ -48,6 +50,22 @@ function escapeHtml(str = "") {
         "\"": "&quot;",
         "'": "&#39;",
     })[c]);
+}
+
+/**
+ * Renders lightweight inline formatting in description text: `**bold**` becomes
+ * <strong>, and `*italic*` becomes <em>. The input is HTML-escaped first, so the
+ * `*`/`**` markers are the only formatting ever produced - any literal HTML in the
+ * source text (e.g. a stray `<script>`) is neutralized before these patterns run
+ * and can never be smuggled through as real markup. Unmatched markers (e.g. a
+ * single trailing `*`) are left as literal asterisks.
+ * @param {string} str - Raw description text, as authored in the data file.
+ * @returns {string} HTML-safe string with bold/italic markers converted to tags.
+ */
+function formatDescriptionText(str = "") {
+    return escapeHtml(str)
+        .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+        .replace(/\*(.+?)\*/g, "<em>$1</em>");
 }
 
 // Input validation helper for boneId
@@ -262,7 +280,8 @@ app.get("/api/colored-regions", async (req, res) => {
 
 /**
  * Gets description of boneset, bone, or subbone, formatted as HTML list items.
- * Expects a 'boneId' query parameter.
+ * Description text supports lightweight inline formatting: `**bold**` and
+ * `*italic*` (see formatDescriptionText). Expects a 'boneId' query parameter.
  */
 app.get("/api/description/", async (req, res) => {
     const { boneId } = req.query;
@@ -283,7 +302,7 @@ app.get("/api/description/", async (req, res) => {
     const descriptionData = descriptionResult.data;
     let html = `<li><strong>${escapeHtml(descriptionData.name)}</strong></li>`;
     (descriptionData.description || []).forEach((point) => {
-        html += `<li>${escapeHtml(point)}</li>`;
+        html += `<li>${formatDescriptionText(point)}</li>`;
     });
     res.send(html);
 });
@@ -491,6 +510,7 @@ module.exports = {
   app,
   serverReady,
   escapeHtml,
+  formatDescriptionText,
   searchItems,
   initializeSearchCache,
 };

@@ -218,16 +218,20 @@
                             </form>
 
                             <div class="scene-actions">
+                                <button id="scene-import-image" type="button" class="scene-btn scene-btn-secondary">Import image…</button>
+                                <input id="scene-import-input" type="file" accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml" multiple hidden />
                                 <button id="scene-fit-toggle" type="button" class="scene-btn scene-btn-secondary">Show actual size</button>
                                 <button id="scene-rename" type="button" class="scene-btn scene-btn-secondary">Rename</button>
                                 <button id="scene-delete" type="button" class="scene-btn scene-btn-danger">Delete</button>
                             </div>
+                            <p id="scene-import-error" class="scene-field-error" hidden></p>
                         </div>
 
                         <div class="scene-canvas-frame">
                             <div id="scene-canvas-empty" class="scene-empty scene-canvas-empty">
                                 <p><strong>This scene is blank.</strong></p>
                                 <p>Images and annotations added to this scene will appear here.</p>
+                                <button id="scene-canvas-empty-import" type="button" class="scene-btn scene-btn-primary">Import image…</button>
                             </div>
                             <div id="scene-canvas" class="scene-canvas" role="region" aria-label="Scene canvas" tabindex="0" hidden></div>
                         </div>
