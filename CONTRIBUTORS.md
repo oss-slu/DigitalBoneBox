@@ -6,5 +6,5 @@ Initial contributor list for the Fall 2026 team attribution audit:
 - Ramedan Ahmed (`Remex9`)
 - Olasubomi Adekunle (`Subomiadekunle`)
 - Mayokun Lawal (`mayokunl`)
-- Nayira Nwikpuinee
+- Nayira Nwikpuinee (`Nayira`)
 
