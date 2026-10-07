@@ -106,15 +106,26 @@ function toSummary(scene) {
 
 // Local development only: one JSON file per scene.
 function createFileSceneStore(scenesDir = path.join(__dirname, "data", "scenes")) {
-    // Re-validated here, not just trusted from the route's own check (CodeQL:
-    // "uncontrolled data used in path expression") - this function takes a bare
-    // sceneId and builds a filesystem path from it, so the guard has to live
-    // at the point the path is built, not in a caller it can't see.
+    // Re-validated here, not just trusted from the route's own check (CodeQL
+    // js/path-injection: "uncontrolled data used in path expression") - this
+    // function takes a bare sceneId and builds a filesystem path from it, so
+    // the guard has to live at the point the path is built, not in a caller
+    // it can't see. The allowlist regex alone isn't a pattern CodeQL's
+    // path-injection query recognizes as a barrier, so this also resolves the
+    // path and proves it stays inside scenesDir - the same resolve+relative
+    // containment check server.js's readJSON already uses for bone/boneset
+    // lookups, which CodeQL does recognize.
     const scenePath = (sceneId) => {
         if (!isValidSceneId(sceneId)) {
             throw new Error("Invalid sceneId");
         }
-        return path.join(scenesDir, `${sceneId}.json`);
+        const resolved = path.resolve(scenesDir, `${sceneId}.json`);
+        const relative = path.relative(scenesDir, resolved);
+        const staysInsideScenesDir = relative && !relative.startsWith("..") && !path.isAbsolute(relative);
+        if (!staysInsideScenesDir) {
+            throw new Error("Invalid sceneId");
+        }
+        return resolved;
     };
 
     async function ensureDir() {
@@ -357,7 +368,12 @@ function createScenesRouter(store = resolveSceneStore()) {
      */
     router.get("/:sceneId", async (req, res) => {
         try {
-            const scene = await store.get(req.params.sceneId);
+            const { sceneId } = req.params;
+            if (!isValidSceneId(sceneId)) {
+                return res.status(400).json({ error: "Invalid sceneId" });
+            }
+
+            const scene = await store.get(sceneId);
             if (!scene) {
                 return res.status(404).json({ error: "Scene not found" });
             }
@@ -380,6 +396,9 @@ function createScenesRouter(store = resolveSceneStore()) {
     router.patch("/:sceneId", async (req, res) => {
         const { sceneId } = req.params;
         try {
+            if (!isValidSceneId(sceneId)) {
+                return res.status(400).json({ error: "Invalid sceneId" });
+            }
             if (!req.body || (req.body.name === undefined && req.body.image === undefined)) {
                 return res.status(400).json({ error: "name or image is required" });
             }
@@ -444,7 +463,12 @@ function createScenesRouter(store = resolveSceneStore()) {
      */
     router.delete("/:sceneId", async (req, res) => {
         try {
-            const deleted = await store.remove(req.params.sceneId);
+            const { sceneId } = req.params;
+            if (!isValidSceneId(sceneId)) {
+                return res.status(400).json({ error: "Invalid sceneId" });
+            }
+
+            const deleted = await store.remove(sceneId);
             if (!deleted) {
                 return res.status(404).json({ error: "Scene not found" });
             }
