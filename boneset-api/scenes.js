@@ -106,35 +106,34 @@ function toSummary(scene) {
 
 // Local development only: one JSON file per scene.
 function createFileSceneStore(scenesDir = path.join(__dirname, "data", "scenes")) {
-    // Re-validated here, not just trusted from the route's own check (CodeQL
-    // js/path-injection: "uncontrolled data used in path expression") - this
-    // function takes a bare sceneId and builds a filesystem path from it, so
-    // the guard has to live at the point the path is built, not in a caller
-    // it can't see. The allowlist regex alone isn't a pattern CodeQL's
-    // path-injection query recognizes as a barrier, so this also resolves the
-    // path and proves it stays inside scenesDir - the same resolve+relative
-    // containment check server.js's readJSON already uses for bone/boneset
-    // lookups, which CodeQL does recognize.
-    const scenePath = (sceneId) => {
-        if (!isValidSceneId(sceneId)) {
-            throw new Error("Invalid sceneId");
-        }
-        const resolved = path.resolve(scenesDir, `${sceneId}.json`);
-        const relative = path.relative(scenesDir, resolved);
-        const staysInsideScenesDir = relative && !relative.startsWith("..") && !path.isAbsolute(relative);
-        if (!staysInsideScenesDir) {
-            throw new Error("Invalid sceneId");
-        }
-        return resolved;
-    };
+    // Not tainted by user input - just the configured base directory, resolved
+    // once so every function below checks containment against the same value.
+    const resolvedScenesDir = path.resolve(scenesDir);
 
     async function ensureDir() {
         await fs.mkdir(scenesDir, { recursive: true });
     }
 
+    // CodeQL (js/path-injection) flagged fs calls fed by a sceneId-derived path
+    // even though the route layer already validates it: a sanitizer defined in
+    // a separate helper function wasn't recognized as covering a different
+    // function's fs call. So this check is duplicated inline in get/save/remove
+    // below - right next to the fs call it guards, with nothing delegated - and
+    // combines two independent proofs of safety on the exact value passed to
+    // fs: (1) sceneId can only be a bare UUID (no "/", "\", or ".." possible),
+    // and (2) the resolved path is explicitly re-verified to still be inside
+    // resolvedScenesDir before it's used, so even a hypothetical regex bypass
+    // could not escape this directory.
     async function get(sceneId) {
+        if (!isValidSceneId(sceneId)) {
+            throw new Error("Invalid sceneId");
+        }
+        const target = path.resolve(resolvedScenesDir, `${sceneId}.json`);
+        if (!target.startsWith(resolvedScenesDir + path.sep)) {
+            throw new Error("Invalid sceneId");
+        }
         try {
-            const raw = await fs.readFile(scenePath(sceneId), "utf8");
+            const raw = await fs.readFile(target, "utf8");
             return JSON.parse(raw);
         } catch (error) {
             if (error.code === "ENOENT") return null;
@@ -156,8 +155,14 @@ function createFileSceneStore(scenesDir = path.join(__dirname, "data", "scenes")
     }
 
     async function save(scene) {
+        if (!isValidSceneId(scene.id)) {
+            throw new Error("Invalid sceneId");
+        }
+        const target = path.resolve(resolvedScenesDir, `${scene.id}.json`);
+        if (!target.startsWith(resolvedScenesDir + path.sep)) {
+            throw new Error("Invalid sceneId");
+        }
         await ensureDir();
-        const target = scenePath(scene.id);
         const tmp = `${target}.${crypto.randomUUID()}.tmp`;
         await fs.writeFile(tmp, JSON.stringify(scene, null, 2), "utf8");
         await fs.rename(tmp, target);
@@ -165,8 +170,15 @@ function createFileSceneStore(scenesDir = path.join(__dirname, "data", "scenes")
     }
 
     async function remove(sceneId) {
+        if (!isValidSceneId(sceneId)) {
+            throw new Error("Invalid sceneId");
+        }
+        const target = path.resolve(resolvedScenesDir, `${sceneId}.json`);
+        if (!target.startsWith(resolvedScenesDir + path.sep)) {
+            throw new Error("Invalid sceneId");
+        }
         try {
-            await fs.unlink(scenePath(sceneId));
+            await fs.unlink(target);
             return true;
         } catch (error) {
             if (error.code === "ENOENT") return false;
