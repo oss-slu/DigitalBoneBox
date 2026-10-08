@@ -6,6 +6,7 @@ const rateLimit = require("express-rate-limit");
 const fs = require("fs").promises; // Use promises for async/await file reading
 const path = require("path");
 const { createScenesRouter } = require("./scenes");
+const { createImageCatalogRouter } = require("./images");
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -26,6 +27,7 @@ const TEMPLATES_DIR = path.join(__dirname, "../templates");
 const BONESET_NAMES = ["bony_pelvis", "skull", "thorax", "vertebrae", "upper_limb", "lower_limb"];
 
 app.use("/api/images", express.static(IMAGES_DIR));
+app.use("/api/image-catalog", createImageCatalogRouter({ imagesDir: IMAGES_DIR, descriptionsDir: DESCRIPTIONS_DIR }));
 app.use("/api/scenes", createScenesRouter());
 
 // Rate limiter for search endpoint
