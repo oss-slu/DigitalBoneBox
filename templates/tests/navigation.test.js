@@ -37,39 +37,53 @@ describe("Prev/Next navigation keeps the dropdown and its listeners in sync - Is
         subboneDropdown.addEventListener("change", changeSpy);
     });
 
-    test("clicking Next dispatches a change event and advances the dropdown selection", () => {
+    test("clicking Next for the first time after selecting a bone shows the first subbone, not the second", () => {
+        // Regression test: the dropdown still shows its placeholder right after a
+        // bone is selected, so the first Next click must reveal subbones[0]. It must
+        // not skip straight to subbones[1] as if subbones[0] had already been shown.
         nextButton.click();
 
-        expect(subboneDropdown.value).toBe("subbone_b");
+        expect(subboneDropdown.value).toBe("subbone_a");
         expect(changeSpy).toHaveBeenCalledTimes(1);
     });
 
-    test("clicking Next repeatedly stops at the last subbone", () => {
+    test("clicking Next repeatedly walks through every subbone in order and stops at the last one", () => {
+        nextButton.click(); // (none shown yet) -> subbone_a
         nextButton.click(); // subbone_a -> subbone_b
         nextButton.click(); // subbone_b -> subbone_c
         nextButton.click(); // already last subbone: no-op, no extra change event
 
         expect(subboneDropdown.value).toBe("subbone_c");
-        expect(changeSpy).toHaveBeenCalledTimes(2);
+        expect(changeSpy).toHaveBeenCalledTimes(3);
     });
 
     test("clicking Previous dispatches a change event and moves back a subbone", () => {
-        nextButton.click();
-        nextButton.click();
+        nextButton.click(); // -> subbone_a
+        nextButton.click(); // -> subbone_b
         changeSpy.mockClear();
 
         prevButton.click();
 
-        expect(subboneDropdown.value).toBe("subbone_b");
+        expect(subboneDropdown.value).toBe("subbone_a");
         expect(changeSpy).toHaveBeenCalledTimes(1);
     });
 
-    test("clicking Previous at the first subbone does nothing", () => {
+    test("clicking Previous before any Next click does nothing", () => {
         const valueBeforeClick = subboneDropdown.value;
 
         prevButton.click();
 
         expect(subboneDropdown.value).toBe(valueBeforeClick);
+        expect(changeSpy).not.toHaveBeenCalled();
+    });
+
+    test("clicking Previous at the first subbone does nothing", () => {
+        nextButton.click(); // -> subbone_a
+        changeSpy.mockClear();
+
+        prevButton.click();
+
+        expect(subboneDropdown.value).toBe("subbone_a");
         expect(changeSpy).not.toHaveBeenCalled();
     });
 
