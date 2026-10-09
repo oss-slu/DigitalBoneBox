@@ -57,8 +57,17 @@ function createFakeBackend() {
         if (!scene) return respond(404, { error: "Scene not found" });
         if (method === "GET") return respond(200, scene);
         if (method === "PATCH") {
-            if (!body || (body.name === undefined && body.image === undefined)) {
-                return respond(400, { error: "name or image is required" });
+            const hasKnownField = body && (
+                body.name !== undefined ||
+                body.image !== undefined ||
+                body.updateImage !== undefined ||
+                body.removeImageId !== undefined ||
+                body.reorderImageIds !== undefined
+            );
+            if (!hasKnownField) {
+                return respond(400, {
+                    error: "name, image, updateImage, removeImageId, or reorderImageIds is required",
+                });
             }
             if (body.name !== undefined) {
                 const name = (body.name || "").trim();
@@ -69,6 +78,27 @@ function createFakeBackend() {
             if (body.image !== undefined) {
                 const alreadyPresent = scene.images.some((img) => img.id === body.image.id);
                 if (!alreadyPresent) scene.images.push(body.image);
+            }
+            if (body.updateImage !== undefined) {
+                const { id: imageId, ...fields } = body.updateImage;
+                const target = scene.images.find((img) => img.id === imageId);
+                if (!target) return respond(404, { error: "Image not found" });
+                Object.assign(target, fields);
+            }
+            if (body.removeImageId !== undefined) {
+                scene.images = scene.images.filter((img) => img.id !== body.removeImageId);
+            }
+            if (body.reorderImageIds !== undefined) {
+                const ids = body.reorderImageIds;
+                const currentIds = scene.images.map((img) => img.id);
+                const isSamePermutation =
+                    Array.isArray(ids) &&
+                    ids.length === currentIds.length &&
+                    [...ids].sort().join() === [...currentIds].sort().join();
+                if (!isSamePermutation) {
+                    return respond(400, { error: "reorderImageIds must match the scene's current images" });
+                }
+                scene.images = ids.map((imgId) => scene.images.find((img) => img.id === imgId));
             }
             scene.updatedAt = now;
             return respond(200, scene);
@@ -581,5 +611,398 @@ describe("Scene editor: importing images - Issue 411", () => {
 
         await openByName(originalTitle);
         await waitFor(() => expect(document.querySelectorAll(".scene-image-object")).toHaveLength(1));
+    });
+});
+
+function selectImage(index) {
+    document
+        .querySelector(`[data-scene-image-index="${index}"]`)
+        .dispatchEvent(new MouseEvent("click", { bubbles: true }));
+}
+
+// Issues #418/#419: removing an image and reordering the stack.
+describe("Scene editor: remove and reorder images", () => {
+    async function openSceneWithTwoImages() {
+        backend.seed({
+            name: "Pair",
+            images: [
+                { id: "img-a", src: "/images/a.png", x: 0, y: 0, width: 100, height: 100 },
+                { id: "img-b", src: "/images/b.png", x: 50, y: 50, width: 100, height: 100 },
+            ],
+        });
+        await enterEditor();
+        await openByName("Pair");
+    }
+
+    it("shows the image toolbar only while an image is selected", async () => {
+        await openSceneWithTwoImages();
+        expect($("scene-image-toolbar").hidden).toBe(true);
+
+        selectImage(0);
+        expect($("scene-image-toolbar").hidden).toBe(false);
+
+        selectImage(0);
+        expect($("scene-image-toolbar").hidden).toBe(true);
+    });
+
+    it("disables bring-forward at the top and send-backward at the bottom of the stack", async () => {
+        await openSceneWithTwoImages();
+
+        selectImage(0);
+        expect($("scene-image-backward").disabled).toBe(true);
+        expect($("scene-image-forward").disabled).toBe(false);
+
+        selectImage(0); // deselect
+        selectImage(1);
+        expect($("scene-image-forward").disabled).toBe(true);
+        expect($("scene-image-backward").disabled).toBe(false);
+    });
+
+    it("removes the selected image, persists it, and updates the scene list count", async () => {
+        await openSceneWithTwoImages();
+        selectImage(0);
+
+        click("scene-image-remove");
+        await waitFor(() => expect(document.querySelectorAll(".scene-image-object")).toHaveLength(1));
+
+        expect(scenesModule.getActiveScene().images.map((img) => img.id)).toEqual(["img-b"]);
+        expect($("scene-image-toolbar").hidden).toBe(true);
+        expect(listButton("Pair").textContent).toMatch(/1 image/);
+
+        const patchCall = backend.calls.find((c) => c.method === "PATCH" && c.body && c.body.removeImageId);
+        expect(patchCall.body.removeImageId).toBe("img-a");
+        expect([...backend.scenes.values()][0].images.map((img) => img.id)).toEqual(["img-b"]);
+    });
+
+    it("restores the image and offers a retry if removal fails", async () => {
+        await openSceneWithTwoImages();
+        selectImage(0);
+        backend.fail("PATCH", 500);
+
+        click("scene-image-remove");
+        await waitFor(() => expect($("scene-workspace-error").hidden).toBe(false));
+
+        expect(document.querySelectorAll(".scene-image-object")).toHaveLength(2);
+        expect(scenesModule.getActiveScene().images.map((img) => img.id)).toEqual(["img-a", "img-b"]);
+
+        click("scene-workspace-retry");
+        await waitFor(() => expect($("scene-workspace-error").hidden).toBe(true));
+        expect(scenesModule.getActiveScene().images.map((img) => img.id)).toEqual(["img-b"]);
+    });
+
+    it("brings an image forward and sends it backward, persisting the new order", async () => {
+        await openSceneWithTwoImages();
+        selectImage(0);
+
+        click("scene-image-forward");
+        await waitFor(() =>
+            expect(scenesModule.getActiveScene().images.map((img) => img.id)).toEqual(["img-b", "img-a"])
+        );
+        let reorderCall = backend.calls.filter((c) => c.method === "PATCH" && c.body && c.body.reorderImageIds).pop();
+        expect(reorderCall.body.reorderImageIds).toEqual(["img-b", "img-a"]);
+
+        click("scene-image-backward");
+        await waitFor(() =>
+            expect(scenesModule.getActiveScene().images.map((img) => img.id)).toEqual(["img-a", "img-b"])
+        );
+        reorderCall = backend.calls.filter((c) => c.method === "PATCH" && c.body && c.body.reorderImageIds).pop();
+        expect(reorderCall.body.reorderImageIds).toEqual(["img-a", "img-b"]);
+    });
+
+    it("reverts the order and offers a retry if reordering fails", async () => {
+        await openSceneWithTwoImages();
+        selectImage(0);
+        backend.fail("PATCH", 500);
+
+        click("scene-image-forward");
+        await waitFor(() => expect($("scene-workspace-error").hidden).toBe(false));
+        expect(scenesModule.getActiveScene().images.map((img) => img.id)).toEqual(["img-a", "img-b"]);
+
+        click("scene-workspace-retry");
+        await waitFor(() =>
+            expect(scenesModule.getActiveScene().images.map((img) => img.id)).toEqual(["img-b", "img-a"])
+        );
+    });
+});
+
+// Issues #415/#416: rotating and flipping an image.
+describe("Scene editor: rotate and flip images", () => {
+    async function openSceneWithOneImage() {
+        backend.seed({
+            name: "Solo",
+            images: [{ id: "img-a", src: "/images/a.png", x: 0, y: 0, width: 100, height: 50 }],
+        });
+        await enterEditor();
+        await openByName("Solo");
+        selectImage(0);
+    }
+
+    it("rotates by the stepper amount and wraps into [0, 360)", async () => {
+        await openSceneWithOneImage();
+
+        click("scene-image-rotate-right-90");
+        await waitFor(() => expect(scenesModule.getActiveScene().images[0].rotation).toBe(90));
+
+        click("scene-image-rotate-left-15");
+        await waitFor(() => expect(scenesModule.getActiveScene().images[0].rotation).toBe(75));
+
+        click("scene-image-rotate-left-90");
+        click("scene-image-rotate-left-90");
+        await waitFor(() => expect(scenesModule.getActiveScene().images[0].rotation).toBe(255));
+
+        const lastPatch = backend.calls.filter((c) => c.method === "PATCH" && c.body.updateImage).pop();
+        expect(lastPatch.body.updateImage).toMatchObject({ id: "img-a", rotation: 255 });
+    });
+
+    it("toggles flipX and flipY independently and persists each", async () => {
+        await openSceneWithOneImage();
+
+        click("scene-image-flip-horizontal");
+        await waitFor(() => expect(scenesModule.getActiveScene().images[0].flipX).toBe(true));
+        expect(scenesModule.getActiveScene().images[0].flipY).toBeFalsy();
+
+        click("scene-image-flip-vertical");
+        await waitFor(() => expect(scenesModule.getActiveScene().images[0].flipY).toBe(true));
+
+        click("scene-image-flip-horizontal");
+        await waitFor(() => expect(scenesModule.getActiveScene().images[0].flipX).toBe(false));
+
+        const patchCalls = backend.calls.filter((c) => c.method === "PATCH" && c.body.updateImage);
+        expect(patchCalls.map((c) => c.body.updateImage)).toEqual([
+            { id: "img-a", flipX: true },
+            { id: "img-a", flipY: true },
+            { id: "img-a", flipX: false },
+        ]);
+    });
+
+    it("reverts a failed rotation and offers a retry", async () => {
+        await openSceneWithOneImage();
+        backend.fail("PATCH", 500);
+
+        click("scene-image-rotate-right-90");
+        await waitFor(() => expect($("scene-workspace-error").hidden).toBe(false));
+        expect(scenesModule.getActiveScene().images[0].rotation).toBeFalsy();
+
+        click("scene-workspace-retry");
+        await waitFor(() => expect(scenesModule.getActiveScene().images[0].rotation).toBe(90));
+    });
+
+    it("reverts a failed flip and offers a retry", async () => {
+        await openSceneWithOneImage();
+        backend.fail("PATCH", 500);
+
+        click("scene-image-flip-horizontal");
+        await waitFor(() => expect($("scene-workspace-error").hidden).toBe(false));
+        expect(scenesModule.getActiveScene().images[0].flipX).toBeFalsy();
+
+        click("scene-workspace-retry");
+        await waitFor(() => expect(scenesModule.getActiveScene().images[0].flipX).toBe(true));
+    });
+});
+
+// Issues #413/#414: dragging a selected image to move or resize it. jsdom
+// doesn't implement real SVG layout, so `getBoundingClientRect` is mocked to
+// a fixed size matching the scene's default 960x600 viewBox (a single small
+// image never grows it), giving an exact 1:1 scene-unit-per-pixel scale that
+// makes the expected numbers easy to check.
+describe("Scene editor: move and resize images", () => {
+    async function openSceneWithOneImage() {
+        backend.seed({
+            name: "Solo",
+            images: [{ id: "img-a", src: "/images/a.png", x: 100, y: 100, width: 200, height: 100 }],
+        });
+        await enterEditor();
+        await openByName("Solo");
+        selectImage(0);
+    }
+
+    function mockSvgScale() {
+        const svg = document.querySelector("#scene-canvas svg");
+        svg.getBoundingClientRect = () => ({ width: 960, height: 600 });
+        return svg;
+    }
+
+    function drag(target, from, to) {
+        target.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, clientX: from.x, clientY: from.y }));
+        document.dispatchEvent(new MouseEvent("mousemove", { clientX: to.x, clientY: to.y }));
+        document.dispatchEvent(new MouseEvent("mouseup", { clientX: to.x, clientY: to.y }));
+    }
+
+    it("moves the selected image by the drag delta and persists the new position", async () => {
+        await openSceneWithOneImage();
+        mockSvgScale();
+        const imageNode = document.querySelector("[data-scene-image-index=\"0\"]");
+
+        drag(imageNode, { x: 0, y: 0 }, { x: 30, y: 20 });
+
+        await waitFor(() => expect(scenesModule.getActiveScene().images[0]).toMatchObject({ x: 130, y: 120 }));
+        const patchCall = backend.calls.filter((c) => c.method === "PATCH" && c.body.updateImage).pop();
+        expect(patchCall.body.updateImage).toMatchObject({ id: "img-a", x: 130, y: 120 });
+    });
+
+    it("does not move the image or fire a save for a mousedown/mouseup with no real movement", async () => {
+        await openSceneWithOneImage();
+        mockSvgScale();
+        const imageNode = document.querySelector("[data-scene-image-index=\"0\"]");
+
+        drag(imageNode, { x: 0, y: 0 }, { x: 0, y: 0 });
+
+        expect(scenesModule.getActiveScene().images[0]).toMatchObject({ x: 100, y: 100 });
+        expect(backend.calls.some((c) => c.method === "PATCH" && c.body.updateImage)).toBe(false);
+    });
+
+    it("keeps the image selected after a move drag instead of the resulting click deselecting it", async () => {
+        await openSceneWithOneImage();
+        mockSvgScale();
+        const imageNode = document.querySelector("[data-scene-image-index=\"0\"]");
+
+        drag(imageNode, { x: 0, y: 0 }, { x: 30, y: 20 });
+
+        // The drag's own re-renders replace the <image> DOM node, so the
+        // original reference is now detached and can't bubble anywhere; the
+        // simulated click (which real browsers fire after mouseup on the
+        // same element regardless of movement in between, something jsdom
+        // doesn't synthesize from dispatched mousedown/mouseup alone) has to
+        // target the current node instead.
+        document
+            .querySelector("[data-scene-image-index=\"0\"]")
+            .dispatchEvent(new MouseEvent("click", { bubbles: true }));
+
+        expect(document.querySelectorAll(".scene-selection-outline")).toHaveLength(1);
+    });
+
+    it("resizes from a corner handle, preserving aspect ratio, anchored at the center", async () => {
+        await openSceneWithOneImage(); // 200x100 at (100,100) -> center (200,150)
+        mockSvgScale();
+        const handle = document.querySelector("[data-corner=\"se\"]");
+
+        drag(handle, { x: 0, y: 0 }, { x: 40, y: 0 });
+
+        await waitFor(() => {
+            const image = scenesModule.getActiveScene().images[0];
+            expect(image.width).toBeCloseTo(240);
+            expect(image.height).toBeCloseTo(120);
+            expect(image.x).toBeCloseTo(80);
+            expect(image.y).toBeCloseTo(90);
+        });
+    });
+
+    it("reverts a failed move and offers a retry", async () => {
+        await openSceneWithOneImage();
+        mockSvgScale();
+        backend.fail("PATCH", 500);
+        const imageNode = document.querySelector("[data-scene-image-index=\"0\"]");
+
+        drag(imageNode, { x: 0, y: 0 }, { x: 30, y: 20 });
+        await waitFor(() => expect($("scene-workspace-error").hidden).toBe(false));
+        expect(scenesModule.getActiveScene().images[0]).toMatchObject({ x: 100, y: 100 });
+
+        click("scene-workspace-retry");
+        await waitFor(() => expect(scenesModule.getActiveScene().images[0]).toMatchObject({ x: 130, y: 120 }));
+    });
+});
+
+// Issue #417: non-destructive cropping.
+describe("Scene editor: crop an image", () => {
+    async function openSceneWithOneImage() {
+        backend.seed({
+            name: "Solo",
+            images: [{ id: "img-a", src: "/images/a.png", x: 100, y: 100, width: 200, height: 100 }],
+        });
+        await enterEditor();
+        await openByName("Solo");
+        selectImage(0);
+    }
+
+    function mockSvgScale() {
+        const svg = document.querySelector("#scene-canvas svg");
+        svg.getBoundingClientRect = () => ({ width: 960, height: 600 });
+        return svg;
+    }
+
+    function drag(target, from, to) {
+        target.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, clientX: from.x, clientY: from.y }));
+        document.dispatchEvent(new MouseEvent("mousemove", { clientX: to.x, clientY: to.y }));
+        document.dispatchEvent(new MouseEvent("mouseup", { clientX: to.x, clientY: to.y }));
+    }
+
+    it("toggles the toolbar between Crop and Done/Reset", async () => {
+        await openSceneWithOneImage();
+        expect($("scene-image-crop-start").hidden).toBe(false);
+        expect($("scene-image-crop-done").hidden).toBe(true);
+
+        click("scene-image-crop-start");
+        expect($("scene-image-crop-start").hidden).toBe(true);
+        expect($("scene-image-crop-done").hidden).toBe(false);
+        expect($("scene-image-crop-reset").hidden).toBe(false);
+
+        click("scene-image-crop-done");
+        expect($("scene-image-crop-start").hidden).toBe(false);
+        expect($("scene-image-crop-done").hidden).toBe(true);
+    });
+
+    it("shows the full image uncropped with a draft crop outline while in crop mode", async () => {
+        await openSceneWithOneImage();
+        click("scene-image-crop-start");
+
+        expect(document.querySelector("image").hasAttribute("clip-path")).toBe(false);
+        expect(document.querySelectorAll(".scene-crop-outline")).toHaveLength(1);
+    });
+
+    it("drags the se handle to shrink the crop rect and persists it on release", async () => {
+        await openSceneWithOneImage(); // 200x100
+        mockSvgScale();
+        click("scene-image-crop-start");
+        const handle = document.querySelector("[data-corner=\"se\"]");
+
+        drag(handle, { x: 0, y: 0 }, { x: -50, y: -20 });
+
+        await waitFor(() => {
+            const image = scenesModule.getActiveScene().images[0];
+            expect(image).toMatchObject({ cropX: 0, cropY: 0, cropWidth: 150, cropHeight: 80 });
+        });
+        const patchCall = backend.calls.filter((c) => c.method === "PATCH" && c.body.updateImage).pop();
+        expect(patchCall.body.updateImage).toMatchObject({ id: "img-a", cropWidth: 150, cropHeight: 80 });
+    });
+
+    it("drags the nw handle, anchoring at the opposite corner of the crop rect", async () => {
+        await openSceneWithOneImage(); // 200x100
+        mockSvgScale();
+        click("scene-image-crop-start");
+        const handle = document.querySelector("[data-corner=\"nw\"]");
+
+        drag(handle, { x: 0, y: 0 }, { x: 40, y: 20 });
+
+        await waitFor(() => {
+            const image = scenesModule.getActiveScene().images[0];
+            expect(image).toMatchObject({ cropX: 40, cropY: 20, cropWidth: 160, cropHeight: 80 });
+        });
+    });
+
+    it("resets the crop back to fully visible and persists it", async () => {
+        await openSceneWithOneImage();
+        mockSvgScale();
+        click("scene-image-crop-start");
+        drag(document.querySelector("[data-corner=\"se\"]"), { x: 0, y: 0 }, { x: -50, y: -20 });
+        await waitFor(() => expect(scenesModule.getActiveScene().images[0].cropWidth).toBe(150));
+
+        click("scene-image-crop-reset");
+
+        await waitFor(() => {
+            const image = scenesModule.getActiveScene().images[0];
+            expect(image).toMatchObject({ cropX: 0, cropY: 0, cropWidth: 200, cropHeight: 100 });
+        });
+    });
+
+    it("exits crop mode without an extra save when nothing was dragged", async () => {
+        await openSceneWithOneImage();
+        click("scene-image-crop-start");
+        const callsBefore = backend.calls.length;
+
+        click("scene-image-crop-done");
+
+        expect(backend.calls.length).toBe(callsBefore);
+        expect($("scene-image-toolbar").hidden).toBe(false);
+        expect(document.querySelectorAll(".scene-crop-outline")).toHaveLength(0);
     });
 });

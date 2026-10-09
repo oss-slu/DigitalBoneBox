@@ -21,6 +21,9 @@ const DEFAULT_STROKE = "#003366";
 // the browser mints that URL itself from a real File/Blob, so it's exactly as
 // safe as the already-allowed `data:image/` scheme, never attacker-controllable.
 const SAFE_IMAGE_SRC = /^(\/|\.\/|https?:\/\/|data:image\/|blob:)/i;
+// Order matches renderImage's own `corners` array: [TL, TR, BR, BL].
+const RESIZE_HANDLE_CORNERS = ["nw", "ne", "se", "sw"];
+const RESIZE_HANDLE_SIZE = 10;
 
 let markerCount = 0;
 
@@ -59,7 +62,28 @@ function el(name, attrs = {}) {
     return node;
 }
 
-function renderImage(image, index) {
+/**
+ * The visible sub-rectangle of an image's own local box (0,0 to width,height)
+ * - Issue #417. Defaults to the full box when no crop fields are set, so an
+ * uncropped image behaves exactly as before.
+ */
+function cropRectFor(image) {
+    const hasCrop = [image.cropX, image.cropY, image.cropWidth, image.cropHeight].every(isNumber);
+    return hasCrop
+        ? { x: image.cropX, y: image.cropY, width: image.cropWidth, height: image.cropHeight }
+        : { x: 0, y: 0, width: image.width, height: image.height };
+}
+
+/**
+ * @param {object} image
+ * @param {number} index
+ * @param {SVGDefsElement} defs
+ * @param {{ skipClip?: boolean }} [options] - skipClip shows the full,
+ *   unclipped image regardless of any saved crop - used only while actively
+ *   editing the crop (Issue #417), so the user can see the whole source to
+ *   choose a region from.
+ */
+function renderImage(image, index, defs, { skipClip = false } = {}) {
     if (typeof image.src !== "string" || !SAFE_IMAGE_SRC.test(image.src)) return null;
     if (![image.x, image.y, image.width, image.height].every(isNumber)) return null;
     if (image.width <= 0 || image.height <= 0) return null;
@@ -76,7 +100,29 @@ function renderImage(image, index) {
         transforms.push(`translate(${cx} ${cy}) scale(${sx} ${sy}) translate(${-cx} ${-cy})`);
     }
 
-    const node = el("image", {
+    const crop = cropRectFor(image);
+    const isCropped =
+        !skipClip && (crop.x !== 0 || crop.y !== 0 || crop.width !== image.width || crop.height !== image.height);
+
+    let clipId;
+    if (isCropped) {
+        markerCount += 1;
+        clipId = `scene-image-clip-${markerCount}`;
+        const clipPath = el("clipPath", { id: clipId });
+        // In the SAME pre-rotation, absolute coordinates as the image's own
+        // x/y/width/height below - both live inside the same transformed <g>
+        // when rotated/flipped, so the crop window rotates/flips WITH the
+        // image as one rigid unit, not independently of it.
+        clipPath.appendChild(el("rect", {
+            x: image.x + crop.x,
+            y: image.y + crop.y,
+            width: crop.width,
+            height: crop.height,
+        }));
+        defs.appendChild(clipPath);
+    }
+
+    const imageNode = el("image", {
         href: image.src,
         x: image.x,
         y: image.y,
@@ -84,17 +130,49 @@ function renderImage(image, index) {
         height: image.height,
         preserveAspectRatio: "none",
         opacity: isNumber(image.opacity) ? image.opacity : undefined,
-        transform: transforms.length ? transforms.join(" ") : undefined,
+        "clip-path": clipId ? `url(#${clipId})` : undefined,
         class: "scene-image-object",
         "data-scene-image-index": index,
     });
-    const corners = [
+
+    // The transform only moves to a wrapping <g> when a clip-path is also in
+    // play (so the clip rotates/flips with the image, see above) - otherwise
+    // it stays directly on the <image>, unchanged from before #417.
+    let node = imageNode;
+    if (transforms.length) {
+        if (clipId) {
+            const group = el("g", { transform: transforms.join(" ") });
+            group.appendChild(imageNode);
+            node = group;
+        } else {
+            imageNode.setAttribute("transform", transforms.join(" "));
+        }
+    }
+
+    const fullCorners = [
         [image.x, image.y],
         [image.x + image.width, image.y],
         [image.x + image.width, image.y + image.height],
         [image.x, image.y + image.height],
     ];
-    return { node, bounds: isNumber(image.rotation) ? rotatePoints(corners, image.rotation, cx, cy) : corners };
+    const cropCorners = [
+        [image.x + crop.x, image.y + crop.y],
+        [image.x + crop.x + crop.width, image.y + crop.y],
+        [image.x + crop.x + crop.width, image.y + crop.y + crop.height],
+        [image.x + crop.x, image.y + crop.y + crop.height],
+    ];
+    const visibleCorners = isCropped ? cropCorners : fullCorners;
+    const rotation = image.rotation;
+
+    return {
+        node,
+        // The visible (cropped, if applicable) region - used for the normal
+        // selection outline and the canvas's auto-sizing.
+        bounds: isNumber(rotation) ? rotatePoints(visibleCorners, rotation, cx, cy) : visibleCorners,
+        // The current crop rect regardless of skipClip - used only while
+        // actively editing the crop, to draw its own handles/outline.
+        cropBounds: isNumber(rotation) ? rotatePoints(cropCorners, rotation, cx, cy) : cropCorners,
+    };
 }
 
 function rotatePoints(points, degrees, cx, cy) {
@@ -190,10 +268,12 @@ function renderAnnotation(annotation, defs) {
  * `data-scene-image-index` attribute, letting a caller wire up click-to-select
  * without this renderer owning any selection state itself.
  * @param {{ images: object[], annotations: object[] }} scene
- * @param {{ selectedIndex?: number }} [options]
+ * @param {{ selectedIndex?: number, cropMode?: boolean }} [options] - cropMode
+ *   shows the selected image uncropped with handles on its *draft* crop rect
+ *   instead of the normal selection outline/resize handles (Issue #417).
  * @returns {{ svg: SVGSVGElement, rendered: number, unsupported: number, width: number, height: number }}
  */
-export function renderScene(scene, { selectedIndex } = {}) {
+export function renderScene(scene, { selectedIndex, cropMode = false } = {}) {
     const svg = el("svg", { class: "scene-svg", role: "img" });
     const defs = el("defs");
     const imageLayer = el("g", { class: "scene-layer-images" });
@@ -225,13 +305,31 @@ export function renderScene(scene, { selectedIndex } = {}) {
     };
 
     (scene.images || []).forEach((image, index) => {
-        const result = place(renderImage(image, index), imageLayer);
+        const isEditingCrop = cropMode && index === selectedIndex;
+        const result = place(renderImage(image, index, defs, { skipClip: isEditingCrop }), imageLayer);
         if (result && index === selectedIndex) {
+            // While actively editing the crop, the outline/handles track the
+            // *draft* crop rect instead of the image's visible bounds, so
+            // they can be dragged inward from the full (now unclipped) image.
+            const handleBounds = isEditingCrop ? result.cropBounds : result.bounds;
             selectionLayer.appendChild(el("polygon", {
-                class: "scene-selection-outline",
-                points: result.bounds.map((p) => p.join(",")).join(" "),
+                class: isEditingCrop ? "scene-crop-outline" : "scene-selection-outline",
+                points: handleBounds.map((p) => p.join(",")).join(" "),
                 "pointer-events": "none",
             }));
+            // One square handle per corner (Issues #413/#414/#417), at the
+            // same already-rotated bounds the outline above uses -
+            // axis-aligned regardless of the image's own rotation.
+            handleBounds.forEach(([x, y], cornerIndex) => {
+                selectionLayer.appendChild(el("rect", {
+                    class: "scene-resize-handle",
+                    x: x - RESIZE_HANDLE_SIZE / 2,
+                    y: y - RESIZE_HANDLE_SIZE / 2,
+                    width: RESIZE_HANDLE_SIZE,
+                    height: RESIZE_HANDLE_SIZE,
+                    "data-corner": RESIZE_HANDLE_CORNERS[cornerIndex],
+                }));
+            });
         }
     });
     for (const annotation of scene.annotations || []) place(renderAnnotation(annotation, defs), annotationLayer);

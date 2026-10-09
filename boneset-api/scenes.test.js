@@ -400,6 +400,243 @@ describe.each(backends)("Scenes API ($name)", (backend) => {
         });
     });
 
+    // Issues #413-417: Position, Resize, Rotate, Flip, Crop an Image
+    describe("PATCH /api/scenes/:sceneId with updateImage - Issues 413-417", () => {
+        async function createSceneWithImage(overrides = {}) {
+            const created = await createScene();
+            const image = validImage(overrides);
+            await request(app).patch(`/api/scenes/${created.body.id}`).send({ image });
+            return { sceneId: created.body.id, image };
+        }
+
+        it("updates position and size (Issues 413, 414)", async () => {
+            const { sceneId, image } = await createSceneWithImage();
+
+            const response = await request(app)
+                .patch(`/api/scenes/${sceneId}`)
+                .send({ updateImage: { id: image.id, x: 40, y: 60, width: 200, height: 100 } });
+
+            expect(response.statusCode).toBe(200);
+            expect(response.body.images[0]).toMatchObject({ x: 40, y: 60, width: 200, height: 100 });
+        });
+
+        it("updates rotation (Issue 415)", async () => {
+            const { sceneId, image } = await createSceneWithImage();
+
+            const response = await request(app)
+                .patch(`/api/scenes/${sceneId}`)
+                .send({ updateImage: { id: image.id, rotation: 90 } });
+
+            expect(response.statusCode).toBe(200);
+            expect(response.body.images[0].rotation).toBe(90);
+        });
+
+        it("updates flipX/flipY (Issue 416)", async () => {
+            const { sceneId, image } = await createSceneWithImage();
+
+            const response = await request(app)
+                .patch(`/api/scenes/${sceneId}`)
+                .send({ updateImage: { id: image.id, flipX: true, flipY: true } });
+
+            expect(response.statusCode).toBe(200);
+            expect(response.body.images[0]).toMatchObject({ flipX: true, flipY: true });
+        });
+
+        it("sets a crop rect that fits within the image (Issue 417)", async () => {
+            const { sceneId, image } = await createSceneWithImage({ width: 100, height: 50 });
+
+            const response = await request(app)
+                .patch(`/api/scenes/${sceneId}`)
+                .send({ updateImage: { id: image.id, cropX: 10, cropY: 5, cropWidth: 50, cropHeight: 25 } });
+
+            expect(response.statusCode).toBe(200);
+            expect(response.body.images[0]).toMatchObject({ cropX: 10, cropY: 5, cropWidth: 50, cropHeight: 25 });
+        });
+
+        it("rejects a crop rect that doesn't fit within the image", async () => {
+            const { sceneId, image } = await createSceneWithImage({ width: 100, height: 50 });
+
+            const response = await request(app)
+                .patch(`/api/scenes/${sceneId}`)
+                .send({ updateImage: { id: image.id, cropX: 60, cropY: 0, cropWidth: 50, cropHeight: 25 } });
+
+            expect(response.statusCode).toBe(400);
+            expect(response.body.error).toMatch(/fit within the image/i);
+        });
+
+        it("rejects an incomplete crop rect (all four fields required together)", async () => {
+            const { sceneId, image } = await createSceneWithImage();
+
+            const response = await request(app)
+                .patch(`/api/scenes/${sceneId}`)
+                .send({ updateImage: { id: image.id, cropX: 10, cropY: 5, cropWidth: 20 } });
+
+            expect(response.statusCode).toBe(400);
+        });
+
+        it("validates crop against a width/height changing in the same request", async () => {
+            const { sceneId, image } = await createSceneWithImage({ width: 100, height: 50 });
+
+            const response = await request(app).patch(`/api/scenes/${sceneId}`).send({
+                updateImage: { id: image.id, width: 40, cropX: 0, cropY: 0, cropWidth: 50, cropHeight: 25 },
+            });
+
+            expect(response.statusCode).toBe(400);
+        });
+
+        it("rejects an unknown field", async () => {
+            const { sceneId, image } = await createSceneWithImage();
+
+            const response = await request(app)
+                .patch(`/api/scenes/${sceneId}`)
+                .send({ updateImage: { id: image.id, src: "data:image/png;base64,EVIL" } });
+
+            expect(response.statusCode).toBe(400);
+        });
+
+        it("never lets updateImage change id or src", async () => {
+            const { sceneId, image } = await createSceneWithImage();
+
+            await request(app)
+                .patch(`/api/scenes/${sceneId}`)
+                .send({ updateImage: { id: image.id, x: 5 } });
+
+            const reloaded = await request(app).get(`/api/scenes/${sceneId}`);
+            expect(reloaded.body.images[0].id).toBe(image.id);
+            expect(reloaded.body.images[0].src).toBe(image.src);
+        });
+
+        it("keeps updates after the scene is reloaded", async () => {
+            const { sceneId, image } = await createSceneWithImage();
+            await request(app)
+                .patch(`/api/scenes/${sceneId}`)
+                .send({ updateImage: { id: image.id, rotation: 45 } });
+
+            const reloaded = await request(app).get(`/api/scenes/${sceneId}`);
+            expect(reloaded.body.images[0].rotation).toBe(45);
+        });
+
+        it("returns 404 when updating an image that doesn't exist", async () => {
+            const created = await createScene();
+            const response = await request(app)
+                .patch(`/api/scenes/${created.body.id}`)
+                .send({ updateImage: { id: crypto.randomUUID(), rotation: 10 } });
+
+            expect(response.statusCode).toBe(404);
+        });
+    });
+
+    // Issue #418: Remove an Image from a Scene
+    describe("PATCH /api/scenes/:sceneId with removeImageId - Issue 418", () => {
+        it("removes the requested image and leaves the others intact", async () => {
+            const created = await createScene();
+            const keep = validImage();
+            const remove = validImage();
+            await request(app).patch(`/api/scenes/${created.body.id}`).send({ image: keep });
+            await request(app).patch(`/api/scenes/${created.body.id}`).send({ image: remove });
+
+            const response = await request(app)
+                .patch(`/api/scenes/${created.body.id}`)
+                .send({ removeImageId: remove.id });
+
+            expect(response.statusCode).toBe(200);
+            expect(response.body.images).toEqual([keep]);
+        });
+
+        it("keeps the removal after the scene is reloaded", async () => {
+            const created = await createScene();
+            const image = validImage();
+            await request(app).patch(`/api/scenes/${created.body.id}`).send({ image });
+            await request(app).patch(`/api/scenes/${created.body.id}`).send({ removeImageId: image.id });
+
+            const reloaded = await request(app).get(`/api/scenes/${created.body.id}`);
+            expect(reloaded.body.images).toEqual([]);
+        });
+
+        it("is a no-op success when the image is already gone (safe to retry)", async () => {
+            const created = await createScene();
+            const image = validImage();
+            await request(app).patch(`/api/scenes/${created.body.id}`).send({ image });
+            await request(app).patch(`/api/scenes/${created.body.id}`).send({ removeImageId: image.id });
+
+            const response = await request(app)
+                .patch(`/api/scenes/${created.body.id}`)
+                .send({ removeImageId: image.id });
+
+            expect(response.statusCode).toBe(200);
+            expect(response.body.images).toEqual([]);
+        });
+
+        it("returns 404 when removing from an unknown scene", async () => {
+            const response = await request(app)
+                .patch(`/api/scenes/${UNKNOWN_ID}`)
+                .send({ removeImageId: crypto.randomUUID() });
+
+            expect(response.statusCode).toBe(404);
+        });
+    });
+
+    // Issue #419: Reorder Image Layers
+    describe("PATCH /api/scenes/:sceneId with reorderImageIds - Issue 419", () => {
+        it("reorders images to match the given id order", async () => {
+            const created = await createScene();
+            const first = validImage();
+            const second = validImage();
+            await request(app).patch(`/api/scenes/${created.body.id}`).send({ image: first });
+            await request(app).patch(`/api/scenes/${created.body.id}`).send({ image: second });
+
+            const response = await request(app)
+                .patch(`/api/scenes/${created.body.id}`)
+                .send({ reorderImageIds: [second.id, first.id] });
+
+            expect(response.statusCode).toBe(200);
+            expect(response.body.images).toEqual([second, first]);
+        });
+
+        it("keeps the new order after the scene is reloaded", async () => {
+            const created = await createScene();
+            const first = validImage();
+            const second = validImage();
+            await request(app).patch(`/api/scenes/${created.body.id}`).send({ image: first });
+            await request(app).patch(`/api/scenes/${created.body.id}`).send({ image: second });
+            await request(app)
+                .patch(`/api/scenes/${created.body.id}`)
+                .send({ reorderImageIds: [second.id, first.id] });
+
+            const reloaded = await request(app).get(`/api/scenes/${created.body.id}`);
+            expect(reloaded.body.images.map((img) => img.id)).toEqual([second.id, first.id]);
+        });
+
+        it("rejects an order that drops an existing image", async () => {
+            const created = await createScene();
+            const first = validImage();
+            const second = validImage();
+            await request(app).patch(`/api/scenes/${created.body.id}`).send({ image: first });
+            await request(app).patch(`/api/scenes/${created.body.id}`).send({ image: second });
+
+            const response = await request(app)
+                .patch(`/api/scenes/${created.body.id}`)
+                .send({ reorderImageIds: [first.id] });
+
+            expect(response.statusCode).toBe(400);
+
+            const reloaded = await request(app).get(`/api/scenes/${created.body.id}`);
+            expect(reloaded.body.images).toEqual([first, second]);
+        });
+
+        it("rejects an order that includes an id not on the scene", async () => {
+            const created = await createScene();
+            const first = validImage();
+            await request(app).patch(`/api/scenes/${created.body.id}`).send({ image: first });
+
+            const response = await request(app)
+                .patch(`/api/scenes/${created.body.id}`)
+                .send({ reorderImageIds: [first.id, crypto.randomUUID()] });
+
+            expect(response.statusCode).toBe(400);
+        });
+    });
+
     // Issue #424: Delete a Scene
     describe("DELETE /api/scenes/:sceneId - Issue 424", () => {
         it("deletes only the requested scene", async () => {

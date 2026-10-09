@@ -64,6 +64,44 @@ export function saveImageToScene(sceneId, image) {
     return request(scenePath(sceneId), { method: "PATCH", body: JSON.stringify({ image }) });
 }
 
+/**
+ * Partially updates an existing image's fields - position, size, rotation,
+ * flip, or crop (Issues #413-417). Only the given fields are touched.
+ * @param {string} sceneId
+ * @param {string} imageId
+ * @param {object} fields
+ * @returns {Promise<object>} The updated scene.
+ */
+export function updateSceneImage(sceneId, imageId, fields) {
+    return request(scenePath(sceneId), {
+        method: "PATCH",
+        body: JSON.stringify({ updateImage: { id: imageId, ...fields } }),
+    });
+}
+
+/**
+ * Removes one image from a scene by id (Issue #418). A retry after a prior
+ * success is always safe - the server treats "already gone" as success too.
+ * @param {string} sceneId
+ * @param {string} imageId
+ * @returns {Promise<object>} The updated scene.
+ */
+export function removeSceneImage(sceneId, imageId) {
+    return request(scenePath(sceneId), { method: "PATCH", body: JSON.stringify({ removeImageId: imageId }) });
+}
+
+/**
+ * Reorders a scene's images to match the given id order (Issue #419). The
+ * server rejects any order that isn't an exact permutation of the scene's
+ * current image ids.
+ * @param {string} sceneId
+ * @param {string[]} orderedIds
+ * @returns {Promise<object>} The updated scene.
+ */
+export function reorderSceneImages(sceneId, orderedIds) {
+    return request(scenePath(sceneId), { method: "PATCH", body: JSON.stringify({ reorderImageIds: orderedIds }) });
+}
+
 export function deleteScene(sceneId) {
     return request(scenePath(sceneId), { method: "DELETE" });
 }
@@ -104,9 +142,21 @@ const state = {
     fitToWidth: true,
     busy: false,
     selectedImageIndex: null,
+    cropMode: false,
 };
 
+function deselectImage() {
+    state.selectedImageIndex = null;
+    state.cropMode = false;
+}
+
 let dom = null;
+// Set by startImageDrag's mouseup once a real drag (not just a click) just
+// finished, so the canvas's own click handler (select/deselect toggle) knows
+// to skip itself for that click - browsers fire `click` after mouseup on the
+// same element regardless of how far the mouse moved in between, so without
+// this a move/resize drag would immediately deselect the image it just moved.
+let suppressNextClick = false;
 
 // Issues #411/#412: importing an image into a scene and persisting it. The
 // image is read as a base64 data: URL - that same string is both the immediate
@@ -225,9 +275,30 @@ function renderLibrary() {
     }
 }
 
+/**
+ * Shows the selected-image toolbar (reorder/rotate/flip/crop/remove) only
+ * while an image is actually selected: disables the reorder buttons at
+ * whichever end of the stack the selection is already at, and swaps the
+ * "Crop…" button for "Done"/"Reset crop" while actively editing a crop
+ * (Issue #417).
+ */
+function updateImageToolbar() {
+    const scene = state.active;
+    const index = state.selectedImageIndex;
+    const hasSelection = Boolean(scene) && index !== null && index >= 0 && index < scene.images.length;
+    dom.imageToolbar.hidden = !hasSelection;
+    if (!hasSelection) return;
+    dom.imageBackward.disabled = index === 0;
+    dom.imageForward.disabled = index === scene.images.length - 1;
+    dom.imageCropStart.hidden = state.cropMode;
+    dom.imageCropDone.hidden = !state.cropMode;
+    dom.imageCropReset.hidden = !state.cropMode;
+}
+
 function renderCanvas() {
     const scene = state.active;
     dom.canvas.replaceChildren();
+    updateImageToolbar();
     const isEmpty = scene.images.length === 0 && scene.annotations.length === 0;
     dom.canvasEmpty.hidden = !isEmpty;
     dom.canvas.hidden = isEmpty;
@@ -235,7 +306,10 @@ function renderCanvas() {
     dom.canvasNote.hidden = true;
     if (isEmpty) return;
 
-    const { svg, unsupported, width, height } = renderScene(scene, { selectedIndex: state.selectedImageIndex });
+    const { svg, unsupported, width, height } = renderScene(scene, {
+        selectedIndex: state.selectedImageIndex,
+        cropMode: state.cropMode,
+    });
     svg.setAttribute("aria-label", `Scene canvas for ${scene.name}`);
     if (state.fitToWidth) {
         svg.style.width = "100%";
@@ -269,7 +343,7 @@ function renderWorkspace() {
 
 function clearActiveScene() {
     state.active = null;
-    state.selectedImageIndex = null;
+    deselectImage();
     state.openRequest += 1;
     dom.workspace.removeAttribute("aria-busy");
     dom.workspaceLoading.hidden = true;
@@ -310,7 +384,7 @@ async function openScene(sceneId) {
         const scene = await getScene(sceneId);
         if (requestId !== state.openRequest) return;
         state.active = scene;
-        state.selectedImageIndex = null;
+        deselectImage();
         renderWorkspace();
         renderLibrary();
         announce(`Opened ${scene.name}.`);
@@ -341,7 +415,7 @@ async function handleCreate() {
         const scene = await createScene();
         state.openRequest += 1;
         state.active = scene;
-        state.selectedImageIndex = null;
+        deselectImage();
         await loadLibrary();
         setBusy(false);
         renderWorkspace();
@@ -501,6 +575,408 @@ async function retryImageSaves(sceneId, images) {
 }
 
 /**
+ * Removes one image from a scene, optimistically and persisted (Issue #418).
+ * Re-entrant by design so its own retry can just call it again: it always
+ * re-finds the image's current position before acting, which is what makes a
+ * restore-then-retry sequence work correctly.
+ * @param {string} sceneId
+ * @param {{id: string}} image
+ */
+async function performImageRemoval(sceneId, image) {
+    const isActiveScene = Boolean(state.active) && state.active.id === sceneId;
+    const index = isActiveScene ? state.active.images.findIndex((img) => img.id === image.id) : -1;
+
+    if (index !== -1) {
+        state.active.images.splice(index, 1);
+        if (state.selectedImageIndex === index) deselectImage();
+        renderWorkspace();
+    }
+    const summary = state.scenes.find((s) => s.id === sceneId);
+    if (summary) {
+        summary.imageCount = Math.max(0, summary.imageCount - 1);
+        renderLibrary();
+    }
+
+    try {
+        await removeSceneImage(sceneId, image.id);
+        hideWorkspaceError();
+    } catch {
+        if (state.active && state.active.id === sceneId && !state.active.images.some((img) => img.id === image.id)) {
+            state.active.images.splice(index === -1 ? state.active.images.length : index, 0, image);
+            renderWorkspace();
+        }
+        if (summary) {
+            summary.imageCount += 1;
+            renderLibrary();
+        }
+        showWorkspaceError("Could not remove the image. It has been restored - try again.", {
+            retry: () => performImageRemoval(sceneId, image),
+        });
+    }
+}
+
+function handleImageRemove() {
+    if (!state.active || state.selectedImageIndex === null) return;
+    const image = state.active.images[state.selectedImageIndex];
+    if (!image) return;
+    performImageRemoval(state.active.id, image);
+}
+
+/**
+ * Persists a field-level change already applied to `image` (the caller has
+ * already set the new values and rendered them - this just saves and handles
+ * failure). On failure, reverts exactly the touched fields back to `previous`
+ * and offers a retry that re-applies `fields` and tries again - used by both
+ * the button-driven updates below and by drag-release in initializeSceneEditor
+ * (Issues #413-417: position, resize, rotate, flip, crop all share this path).
+ * @param {string} sceneId
+ * @param {number} index - The image's index at the time of the change, used
+ *   to confirm it's still the same image object before reverting/re-rendering.
+ * @param {object} image
+ * @param {object} previous - The pre-change values for exactly the touched fields.
+ * @param {object} fields - The new values that were set, e.g. `{ rotation: 90 }`.
+ */
+async function persistImageFields(sceneId, index, image, previous, fields) {
+    try {
+        await updateSceneImage(sceneId, image.id, fields);
+        hideWorkspaceError();
+    } catch {
+        if (state.active && state.active.id === sceneId && state.active.images[index] === image) {
+            Object.assign(image, previous);
+            renderWorkspace();
+        }
+        showWorkspaceError("Could not save the change. Try again.", {
+            retry: () => {
+                if (state.active && state.active.id === sceneId && state.active.images[index] === image) {
+                    Object.assign(image, fields);
+                    renderWorkspace();
+                }
+                persistImageFields(sceneId, index, image, previous, fields);
+            },
+        });
+    }
+}
+
+/**
+ * Applies a field-level change to the selected image - optimistic locally,
+ * then persisted via persistImageFields. For button-driven changes (rotate
+ * stepper, flip) where nothing has been applied yet, unlike a drag which
+ * applies its own changes live frame-by-frame before calling
+ * persistImageFields directly at release.
+ * @param {object} fields - The new values to set, e.g. `{ rotation: 90 }`.
+ */
+function applySelectedImageUpdate(fields) {
+    if (!state.active || state.selectedImageIndex === null) return;
+    const scene = state.active;
+    const sceneId = scene.id;
+    const index = state.selectedImageIndex;
+    const image = scene.images[index];
+    if (!image) return;
+
+    const previous = {};
+    for (const key of Object.keys(fields)) previous[key] = image[key];
+    Object.assign(image, fields);
+    renderWorkspace();
+
+    persistImageFields(sceneId, index, image, previous, fields);
+}
+
+/**
+ * Rotates the selected image by a relative amount, normalized into [0, 360)
+ * (Issue #415). Stepper buttons only (±15°/±90°), not a free-drag handle.
+ * @param {number} deltaDegrees
+ */
+function rotateSelectedImage(deltaDegrees) {
+    if (!state.active || state.selectedImageIndex === null) return;
+    const image = state.active.images[state.selectedImageIndex];
+    if (!image) return;
+    const current = typeof image.rotation === "number" ? image.rotation : 0;
+    const next = ((current + deltaDegrees) % 360 + 360) % 360;
+    applySelectedImageUpdate({ rotation: next });
+}
+
+/**
+ * Toggles the selected image's flip state on one axis (Issue #416).
+ * @param {"horizontal" | "vertical"} axis
+ */
+function flipSelectedImage(axis) {
+    if (!state.active || state.selectedImageIndex === null) return;
+    const image = state.active.images[state.selectedImageIndex];
+    if (!image) return;
+    const field = axis === "horizontal" ? "flipX" : "flipY";
+    applySelectedImageUpdate({ [field]: !image[field] });
+}
+
+/**
+ * Swaps the selected image with its neighbor toward the front (direction=1)
+ * or back (direction=-1) of the paint order (Issue #419). No-op at either end
+ * of the stack - the toolbar also disables the button there, this is just the
+ * same guard for any other caller.
+ * @param {1 | -1} direction
+ */
+async function moveSelectedImage(direction) {
+    if (!state.active || state.selectedImageIndex === null) return;
+    const scene = state.active;
+    const sceneId = scene.id;
+    const index = state.selectedImageIndex;
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= scene.images.length) return;
+
+    const images = scene.images;
+    [images[index], images[targetIndex]] = [images[targetIndex], images[index]];
+    state.selectedImageIndex = targetIndex;
+    renderWorkspace();
+
+    try {
+        await reorderSceneImages(sceneId, images.map((img) => img.id));
+        hideWorkspaceError();
+    } catch {
+        if (state.active && state.active.id === sceneId) {
+            [images[index], images[targetIndex]] = [images[targetIndex], images[index]];
+            state.selectedImageIndex = index;
+            renderWorkspace();
+        }
+        showWorkspaceError("Could not reorder images. Try again.", {
+            retry: () => moveSelectedImage(direction),
+        });
+    }
+}
+
+// Issues #413/#414: dragging a selected image to move it, or dragging one of
+// its corner handles to resize it. Both read the SVG's current on-screen size
+// vs. its viewBox to convert mouse-pixel deltas into scene units - deltas
+// only, never absolute positions, so there's no dependency on the SVG's
+// screen offset, only its scale. This is what makes it testable without a
+// real browser: a test can set `svg.getBoundingClientRect` to a fixed value,
+// the same way existing tests mock `FileReader`/`Image` for things jsdom
+// can't do for real.
+const MIN_IMAGE_SIZE = 10;
+const DRAG_THRESHOLD = 2;
+const CORNER_GROWTH_SIGN = {
+    nw: { x: -1, y: -1 },
+    ne: { x: 1, y: -1 },
+    se: { x: 1, y: 1 },
+    sw: { x: -1, y: 1 },
+};
+
+function getSceneScale(svg) {
+    const rect = svg.getBoundingClientRect();
+    // Parsed from the attribute directly, not `.viewBox.baseVal` - jsdom's
+    // SVG support leaves that an empty stub, and parsing the attribute string
+    // works identically in a real browser too since renderScene always keeps
+    // it in sync via setAttribute.
+    const [, , vbWidth, vbHeight] = (svg.getAttribute("viewBox") || "0 0 0 0").split(" ").map(Number);
+    return {
+        x: rect.width ? vbWidth / rect.width : 1,
+        y: rect.height ? vbHeight / rect.height : 1,
+    };
+}
+
+/**
+ * Rotates a delta *vector* (not a point - no center needed) by -degrees, to
+ * convert a mouse-drag delta measured in global scene axes into the image's
+ * own local (unrotated) axes. Uses the same rotation convention as
+ * sceneCanvas.js's rotatePoints, just inverted and center-free.
+ */
+function unrotateVector(dx, dy, degrees) {
+    const radians = (degrees * Math.PI) / 180;
+    const cos = Math.cos(radians);
+    const sin = Math.sin(radians);
+    return { x: dx * cos + dy * sin, y: -dx * sin + dy * cos };
+}
+
+/**
+ * Starts a move-or-resize drag on the currently selected image. Moving
+ * updates x/y directly (translation is rotation-invariant). Resizing scales
+ * from the image's own center (which stays fixed regardless of rotation,
+ * matching how sceneCanvas.js already rotates images around their center) -
+ * the mouse delta is un-rotated into the image's local axes first so dragging
+ * a corner grows/shrinks the image along its own edges even when rotated,
+ * and width/height are scaled by the same factor so it's never distorted.
+ * @param {MouseEvent} event
+ * @param {SVGSVGElement} svg
+ * @param {string|null} corner - "nw"|"ne"|"se"|"sw" to resize, or null to move.
+ */
+function startImageDrag(event, svg, corner) {
+    const scene = state.active;
+    const index = state.selectedImageIndex;
+    const image = scene.images[index];
+    const sceneId = scene.id;
+    const scale = getSceneScale(svg);
+    const startClientX = event.clientX;
+    const startClientY = event.clientY;
+    const startX = image.x;
+    const startY = image.y;
+    const startWidth = image.width;
+    const startHeight = image.height;
+    const rotation = typeof image.rotation === "number" ? image.rotation : 0;
+    let didDrag = false;
+
+    function onMouseMove(moveEvent) {
+        const dxClient = moveEvent.clientX - startClientX;
+        const dyClient = moveEvent.clientY - startClientY;
+        if (Math.abs(dxClient) > DRAG_THRESHOLD || Math.abs(dyClient) > DRAG_THRESHOLD) didDrag = true;
+        const globalDx = dxClient * scale.x;
+        const globalDy = dyClient * scale.y;
+
+        if (corner) {
+            const sign = CORNER_GROWTH_SIGN[corner];
+            const local = unrotateVector(globalDx, globalDy, rotation);
+            const minScale = MIN_IMAGE_SIZE / Math.min(startWidth, startHeight);
+            const scaleFactor = Math.max(minScale, (startWidth + sign.x * local.x) / startWidth);
+            const newWidth = startWidth * scaleFactor;
+            const newHeight = startHeight * scaleFactor;
+            const cx = startX + startWidth / 2;
+            const cy = startY + startHeight / 2;
+            image.width = newWidth;
+            image.height = newHeight;
+            image.x = cx - newWidth / 2;
+            image.y = cy - newHeight / 2;
+        } else {
+            image.x = startX + globalDx;
+            image.y = startY + globalDy;
+        }
+        renderWorkspace();
+    }
+
+    function onMouseUp() {
+        document.removeEventListener("mousemove", onMouseMove);
+        document.removeEventListener("mouseup", onMouseUp);
+        suppressNextClick = didDrag;
+        if (!didDrag) return;
+
+        const fields = corner
+            ? { x: image.x, y: image.y, width: image.width, height: image.height }
+            : { x: image.x, y: image.y };
+        const previous = corner
+            ? { x: startX, y: startY, width: startWidth, height: startHeight }
+            : { x: startX, y: startY };
+        persistImageFields(sceneId, index, image, previous, fields);
+    }
+
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+}
+
+// Issue #417: non-destructive cropping. The crop rect lives in the image's
+// own local box space (0..width, 0..height); absent fields mean "fully
+// visible" everywhere this is read, matching sceneCanvas.js's cropRectFor.
+const MIN_CROP_SIZE = 10;
+
+function currentCropRect(image) {
+    const hasCrop = [image.cropX, image.cropY, image.cropWidth, image.cropHeight]
+        .every((value) => typeof value === "number" && Number.isFinite(value));
+    return hasCrop
+        ? { x: image.cropX, y: image.cropY, width: image.cropWidth, height: image.cropHeight }
+        : { x: 0, y: 0, width: image.width, height: image.height };
+}
+
+/**
+ * Computes a new crop rect from a corner drag, anchored at the OPPOSITE
+ * corner of the crop rect itself - unlike resize's center anchor, this is
+ * the standard crop-tool behavior, since there's no reason a crop needs to
+ * stay centered. Clamped to stay within the image's own local box and never
+ * shrink below MIN_CROP_SIZE.
+ * @param {"nw"|"ne"|"se"|"sw"} corner
+ * @param {{x: number, y: number, width: number, height: number}} start - crop rect at drag-start.
+ * @param {{x: number, y: number}} localDelta - mouse delta, already un-rotated.
+ * @param {number} imageWidth
+ * @param {number} imageHeight
+ */
+function computeCropRect(corner, start, localDelta, imageWidth, imageHeight) {
+    const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+    let { x, y, width, height } = start;
+
+    if (corner === "se" || corner === "ne") {
+        width = clamp(start.width + localDelta.x, MIN_CROP_SIZE, imageWidth - start.x);
+    } else {
+        const rightEdge = start.x + start.width;
+        x = clamp(start.x + localDelta.x, 0, rightEdge - MIN_CROP_SIZE);
+        width = rightEdge - x;
+    }
+
+    if (corner === "se" || corner === "sw") {
+        height = clamp(start.height + localDelta.y, MIN_CROP_SIZE, imageHeight - start.y);
+    } else {
+        const bottomEdge = start.y + start.height;
+        y = clamp(start.y + localDelta.y, 0, bottomEdge - MIN_CROP_SIZE);
+        height = bottomEdge - y;
+    }
+
+    return { x, y, width, height };
+}
+
+/**
+ * Starts a crop-rect drag on the selected image's currently-grabbed corner
+ * handle (Issue #417) - the same scale/un-rotate approach as startImageDrag.
+ * @param {MouseEvent} event
+ * @param {SVGSVGElement} svg
+ * @param {"nw"|"ne"|"se"|"sw"} corner
+ */
+function startCropDrag(event, svg, corner) {
+    const scene = state.active;
+    const index = state.selectedImageIndex;
+    const image = scene.images[index];
+    const sceneId = scene.id;
+    const scale = getSceneScale(svg);
+    const startClientX = event.clientX;
+    const startClientY = event.clientY;
+    const startCrop = currentCropRect(image);
+    const rotation = typeof image.rotation === "number" ? image.rotation : 0;
+    let didDrag = false;
+
+    function onMouseMove(moveEvent) {
+        const dxClient = moveEvent.clientX - startClientX;
+        const dyClient = moveEvent.clientY - startClientY;
+        if (Math.abs(dxClient) > DRAG_THRESHOLD || Math.abs(dyClient) > DRAG_THRESHOLD) didDrag = true;
+        const local = unrotateVector(dxClient * scale.x, dyClient * scale.y, rotation);
+
+        const next = computeCropRect(corner, startCrop, local, image.width, image.height);
+        image.cropX = next.x;
+        image.cropY = next.y;
+        image.cropWidth = next.width;
+        image.cropHeight = next.height;
+        renderWorkspace();
+    }
+
+    function onMouseUp() {
+        document.removeEventListener("mousemove", onMouseMove);
+        document.removeEventListener("mouseup", onMouseUp);
+        suppressNextClick = didDrag;
+        if (!didDrag) return;
+
+        const fields = { cropX: image.cropX, cropY: image.cropY, cropWidth: image.cropWidth, cropHeight: image.cropHeight };
+        const previous = { cropX: startCrop.x, cropY: startCrop.y, cropWidth: startCrop.width, cropHeight: startCrop.height };
+        persistImageFields(sceneId, index, image, previous, fields);
+    }
+
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+}
+
+/** Enters crop-editing mode for the selected image (Issue #417). */
+function enterCropMode() {
+    if (!state.active || state.selectedImageIndex === null) return;
+    state.cropMode = true;
+    renderCanvas();
+}
+
+/** Exits crop-editing mode - a pure view toggle, since any actual crop
+ * adjustment was already persisted at the end of its own drag gesture. */
+function exitCropMode() {
+    state.cropMode = false;
+    renderCanvas();
+}
+
+/** Clears the selected image's crop back to fully visible, persisted immediately. */
+function resetSelectedImageCrop() {
+    if (!state.active || state.selectedImageIndex === null) return;
+    const image = state.active.images[state.selectedImageIndex];
+    if (!image) return;
+    applySelectedImageUpdate({ cropX: 0, cropY: 0, cropWidth: image.width, cropHeight: image.height });
+}
+
+/**
  * Imports one or more image files into the currently open scene as new,
  * unselected image objects, and persists each one (Issues #411/#412).
  * Unsupported or oversized files are skipped with a combined error message
@@ -637,6 +1113,19 @@ export function initializeSceneEditor(root = document) {
         importButtonEmpty: $("scene-canvas-empty-import"),
         importInput: $("scene-import-input"),
         importError: $("scene-import-error"),
+        imageToolbar: $("scene-image-toolbar"),
+        imageForward: $("scene-image-forward"),
+        imageBackward: $("scene-image-backward"),
+        imageRemove: $("scene-image-remove"),
+        imageRotateLeft90: $("scene-image-rotate-left-90"),
+        imageRotateLeft15: $("scene-image-rotate-left-15"),
+        imageRotateRight15: $("scene-image-rotate-right-15"),
+        imageRotateRight90: $("scene-image-rotate-right-90"),
+        imageFlipHorizontal: $("scene-image-flip-horizontal"),
+        imageFlipVertical: $("scene-image-flip-vertical"),
+        imageCropStart: $("scene-image-crop-start"),
+        imageCropDone: $("scene-image-crop-done"),
+        imageCropReset: $("scene-image-crop-reset"),
     };
     if (!dom.editorView || !dom.enterButton) return;
 
@@ -671,17 +1160,62 @@ export function initializeSceneEditor(root = document) {
         event.target.value = "";
     });
     dom.canvas.addEventListener("click", (event) => {
+        if (suppressNextClick) {
+            suppressNextClick = false;
+            return;
+        }
         const target = event.target.closest("[data-scene-image-index]");
         const index = target ? Number(target.dataset.sceneImageIndex) : null;
-        state.selectedImageIndex = state.selectedImageIndex === index ? null : index;
+        if (state.selectedImageIndex === index) {
+            deselectImage();
+        } else {
+            state.selectedImageIndex = index;
+        }
         renderCanvas();
     });
     dom.canvas.addEventListener("keydown", (event) => {
         if (event.key === "Escape" && state.selectedImageIndex !== null) {
-            state.selectedImageIndex = null;
+            deselectImage();
             renderCanvas();
         }
     });
+    dom.canvas.addEventListener("mousedown", (event) => {
+        if (!state.active || state.selectedImageIndex === null) return;
+        const image = state.active.images[state.selectedImageIndex];
+        if (!image) return;
+
+        const handle = event.target.closest("[data-corner]");
+        const svg = dom.canvas.querySelector("svg");
+        if (!svg) return;
+
+        if (state.cropMode) {
+            if (!handle) return;
+            event.preventDefault();
+            startCropDrag(event, svg, handle.dataset.corner);
+            return;
+        }
+
+        const imageNode = event.target.closest("[data-scene-image-index]");
+        const isSelectedImageNode =
+            imageNode && Number(imageNode.dataset.sceneImageIndex) === state.selectedImageIndex;
+        if (!handle && !isSelectedImageNode) return;
+
+        event.preventDefault();
+        startImageDrag(event, svg, handle ? handle.dataset.corner : null);
+    });
+
+    dom.imageForward.addEventListener("click", () => moveSelectedImage(1));
+    dom.imageBackward.addEventListener("click", () => moveSelectedImage(-1));
+    dom.imageRemove.addEventListener("click", handleImageRemove);
+    dom.imageCropStart.addEventListener("click", enterCropMode);
+    dom.imageCropDone.addEventListener("click", exitCropMode);
+    dom.imageCropReset.addEventListener("click", resetSelectedImageCrop);
+    dom.imageRotateLeft90.addEventListener("click", () => rotateSelectedImage(-90));
+    dom.imageRotateLeft15.addEventListener("click", () => rotateSelectedImage(-15));
+    dom.imageRotateRight15.addEventListener("click", () => rotateSelectedImage(15));
+    dom.imageRotateRight90.addEventListener("click", () => rotateSelectedImage(90));
+    dom.imageFlipHorizontal.addEventListener("click", () => flipSelectedImage("horizontal"));
+    dom.imageFlipVertical.addEventListener("click", () => flipSelectedImage("vertical"));
 
     renderWorkspace();
 }

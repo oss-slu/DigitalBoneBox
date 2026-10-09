@@ -93,6 +93,70 @@ function normalizeImage(image) {
     };
 }
 
+const UPDATABLE_IMAGE_FIELDS = [
+    "x", "y", "width", "height", "rotation", "flipX", "flipY", "cropX", "cropY", "cropWidth", "cropHeight",
+];
+const CROP_FIELDS = ["cropX", "cropY", "cropWidth", "cropHeight"];
+
+/**
+ * Validates and applies a partial update to an already-saved image (Issues
+ * #413-417: position, resize, rotate, flip, crop). Only the keys present in
+ * `fields` are touched - everything else on `existingImage` (including `id`
+ * and `src`, which this never accepts) carries over unchanged. Validation
+ * runs against the *merged* result, not the raw patch in isolation, because
+ * some constraints (the crop rect fitting within width/height) depend on the
+ * final value of a field that might be changing in the very same request.
+ * @param {object} existingImage
+ * @param {object} fields
+ * @returns {{ error: string } | { image: object }}
+ */
+function applyImagePatch(existingImage, fields) {
+    if (!fields || typeof fields !== "object") {
+        return { error: "fields must be an object" };
+    }
+    const unknownField = Object.keys(fields).find((key) => !UPDATABLE_IMAGE_FIELDS.includes(key));
+    if (unknownField) {
+        return { error: `Unknown image field: ${unknownField}` };
+    }
+
+    const merged = { ...existingImage, ...fields };
+
+    if (![merged.x, merged.y, merged.width, merged.height].every(isFiniteNumber)) {
+        return { error: "x, y, width, and height must be numbers" };
+    }
+    if (merged.width <= 0 || merged.height <= 0) {
+        return { error: "width and height must be greater than 0" };
+    }
+    if (merged.rotation !== undefined && !isFiniteNumber(merged.rotation)) {
+        return { error: "rotation must be a number" };
+    }
+    if (merged.flipX !== undefined && typeof merged.flipX !== "boolean") {
+        return { error: "flipX must be a boolean" };
+    }
+    if (merged.flipY !== undefined && typeof merged.flipY !== "boolean") {
+        return { error: "flipY must be a boolean" };
+    }
+
+    const hasCropField = CROP_FIELDS.some((key) => merged[key] !== undefined);
+    if (hasCropField) {
+        if (!CROP_FIELDS.every((key) => isFiniteNumber(merged[key]))) {
+            return { error: "cropX, cropY, cropWidth, and cropHeight must all be numbers when cropping" };
+        }
+        if (merged.cropWidth <= 0 || merged.cropHeight <= 0) {
+            return { error: "cropWidth and cropHeight must be greater than 0" };
+        }
+        if (
+            merged.cropX < 0 || merged.cropY < 0 ||
+            merged.cropX + merged.cropWidth > merged.width ||
+            merged.cropY + merged.cropHeight > merged.height
+        ) {
+            return { error: "The crop area must fit within the image" };
+        }
+    }
+
+    return { image: merged };
+}
+
 function toSummary(scene) {
     return {
         id: scene.id,
@@ -397,13 +461,18 @@ function createScenesRouter(store = resolveSceneStore()) {
 
     /**
      * Updates a scene. Supports renaming (empty names rejected, duplicates return
-     * 409 - Issue #423) and/or adding one newly imported image (validated and
-     * upserted by id so a retried request can't create a duplicate - Issue #412).
-     * At least one of `name`/`image` must be present in the body. The whole
-     * read-modify-write runs under a per-scene lock (PR #493 review) so a
-     * rename and an image save racing each other can't silently clobber one
-     * another - without it, both would read the same snapshot and whichever
-     * wrote back last would discard the other's change entirely.
+     * 409 - Issue #423), adding one newly imported image (validated and upserted
+     * by id so a retried request can't create a duplicate - Issue #412), updating
+     * an existing image's position/size/rotation/flip/crop (`updateImage` - Issues
+     * #413-417), removing one image by id (`removeImageId` - a no-op if already
+     * gone, so a retry is always safe - Issue #418), and reordering images
+     * (`reorderImageIds` - must be a permutation of the scene's current image ids
+     * - Issue #419). At least one of these fields must be present in the body.
+     * The whole read-modify-write
+     * runs under a per-scene lock (PR #493 review) so concurrent updates (e.g. a
+     * rename racing an image save) can't silently clobber one another - without
+     * it, both would read the same snapshot and whichever wrote back last would
+     * discard the other's change entirely.
      */
     router.patch("/:sceneId", async (req, res) => {
         const { sceneId } = req.params;
@@ -411,8 +480,17 @@ function createScenesRouter(store = resolveSceneStore()) {
             if (!isValidSceneId(sceneId)) {
                 return res.status(400).json({ error: "Invalid sceneId" });
             }
-            if (!req.body || (req.body.name === undefined && req.body.image === undefined)) {
-                return res.status(400).json({ error: "name or image is required" });
+            const hasKnownField = req.body && (
+                req.body.name !== undefined ||
+                req.body.image !== undefined ||
+                req.body.updateImage !== undefined ||
+                req.body.removeImageId !== undefined ||
+                req.body.reorderImageIds !== undefined
+            );
+            if (!hasKnownField) {
+                return res.status(400).json({
+                    error: "name, image, updateImage, removeImageId, or reorderImageIds is required",
+                });
             }
 
             await store.withLock(sceneId, async () => {
@@ -459,6 +537,45 @@ function createScenesRouter(store = resolveSceneStore()) {
                     }
                 }
 
+                if (req.body.updateImage !== undefined) {
+                    const { id, ...fields } = req.body.updateImage || {};
+                    const target = scene.images.find((img) => img.id === id);
+                    if (!target) {
+                        res.status(404).json({ error: "Image not found" });
+                        return;
+                    }
+                    const result = applyImagePatch(target, fields);
+                    if (result.error) {
+                        res.status(400).json({ error: result.error });
+                        return;
+                    }
+                    Object.assign(target, result.image);
+                    changed = true;
+                }
+
+                if (req.body.removeImageId !== undefined) {
+                    const before = scene.images.length;
+                    scene.images = scene.images.filter((img) => img.id !== req.body.removeImageId);
+                    if (scene.images.length !== before) {
+                        changed = true;
+                    }
+                }
+
+                if (req.body.reorderImageIds !== undefined) {
+                    const ids = req.body.reorderImageIds;
+                    const currentIds = scene.images.map((img) => img.id);
+                    const isSamePermutation =
+                        Array.isArray(ids) &&
+                        ids.length === currentIds.length &&
+                        [...ids].sort().join() === [...currentIds].sort().join();
+                    if (!isSamePermutation) {
+                        res.status(400).json({ error: "reorderImageIds must match the scene's current images" });
+                        return;
+                    }
+                    scene.images = ids.map((id) => scene.images.find((img) => img.id === id));
+                    changed = true;
+                }
+
                 if (changed) {
                     scene.updatedAt = new Date().toISOString();
                     await store.save(scene);
@@ -501,6 +618,7 @@ module.exports = {
     isValidSceneId,
     normalizeSceneName,
     normalizeImage,
+    applyImagePatch,
     DEFAULT_SCENE_NAME,
     MAX_IMAGE_SRC_LENGTH,
     MAX_SCENE_IMAGES_TOTAL_LENGTH,
