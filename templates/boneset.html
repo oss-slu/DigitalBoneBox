@@ -217,7 +217,24 @@
                                 <p id="scene-rename-error" class="scene-field-error" hidden></p>
                             </form>
 
+                            <form id="scene-import-form" class="scene-import-form" novalidate hidden>
+                                <label for="scene-import-select">Add the images from an existing bone</label>
+                                <div class="scene-rename-row">
+                                    <select id="scene-import-select" disabled aria-describedby="scene-import-error">
+                                        <option value="">Loading bones&hellip;</option>
+                                    </select>
+                                    <button id="scene-import-submit" type="submit" class="scene-btn scene-btn-primary" disabled>Import</button>
+                                    <button id="scene-import-cancel" type="button" class="scene-btn scene-btn-secondary">Cancel</button>
+                                </div>
+                                <fieldset id="scene-import-images" class="scene-import-images" hidden>
+                                    <legend>Images to import</legend>
+                                    <div id="scene-import-image-list" class="scene-import-image-list"></div>
+                                </fieldset>
+                                <p id="scene-import-error" class="scene-field-error" hidden></p>
+                            </form>
+                            
                             <div class="scene-actions">
+                                <button id="scene-import-toggle" type="button" class="scene-btn scene-btn-primary" aria-expanded="false" aria-controls="scene-import-form">Import bone images</button>
                                 <button id="scene-fit-toggle" type="button" class="scene-btn scene-btn-secondary">Show actual size</button>
                                 <button id="scene-rename" type="button" class="scene-btn scene-btn-secondary">Rename</button>
                                 <button id="scene-delete" type="button" class="scene-btn scene-btn-danger">Delete</button>
@@ -227,7 +244,7 @@
                         <div class="scene-canvas-frame">
                             <div id="scene-canvas-empty" class="scene-empty scene-canvas-empty">
                                 <p><strong>This scene is blank.</strong></p>
-                                <p>Images and annotations added to this scene will appear here.</p>
+                                <p>Images and annotations added to this scene will appear here. Use <strong>Import bone images</strong> to start from an existing bone.</p>
                             </div>
                             <div id="scene-canvas" class="scene-canvas" role="region" aria-label="Scene canvas" tabindex="0" hidden></div>
                         </div>
