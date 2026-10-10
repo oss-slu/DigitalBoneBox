@@ -67,10 +67,16 @@ function createFakeBackend() {
         if (url === "/api/scenes/scene-1/import-legacy" && method === "POST") {
             const chosen = ILIUM_IMAGES.filter((image) => body.filenames.includes(image.src.split("/").pop()));
             scene.images.push(...chosen);
+            const include = body.annotations || {};
+            const importedAnnotations = { labels: include.labels ? 6 : 0, lines: include.labels ? 9 : 0, regions: include.regions ? 4 : 0 };
+            const warnings = include.regions
+                ? [{ item: "colored regions", reason: "Older format: positions may differ slightly" }]
+                : [];
             return respond(200, {
                 scene,
                 imported: { boneId: body.boneId, name: "Ilium", count: chosen.length },
-                warnings: [],
+                importedAnnotations,
+                warnings,
             });
         }
         return respond(404, { error: "Not found" });
@@ -157,9 +163,14 @@ describe("Scene editor: import bone images - Issue 466", () => {
         expect(backend.calls).toContainEqual({
             method: "POST",
             url: "/api/scenes/scene-1/import-legacy",
-            body: { boneId: "ilium", filenames: ["ilium_image1.jpg", "ilium_image2.jpg"] },
+            body: {
+                boneId: "ilium",
+                filenames: ["ilium_image1.jpg", "ilium_image2.jpg"],
+                annotations: { labels: true, regions: true },
+            },
         });
-        await waitFor(() => expect($("scene-editor-status").textContent).toBe("Imported 2 images from Ilium."));
+        await waitFor(() => expect($("scene-editor-status").textContent)
+            .toBe("Imported 2 images and 19 annotations from Ilium. 1 import note below."));
     });
 
     it("imports only the selected image", async () => {
@@ -171,7 +182,7 @@ describe("Scene editor: import bone images - Issue 466", () => {
 
         await waitFor(() => expect($("scene-canvas").querySelectorAll("image")).toHaveLength(1));
         expect(backend.calls.find((call) => call.url.endsWith("/import-legacy")).body)
-            .toEqual({ boneId: "ilium", filenames: ["ilium_image2.jpg"] });
+            .toEqual({ boneId: "ilium", filenames: ["ilium_image2.jpg"], annotations: { labels: true, regions: true } });
     });
 
     it("explains when the chosen bone has no images", async () => {
@@ -195,5 +206,51 @@ describe("Scene editor: import bone images - Issue 466", () => {
         expect($("scene-import-error").textContent).toBe("Choose at least one image to import.");
 
         expect(backend.calls.some((call) => call.url.endsWith("/import-legacy"))).toBe(false);
+    });
+});
+
+describe("Scene editor: import labels, pointer lines, and colored regions - Issue 467", () => {
+    it("offers labels and colored regions, both selected, once a bone is chosen", async () => {
+        await openImportForm();
+        expect($("scene-import-extras").hidden).toBe(true);
+
+        await chooseBone("ilium");
+        await waitFor(() => expect($("scene-import-extras").hidden).toBe(false));
+        expect($("scene-import-labels").checked).toBe(true);
+        expect($("scene-import-regions").checked).toBe(true);
+    });
+
+    it("sends only the selected kinds of annotation", async () => {
+        await openImportForm();
+        await chooseBone("ilium");
+        await waitFor(() => expect(imageChoices()).toHaveLength(2));
+        $("scene-import-labels").checked = false;
+        $("scene-import-form").requestSubmit();
+
+        await waitFor(() => expect(backend.calls.some((call) => call.url.endsWith("/import-legacy"))).toBe(true));
+        expect(backend.calls.find((call) => call.url.endsWith("/import-legacy")).body.annotations)
+            .toEqual({ labels: false, regions: true });
+    });
+
+    it("shows import notes instead of hiding what couldn't be converted exactly", async () => {
+        await openImportForm();
+        await chooseBone("ilium");
+        await waitFor(() => expect(imageChoices()).toHaveLength(2));
+        $("scene-import-form").requestSubmit();
+
+        await waitFor(() => expect($("scene-canvas-note").hidden).toBe(false));
+        expect($("scene-canvas-note").textContent)
+            .toBe("Import notes: colored regions: Older format: positions may differ slightly.");
+    });
+
+    it("imports images only when both boxes are cleared", async () => {
+        await openImportForm();
+        await chooseBone("ilium");
+        await waitFor(() => expect(imageChoices()).toHaveLength(2));
+        $("scene-import-labels").checked = false;
+        $("scene-import-regions").checked = false;
+        $("scene-import-form").requestSubmit();
+
+        await waitFor(() => expect($("scene-editor-status").textContent).toBe("Imported 2 images from Ilium."));
     });
 });

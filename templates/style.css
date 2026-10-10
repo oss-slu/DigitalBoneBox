@@ -2847,6 +2847,21 @@ button:disabled {
     object-fit: contain;
 }
 
+.scene-import-extras {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-4);
+}
+
+.scene-import-form .scene-import-option {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    font-weight: 400;
+    cursor: pointer;
+}
+
+
 .scene-rename-row select {
     flex: 1 1 240px;
     min-width: 0;

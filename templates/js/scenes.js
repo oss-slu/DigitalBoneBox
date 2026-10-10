@@ -58,16 +58,21 @@ export function deleteScene(sceneId) {
 }
 
 /**
- * Adds an existing bone's images to a scene. Issue #466.
+ * Adds an existing bone's images, and optionally its annotations, to a scene. Issues #466, #467.
  * @param {string} sceneId
  * @param {string} boneId
  * @param {string[]} [filenames] which of the bone's images to add (default: all)
- * @returns {Promise<{ scene: object, imported: { boneId: string, name: string, count: number }, warnings: object[] }>}
+ * @param {{ labels?: boolean, regions?: boolean }} [annotations] which annotations to add (default: none)
+ * @returns {Promise<{ scene: object, imported: { boneId: string, name: string, count: number },
+ *   importedAnnotations?: { labels: number, lines: number, regions: number }, warnings: object[] }>}
  */
-export function importLegacyImages(sceneId, boneId, filenames) {
+export function importLegacyImages(sceneId, boneId, filenames, annotations) {
+    const body = { boneId };
+    if (filenames) body.filenames = filenames;
+    if (annotations) body.annotations = annotations;
     return request(`${scenePath(sceneId)}/import-legacy`, {
         method: "POST",
-        body: JSON.stringify(filenames ? { boneId, filenames } : { boneId }),
+        body: JSON.stringify(body),
     });
 }
 
@@ -481,6 +486,7 @@ function clearImageChoices() {
     state.importRequest += 1;
     dom.importImageList.replaceChildren();
     dom.importImages.hidden = true;
+    if (dom.importExtras) dom.importExtras.hidden = true;
 }
 
 function hideImportForm() {
@@ -489,6 +495,10 @@ function hideImportForm() {
     dom.importError.hidden = true;
     dom.importSelect.value = "";
     clearImageChoices();
+    if (dom.importLabels) {
+        dom.importLabels.checked = true;
+        dom.importRegions.checked = true;
+    }
     dom.importToggle.setAttribute("aria-expanded", "false");
 }
 
@@ -522,6 +532,7 @@ function renderImageChoices(images) {
         dom.importImageList.append(choice);
     }
     dom.importImages.hidden = false;
+    if (dom.importExtras) dom.importExtras.hidden = false;
 }
 
 async function handleImportBoneChange() {
@@ -588,18 +599,29 @@ async function handleImport(event) {
     dom.importError.hidden = true;
     announce(`Importing images from ${label}\u2026`);
     try {
-        const { scene, imported, warnings } = await importLegacyImages(state.active.id, boneId, filenames);
+        const annotations = dom.importLabels
+            ? { labels: dom.importLabels.checked, regions: dom.importRegions.checked }
+            : undefined;
+        const { scene, imported, importedAnnotations, warnings } =
+            await importLegacyImages(state.active.id, boneId, filenames, annotations);
         state.active = scene;
         setBusy(false);
         hideImportForm();
         renderWorkspace();
         await loadLibrary();
 
-        let message = `Imported ${plural(imported.count, "image")} from ${imported.name}.`;
+        const annotationCount = importedAnnotations
+            ? importedAnnotations.labels + importedAnnotations.lines + importedAnnotations.regions
+            : 0;
+        let message = annotationCount > 0
+            ? `Imported ${plural(imported.count, "image")} and ${plural(annotationCount, "annotation")} from ${imported.name}.`
+            : `Imported ${plural(imported.count, "image")} from ${imported.name}.`;
         if (warnings && warnings.length > 0) {
-            message += ` ${plural(warnings.length, "image")} couldn't be imported.`;
+            message += ` ${plural(warnings.length, "import note")} below.`;
             dom.canvasNote.hidden = false;
-            dom.canvasNote.textContent = `${message} Skipped: ${warnings.map((w) => `${w.filename} (${w.reason})`).join(", ")}.`;
+            dom.canvasNote.textContent = `Import notes: ${warnings
+                .map((w) => `${w.filename || w.item}: ${w.reason}`)
+                .join("; ")}.`;
         }
         announce(message);
         dom.importToggle.focus();
@@ -681,6 +703,9 @@ export function initializeSceneEditor(root = document) {
         importError: $("scene-import-error"),
         importImages: $("scene-import-images"),
         importImageList: $("scene-import-image-list"),
+        importExtras: $("scene-import-extras"),
+        importLabels: $("scene-import-labels"),
+        importRegions: $("scene-import-regions"),
     };
     if (!dom.editorView || !dom.enterButton) return;
 
