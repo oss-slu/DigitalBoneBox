@@ -6,6 +6,10 @@ const crypto = require("crypto");
 const fs = require("fs").promises;
 const path = require("path");
 const { buildLegacyImages, isValidBoneId, nextRowY, LegacyImportError } = require("./legacyImport");
+const { buildLegacyAnnotations } = require("./legacyAnnotations");
+
+const MAX_IMPORT_LOG_ENTRIES = 50;
+const MAX_LOGGED_WARNINGS = 100;
 
 const DEFAULT_SCENE_NAME = "Untitled Scene";
 const MAX_SCENE_NAME_LENGTH = 100;
@@ -313,8 +317,11 @@ function createScenesRouter(store = resolveSceneStore(), options = {}) {
 
     /**
      * Imports an existing bone's images into a scene. Issue #466.
-     * Body: { boneId, filenames? }. `filenames` selects which of the bone's images
-     * to import (default: all of them). Images are added on a new row below the scene's existing
+     * Body: { boneId, filenames?, annotations? }. `filenames` selects which of the bone's images
+     * to import (default: all of them). `annotations` ({ labels, regions }, Issue #467) also imports
+     * the bone's labels and pointer lines and/or colored regions (default: none).
+     * Every import is recorded in the scene's importLog, including anything that couldn't be
+     * converted. Images are added on a new row below the scene's existing
      * images, in the order the viewer shows them. Images that can't be imported
      * are listed in `warnings`; if none can be imported the scene is unchanged.
      */
@@ -332,6 +339,16 @@ function createScenesRouter(store = resolveSceneStore(), options = {}) {
         );
         if (!validFilenames) {
             return res.status(400).json({ error: "filenames must be a non-empty list of image file names" });
+        }
+        const include = req.body ? req.body.annotations : undefined;
+        const validInclude = include === undefined || (
+            include !== null &&
+            typeof include === "object" &&
+            !Array.isArray(include) &&
+            Object.entries(include).every(([key, value]) => ["labels", "regions"].includes(key) && typeof value === "boolean")
+        );
+        if (!validInclude) {
+            return res.status(400).json({ error: "annotations must be an object like { labels: true, regions: true }" });
         }
 
         try {
@@ -352,13 +369,30 @@ function createScenesRouter(store = resolveSceneStore(), options = {}) {
                 });
             }
 
+            const annotationResult = await buildLegacyAnnotations(boneId, result.images, {
+                include: include || {},
+                allImagesImported: result.images.length === result.totalImages,
+                annotationsDir: options.legacyContent && options.legacyContent.annotationsDir,
+            });
+            const warnings = [...result.warnings, ...annotationResult.warnings];
+            const now = new Date().toISOString();
+
             scene.images = [...(scene.images || []), ...result.images];
-            scene.updatedAt = new Date().toISOString();
+            scene.annotations = [...(scene.annotations || []), ...annotationResult.annotations];
+            scene.importLog = [...(scene.importLog || []), {
+                at: now,
+                boneId: result.boneId,
+                images: result.images.length,
+                annotations: annotationResult.counts,
+                warnings: warnings.slice(0, MAX_LOGGED_WARNINGS),
+            }].slice(-MAX_IMPORT_LOG_ENTRIES);
+            scene.updatedAt = now;
             await store.save(scene);
             res.json({
                 scene,
                 imported: { boneId: result.boneId, name: result.name, count: result.images.length },
-                warnings: result.warnings,
+                importedAnnotations: annotationResult.counts,
+                warnings,
             });
         } catch (error) {
             if (error instanceof LegacyImportError) {

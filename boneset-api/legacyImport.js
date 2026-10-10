@@ -138,6 +138,7 @@ async function buildLegacyImages(boneId, options = {}) {
                 type: "legacy-image",
                 boneId,
                 filename,
+                index: boneImages.indexOf(filename),
                 naturalWidth: size.width,
                 naturalHeight: size.height,
             },
@@ -145,7 +146,7 @@ async function buildLegacyImages(boneId, options = {}) {
         x += fitted.width + IMAGE_GAP;
     }
 
-    return { boneId, name: description.name || boneId, images, warnings };
+    return { boneId, name: description.name || boneId, images, warnings, totalImages: boneImages.length };
 }
 
 module.exports = {
