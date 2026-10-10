@@ -5,6 +5,7 @@ const rateLimit = require("express-rate-limit");
 const crypto = require("crypto");
 const fs = require("fs").promises;
 const path = require("path");
+const { buildLegacyImages, isValidBoneId, nextRowY, LegacyImportError } = require("./legacyImport");
 
 const DEFAULT_SCENE_NAME = "Untitled Scene";
 const MAX_SCENE_NAME_LENGTH = 100;
@@ -174,7 +175,13 @@ function sendStoreError(res, error, message) {
     return res.status(500).json({ error: message });
 }
 
-function createScenesRouter(store = resolveSceneStore()) {
+/**
+ * @param {object} [store] scene storage (file, Redis, or unavailable)
+ * @param {object} [options]
+ * @param {object} [options.legacyContent] where existing bone content lives:
+ *   { descriptionsDir, imagesDir }. Defaults to boneset-api/data.
+ */
+function createScenesRouter(store = resolveSceneStore(), options = {}) {
     const router = express.Router();
 
     router.use(rateLimit({
@@ -301,6 +308,63 @@ function createScenesRouter(store = resolveSceneStore()) {
             res.status(204).end();
         } catch (error) {
             sendStoreError(res, error, "Failed to delete scene");
+        }
+    });
+
+    /**
+     * Imports an existing bone's images into a scene. Issue #466.
+     * Body: { boneId, filenames? }. `filenames` selects which of the bone's images
+     * to import (default: all of them). Images are added on a new row below the scene's existing
+     * images, in the order the viewer shows them. Images that can't be imported
+     * are listed in `warnings`; if none can be imported the scene is unchanged.
+     */
+    router.post("/:sceneId/import-legacy", async (req, res) => {
+        const boneId = req.body ? req.body.boneId : undefined;
+        if (!isValidBoneId(boneId)) {
+            return res.status(400).json({ error: "A valid boneId is required" });
+        }
+        const filenames = req.body ? req.body.filenames : undefined;
+        const validFilenames = filenames === undefined || (
+            Array.isArray(filenames) &&
+            filenames.length > 0 &&
+            filenames.length <= 50 &&
+            filenames.every((name) => typeof name === "string" && name.length > 0 && name.length <= 200)
+        );
+        if (!validFilenames) {
+            return res.status(400).json({ error: "filenames must be a non-empty list of image file names" });
+        }
+
+        try {
+            const scene = await store.get(req.params.sceneId);
+            if (!scene) {
+                return res.status(404).json({ error: "Scene not found" });
+            }
+
+            const result = await buildLegacyImages(boneId, {
+                ...options.legacyContent,
+                filenames,
+                origin: { x: 0, y: nextRowY(scene) },
+            });
+            if (result.images.length === 0) {
+                return res.status(422).json({
+                    error: `No images could be imported for ${result.name}`,
+                    warnings: result.warnings,
+                });
+            }
+
+            scene.images = [...(scene.images || []), ...result.images];
+            scene.updatedAt = new Date().toISOString();
+            await store.save(scene);
+            res.json({
+                scene,
+                imported: { boneId: result.boneId, name: result.name, count: result.images.length },
+                warnings: result.warnings,
+            });
+        } catch (error) {
+            if (error instanceof LegacyImportError) {
+                return res.status(error.status).json({ error: error.message });
+            }
+            sendStoreError(res, error, "Failed to import images");
         }
     });
 

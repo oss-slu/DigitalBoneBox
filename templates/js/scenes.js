@@ -58,9 +58,23 @@ export function deleteScene(sceneId) {
 }
 
 /**
+ * Adds an existing bone's images to a scene. Issue #466.
+ * @param {string} sceneId
+ * @param {string} boneId
+ * @param {string[]} [filenames] which of the bone's images to add (default: all)
+ * @returns {Promise<{ scene: object, imported: { boneId: string, name: string, count: number }, warnings: object[] }>}
+ */
+export function importLegacyImages(sceneId, boneId, filenames) {
+    return request(`${scenePath(sceneId)}/import-legacy`, {
+        method: "POST",
+        body: JSON.stringify(filenames ? { boneId, filenames } : { boneId }),
+    });
+}
+
+/**
  * Turns an API error into a message a user can act on.
  * @param {Error} error
- * @param {"rename"|"load"|"open"|"create"|"delete"} context
+ * @param {"rename"|"load"|"open"|"create"|"delete"|"import"} context
  */
 export function describeError(error, context) {
     const status = error instanceof SceneApiError ? error.status : 0;
@@ -72,9 +86,14 @@ export function describeError(error, context) {
                 ? "Enter a scene name (up to 100 characters)."
                 : `The request was rejected: ${error.message}.`;
         case 404:
+            if (context === "import" && !/scene not found/i.test(error.message)) {
+                return "That item has no saved content to import.";
+            }
             return "This scene is no longer available. It may have been deleted.";
         case 409:
             return "Another scene already uses that name. Choose a different name.";
+        case 422:
+            return "That item has no images to import. Choose a different bone.";
         case 429:
             return "Too many requests. Wait a moment and try again.";
         case 503:
@@ -90,6 +109,8 @@ const state = {
     openRequest: 0,
     fitToWidth: true,
     busy: false,
+    boneOptions: null,
+    importRequest: 0,
 };
 
 let dom = null;
@@ -112,6 +133,10 @@ function setBusy(busy) {
     dom.emptyNewButton.disabled = busy;
     dom.renameButton.disabled = busy || !state.active;
     dom.deleteButton.disabled = busy || !state.active;
+    if (dom.importToggle) {
+        dom.importToggle.disabled = busy || !state.active;
+        dom.importSubmit.disabled = busy || !state.boneOptions;
+    }
 }
 
 function showLibraryMessage(message, { retry = false } = {}) {
@@ -201,6 +226,7 @@ function renderCanvas() {
 function renderWorkspace() {
     const scene = state.active;
     hideRenameForm();
+    if (!scene) hideImportForm();
     hideWorkspaceError();
     dom.workspaceEmpty.hidden = Boolean(scene);
     dom.workspaceScene.hidden = !scene;
@@ -398,6 +424,193 @@ async function handleDelete() {
     }
 }
 
+// ---------------------------------------------------------------------------
+// Import images from an existing bone (Issue #466)
+// ---------------------------------------------------------------------------
+
+/**
+ * Builds the bone list for the import picker from /combined-data: each boneset,
+ * followed by its bones, each followed by its bone parts.
+ */
+async function loadBoneOptions() {
+    if (state.boneOptions) return state.boneOptions;
+    const response = await fetch("/combined-data");
+    if (!response.ok) throw new SceneApiError(response.status, `HTTP ${response.status}`);
+    const data = await response.json();
+
+    const groups = (data.bonesets || []).map((boneset) => {
+        const options = [{ id: boneset.id, label: `${boneset.name} (whole boneset)` }];
+        for (const bone of (data.bones || []).filter((b) => b.boneset === boneset.id)) {
+            options.push({ id: bone.id, label: bone.name });
+            for (const part of (data.subbones || []).filter((sb) => sb.bone === bone.id)) {
+                options.push({ id: part.id, label: `\u2014 ${part.name}` });
+            }
+        }
+        return { label: boneset.name, options };
+    });
+    state.boneOptions = groups;
+    return groups;
+}
+
+function renderBoneOptions(groups) {
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = "Choose a bone\u2026";
+    dom.importSelect.replaceChildren(placeholder);
+
+    for (const group of groups) {
+        const optgroup = document.createElement("optgroup");
+        optgroup.label = group.label;
+        for (const { id, label } of group.options) {
+            const option = document.createElement("option");
+            option.value = id;
+            option.textContent = label;
+            optgroup.append(option);
+        }
+        dom.importSelect.append(optgroup);
+    }
+    dom.importSelect.disabled = false;
+}
+
+function showImportError(message) {
+    dom.importError.hidden = false;
+    dom.importError.textContent = message;
+}
+
+function clearImageChoices() {
+    state.importRequest += 1;
+    dom.importImageList.replaceChildren();
+    dom.importImages.hidden = true;
+}
+
+function hideImportForm() {
+    if (!dom || !dom.importForm) return;
+    dom.importForm.hidden = true;
+    dom.importError.hidden = true;
+    dom.importSelect.value = "";
+    clearImageChoices();
+    dom.importToggle.setAttribute("aria-expanded", "false");
+}
+
+/**
+ * Shows a checkbox (with a small preview) for each of the chosen bone's images,
+ * all selected by default, in the order the viewer shows them.
+ */
+function renderImageChoices(images) {
+    if (images.length === 0) {
+        showImportError("That item has no images to import. Choose a different bone.");
+        return;
+    }
+    for (const image of images) {
+        const choice = document.createElement("label");
+        choice.className = "scene-import-image";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.value = image.filename;
+        checkbox.checked = true;
+
+        const preview = document.createElement("img");
+        preview.src = image.url;
+        preview.alt = "";
+        preview.loading = "lazy";
+
+        const name = document.createElement("span");
+        name.textContent = image.filename;
+
+        choice.append(checkbox, preview, name);
+        dom.importImageList.append(choice);
+    }
+    dom.importImages.hidden = false;
+}
+
+async function handleImportBoneChange() {
+    clearImageChoices();
+    dom.importError.hidden = true;
+    const boneId = dom.importSelect.value;
+    if (!boneId) return;
+
+    const requestId = state.importRequest;
+    try {
+        const response = await fetch(`/api/bone-data/?boneId=${encodeURIComponent(boneId)}`);
+        if (requestId !== state.importRequest) return;
+        if (!response.ok) {
+            showImportError(response.status === 404
+                ? "That item has no saved content to import."
+                : "Couldn't load that bone's images. Try again.");
+            return;
+        }
+        const data = await response.json();
+        if (requestId !== state.importRequest) return;
+        renderImageChoices(data.images || []);
+    } catch {
+        if (requestId === state.importRequest) showImportError("Couldn't load that bone's images. Try again.");
+    }
+}
+
+async function showImportForm() {
+    dom.importForm.hidden = false;
+    dom.importError.hidden = true;
+    dom.importToggle.setAttribute("aria-expanded", "true");
+    dom.importSelect.focus();
+    if (state.boneOptions) return;
+
+    try {
+        renderBoneOptions(await loadBoneOptions());
+        setBusy(state.busy);
+    } catch {
+        showImportError("Couldn't load the list of bones. Close this form and try again.");
+    }
+}
+
+async function handleImport(event) {
+    event.preventDefault();
+    if (state.busy || !state.active) return;
+
+    const boneId = dom.importSelect.value;
+    if (!boneId) {
+        showImportError("Choose a bone to import.");
+        dom.importSelect.focus();
+        return;
+    }
+
+    const choices = [...dom.importImageList.querySelectorAll("input[type=checkbox]")];
+    const filenames = choices.filter((choice) => choice.checked).map((choice) => choice.value);
+    if (filenames.length === 0) {
+        showImportError(choices.length === 0
+            ? "Wait for the bone's images to load, or choose a different bone."
+            : "Choose at least one image to import.");
+        return;
+    }
+
+    const label = dom.importSelect.selectedOptions[0].textContent.replace(/^\u2014\s*/, "");
+    setBusy(true);
+    dom.importError.hidden = true;
+    announce(`Importing images from ${label}\u2026`);
+    try {
+        const { scene, imported, warnings } = await importLegacyImages(state.active.id, boneId, filenames);
+        state.active = scene;
+        setBusy(false);
+        hideImportForm();
+        renderWorkspace();
+        await loadLibrary();
+
+        let message = `Imported ${plural(imported.count, "image")} from ${imported.name}.`;
+        if (warnings && warnings.length > 0) {
+            message += ` ${plural(warnings.length, "image")} couldn't be imported.`;
+            dom.canvasNote.hidden = false;
+            dom.canvasNote.textContent = `${message} Skipped: ${warnings.map((w) => `${w.filename} (${w.reason})`).join(", ")}.`;
+        }
+        announce(message);
+        dom.importToggle.focus();
+    } catch (error) {
+        setBusy(false);
+        const message = describeError(error, "import");
+        showImportError(message);
+        announce(message);
+    }
+}
+
 export function getActiveScene() {
     return state.active;
 }
@@ -460,6 +673,14 @@ export function initializeSceneEditor(root = document) {
         canvas: $("scene-canvas"),
         canvasEmpty: $("scene-canvas-empty"),
         canvasNote: $("scene-canvas-note"),
+        importToggle: $("scene-import-toggle"),
+        importForm: $("scene-import-form"),
+        importSelect: $("scene-import-select"),
+        importSubmit: $("scene-import-submit"),
+        importCancel: $("scene-import-cancel"),
+        importError: $("scene-import-error"),
+        importImages: $("scene-import-images"),
+        importImageList: $("scene-import-image-list"),
     };
     if (!dom.editorView || !dom.enterButton) return;
 
@@ -486,6 +707,18 @@ export function initializeSceneEditor(root = document) {
     });
     dom.deleteButton.addEventListener("click", handleDelete);
     dom.fitToggle.addEventListener("click", () => setFitToWidth(!state.fitToWidth));
+    if (dom.importToggle) {
+        dom.importToggle.addEventListener("click", () => {
+            if (dom.importForm.hidden) showImportForm();
+            else hideImportForm();
+        });
+        dom.importForm.addEventListener("submit", handleImport);
+        dom.importSelect.addEventListener("change", handleImportBoneChange);
+        dom.importCancel.addEventListener("click", () => {
+            hideImportForm();
+            dom.importToggle.focus();
+        });
+    }
 
     renderWorkspace();
 }
