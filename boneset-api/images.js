@@ -188,6 +188,7 @@ function createImageCatalogRouter(options) {
 module.exports = {
     buildImageCatalog,
     createImageCatalogRouter,
+    getImageDimensions,
     readImageDimensions,
     imageUrl,
 };
