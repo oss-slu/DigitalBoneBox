@@ -12,6 +12,8 @@ jest.mock("../js/annotationOverlay.js", () => ({
 }));
 jest.mock("../js/api.js", () => ({
     fetchBoneData: jest.fn(),
+    fetchBoneDataResult: jest.fn(),
+    BONE_DATA_STATUS: { OK: "ok", MISSING: "missing", ERROR: "error" },
 }));
 
 const fs = require("fs");
@@ -62,10 +64,14 @@ async function fakeFetch(url) {
     return respond(404, { error: "Not found" });
 }
 
-// Bone data the viewer gets for each item. The Skull items have no content yet.
+// Bone data the viewer gets for each item. The Skull items have no content yet,
+// so the server answers 404 for them.
+const okResult = (data) => ({ status: "ok", httpStatus: 200, data });
+const missingResult = () => ({ status: "missing", httpStatus: 404 });
+const errorResult = (httpStatus) => ({ status: "error", httpStatus, error: new Error("Request failed") });
 function fakeBoneData(boneId) {
-    if (boneId === "skull" || boneId === "anterior") return Promise.resolve(null);
-    return Promise.resolve({ images: [{ url: `${boneId}.jpg` }] });
+    if (boneId === "skull" || boneId === "anterior") return Promise.resolve(missingResult());
+    return Promise.resolve(okResult({ images: [{ url: `${boneId}.jpg` }] }));
 }
 
 async function waitFor(check, timeout = 1000) {
@@ -99,7 +105,7 @@ beforeEach(() => {
     jest.resetModules();
 
     api = require("../js/api.js");
-    api.fetchBoneData.mockImplementation(fakeBoneData);
+    api.fetchBoneDataResult.mockImplementation(fakeBoneData);
     imageDisplay = require("../js/imageDisplay.js");
     // Same markup as the real placeholder, so the "no images" message can be checked.
     imageDisplay.showPlaceholder.mockImplementation(() => {
@@ -229,8 +235,8 @@ describe("No broken or empty content - Issue 469", () => {
     });
 
     it("doesn't let a slow answer for an earlier item replace the current one", async () => {
-        api.fetchBoneData.mockImplementation((boneId) => (boneId === "ilium"
-            ? new Promise((r) => setTimeout(() => r({ images: [{ url: "ilium.jpg" }] }), 50))
+        api.fetchBoneDataResult.mockImplementation((boneId) => (boneId === "ilium"
+            ? new Promise((r) => setTimeout(() => r(okResult({ images: [{ url: "ilium.jpg" }] })), 50))
             : fakeBoneData(boneId)));
 
         choose("boneset-select", "bony_pelvis");
@@ -241,4 +247,111 @@ describe("No broken or empty content - Issue 469", () => {
         const shown = imageDisplay.displayBoneImages.mock.calls.map(([images]) => images[0].url);
         expect(shown).toEqual(["ischium.jpg"]);
     });
+    });
+
+    describe("Missing content vs. failed requests - Issue 469", () => {
+    const placeholderText = () =>
+        document.querySelector("#bone-image-container .images-placeholder p").textContent;
+    const retryButton = () => document.querySelector("#bone-image-container .images-retry-button");
+
+    it("shows an error with a retry button, not \"no images yet\", when the server fails", async () => {
+        api.fetchBoneDataResult.mockImplementation((boneId) => (boneId === "ilium"
+            ? Promise.resolve(errorResult(500))
+            : fakeBoneData(boneId)));
+
+        choose("boneset-select", "bony_pelvis");
+        choose("bone-select", "ilium");
+        await settle();
+
+        expect(placeholderText()).not.toMatch(/no images for this item yet/i);
+        expect(placeholderText()).toMatch(/couldn't load the images/i);
+        expect(retryButton()).not.toBeNull();
+        expect(imageDisplay.displayBoneImages).not.toHaveBeenCalled();
+    });
+
+    it("treats a network failure as an error, not missing content", async () => {
+        api.fetchBoneDataResult.mockImplementation((boneId) => (boneId === "ilium"
+            ? Promise.resolve({ status: "error", error: new TypeError("Failed to fetch") })
+            : fakeBoneData(boneId)));
+
+        choose("boneset-select", "bony_pelvis");
+        choose("bone-select", "ilium");
+        await settle();
+
+        expect(placeholderText()).not.toMatch(/no images for this item yet/i);
+        expect(retryButton()).not.toBeNull();
+    });
+
+    it("loads the images when the user retries after a failure", async () => {
+        let attempts = 0;
+        api.fetchBoneDataResult.mockImplementation((boneId) => {
+            if (boneId !== "ilium") return fakeBoneData(boneId);
+            attempts += 1;
+            return Promise.resolve(attempts === 1 ? errorResult(503) : okResult({ images: [{ url: "ilium.jpg" }] }));
+        });
+
+        choose("boneset-select", "bony_pelvis");
+        choose("bone-select", "ilium");
+        await waitFor(() => expect(retryButton()).not.toBeNull());
+
+        retryButton().click();
+
+        await waitFor(() => expect(imageDisplay.displayBoneImages).toHaveBeenLastCalledWith(
+            [{ url: "ilium.jpg" }], expect.objectContaining({ boneId: "ilium" })));
+        expect(attempts).toBe(2);
+    });
+
+    it("still shows \"no images yet\" (and no retry button) for content that is really missing", async () => {
+        choose("boneset-select", "skull");
+        await settle();
+
+        expect(placeholderText()).toMatch(/no images for this item yet/i);
+        expect(retryButton()).toBeNull();
+    });
 });
+
+describe("fetchBoneDataResult classifies responses - Issue 469", () => {
+    let realApi;
+    let consoleSpy;
+
+    beforeEach(() => {
+        realApi = jest.requireActual("../js/api.js");
+        consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+        consoleSpy.mockRestore();
+    });
+
+    it("returns ok with the data for a successful response", async () => {
+        global.fetch = jest.fn(async () => respond(200, { images: [{ url: "ilium.jpg" }] }));
+        const result = await realApi.fetchBoneDataResult("ilium");
+        expect(result.status).toBe(realApi.BONE_DATA_STATUS.OK);
+        expect(result.data).toEqual({ images: [{ url: "ilium.jpg" }] });
+    });
+
+    it("returns missing for a 404", async () => {
+        global.fetch = jest.fn(async () => respond(404, { error: "Not found" }));
+        const result = await realApi.fetchBoneDataResult("anterior");
+        expect(result.status).toBe(realApi.BONE_DATA_STATUS.MISSING);
+    });
+
+    it("returns error for a 500", async () => {
+        global.fetch = jest.fn(async () => respond(500, { error: "Server error" }));
+        const result = await realApi.fetchBoneDataResult("ilium");
+        expect(result.status).toBe(realApi.BONE_DATA_STATUS.ERROR);
+        expect(result.httpStatus).toBe(500);
+    });
+
+    it("returns error when the network request fails", async () => {
+        global.fetch = jest.fn(async () => { throw new TypeError("Failed to fetch"); });
+        const result = await realApi.fetchBoneDataResult("ilium");
+        expect(result.status).toBe(realApi.BONE_DATA_STATUS.ERROR);
+    });
+
+    it("keeps fetchBoneData returning null on failure for its other callers", async () => {
+        global.fetch = jest.fn(async () => respond(500, { error: "Server error" }));
+        await expect(realApi.fetchBoneData("ilium")).resolves.toBeNull();
+    });
+});
+

@@ -1,7 +1,7 @@
 import { loadDescription } from "./description.js";
 import {displayBoneImages, showPlaceholder} from "./imageDisplay.js";
 import {clearAnnotations} from "./annotationOverlay.js";
-import {fetchBoneData} from "./api.js";
+import { fetchBoneDataResult, BONE_DATA_STATUS } from "./api.js";
 import { imageAnnotationToDropdownMap } from "./imageAnnotationToDropdownMap.js";
 import { showSceneLinks, SHOW_IN_VIEWER_EVENT } from "./sceneLinks.js";
 
@@ -37,6 +37,34 @@ function showNoImagesMessage() {
   }
 }
 
+/**
+ * Shows an error in the image area when the item's data couldn't be loaded
+ * (network problem or server error), with a button to try again.
+ * This is kept separate from the "no images yet" message so an outage doesn't
+ * make real content look like it hasn't been migrated.
+ * @param {Function} onRetry - Called when the user clicks "Try again".
+ * @returns {void}
+ */
+function showLoadErrorMessage(onRetry) {
+  showPlaceholder();
+  const placeholder = document.querySelector("#bone-image-container .images-placeholder");
+  if (!placeholder) return;
+  placeholder.classList.add("images-load-error");
+  placeholder.setAttribute("role", "alert");
+
+  const message = placeholder.querySelector("p");
+  if (message) {
+    message.textContent = "We couldn't load the images for this item. Check your connection and try again.";
+  }
+
+  const retryButton = document.createElement("button");
+  retryButton.type = "button";
+  retryButton.className = "images-retry-button";
+  retryButton.textContent = "Try again";
+  retryButton.addEventListener("click", () => onRetry());
+  placeholder.appendChild(retryButton);
+}
+
 /** Helper: fetch images for a bone/sub-bone and render them.
  * @param {string} boneId - The bone or subbone ID to load images for.
  * @param {Object} [options={}] - Options forwarded to `displayBoneImages`.
@@ -45,27 +73,41 @@ function showNoImagesMessage() {
 async function loadBoneImages(boneId, options = {}) {
   const stage = getImageStage();
   const requestId = ++latestImageRequest;
+  const resetStage = () => {
+    if (stage) { clearAnnotations(stage); stage.classList.remove("with-annotations"); }
+  };
 
-  if (stage) {
-    clearAnnotations(stage);
-    stage.classList.remove("with-annotations");
-  }
+  resetStage();
 
   // Links to any scenes made from this item (hidden when there are none).
   showSceneLinks(boneId || null);
 
   if (!boneId) {
     showPlaceholder();
-    if (stage) { clearAnnotations(stage); stage.classList.remove("with-annotations"); }
+    resetStage();
     return;
   }
+
+  const showError = () => {
+    showLoadErrorMessage(() => loadBoneImages(boneId, options));
+    resetStage();
+  };
+
   try {
-    const data = await fetchBoneData(boneId);
+    const result = await fetchBoneDataResult(boneId);
     if (requestId !== latestImageRequest) return;
+
+    if (!result || result.status === BONE_DATA_STATUS.ERROR) {
+      showError();
+      return;
+    }
+
+    const data = result.status === BONE_DATA_STATUS.OK ? result.data : null;
     const images = data && Array.isArray(data.images) ? data.images : [];
     if (images.length === 0) {
+      // Confirmed missing (404) or the item exists but has no images yet.
       showNoImagesMessage();
-      if (stage) { clearAnnotations(stage); stage.classList.remove("with-annotations"); }
+      resetStage();
     } else {
       // Pass both boneId (for colored regions) and options (for text annotations)
       displayBoneImages(images, { ...options, boneId });
@@ -73,8 +115,7 @@ async function loadBoneImages(boneId, options = {}) {
   } catch (err) {
     if (requestId !== latestImageRequest) return;
     console.error("Failed to load bone images:", err);
-    showNoImagesMessage();
-    if (stage) { clearAnnotations(stage); stage.classList.remove("with-annotations"); }
+    showError();
   }
 }
 

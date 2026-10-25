@@ -1575,6 +1575,30 @@ button:disabled {
     color: #d1d5db;
 }
 
+/* Error state when bone data fails to load, with a retry button (Issue #469) */
+.images-placeholder.images-load-error {
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.images-retry-button {
+    padding: 8px 18px;
+    border: none;
+    border-radius: 6px;
+    background: var(--slu-navy);
+    color: #ffffff;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.images-retry-button:hover,
+.images-retry-button:focus-visible {
+    background: var(--slu-gold);
+    color: var(--slu-navy);
+    outline: 2px solid var(--slu-navy);
+    outline-offset: 2px;
+}
+
 .images-content .images-placeholder:hover {
     border-color: var(--slu-gold);
     background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
