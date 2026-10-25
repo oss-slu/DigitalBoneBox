@@ -10,7 +10,7 @@ const fs = require("fs").promises;
 const path = require("path");
 const { getImageDimensions, imageUrl } = require("./images");
 
-const BONE_ID_PATTERN = /^[a-z0-9_]+$/i;
+const BONE_ID_PATTERN = /^[a-z0-9_-]+$/i; // hyphens allowed for 2nd-5th_metatarsals (Issue #469)
 const MAX_IMAGE_SIZE = 480; // longest side of an imported image, in scene units
 const IMAGE_GAP = 40; // space between imported images, and between import rows
 

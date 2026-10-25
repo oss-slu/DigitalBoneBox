@@ -773,6 +773,47 @@ select:disabled {
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
+/* Links from the viewer to scenes made from the open item (Issue #469) */
+.viewer-scene-links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    background: #f8fafc;
+    border-top: 3px solid var(--slu-gold);
+}
+
+.viewer-scene-links[hidden] {
+    display: none;
+}
+
+.viewer-scene-links-label {
+    margin: 0;
+    width: 100%;
+    font-size: 0.9rem;
+    color: var(--slu-navy);
+}
+
+.viewer-scene-link {
+    padding: var(--space-1) var(--space-3);
+    border: 2px solid var(--slu-navy);
+    border-radius: var(--radius-md, 6px);
+    background: white;
+    color: var(--slu-navy);
+    font: inherit;
+    font-size: 0.9rem;
+    text-transform: none;
+    letter-spacing: normal;
+    cursor: pointer;
+}
+
+.viewer-scene-link:hover,
+.viewer-scene-link:focus-visible {
+    background: var(--slu-navy);
+    color: white;
+}
+
 .images-panel:hover {
     transform: translateY(-2px);
     box-shadow: none;
@@ -1532,6 +1573,30 @@ button:disabled {
 
 .images-content .images-placeholder p {
     color: #d1d5db;
+}
+
+/* Error state when bone data fails to load, with a retry button (Issue #469) */
+.images-placeholder.images-load-error {
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.images-retry-button {
+    padding: 8px 18px;
+    border: none;
+    border-radius: 6px;
+    background: var(--slu-navy);
+    color: #ffffff;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.images-retry-button:hover,
+.images-retry-button:focus-visible {
+    background: var(--slu-gold);
+    color: var(--slu-navy);
+    outline: 2px solid var(--slu-navy);
+    outline-offset: 2px;
 }
 
 .images-content .images-placeholder:hover {
@@ -2776,6 +2841,32 @@ button:disabled {
     margin: var(--space-1) 0 0;
     font-size: 0.9rem;
     color: var(--text-secondary);
+}
+
+/* "Made from" links back to the bone viewer (Issue #469) */
+.scene-sources {
+    margin: var(--space-1) 0 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.scene-source-link {
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--primary);
+    font: inherit;
+    text-transform: none;
+    letter-spacing: normal;
+    box-shadow: none;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.scene-source-link:hover,
+.scene-source-link:focus-visible {
+    color: var(--slu-gold);
+    background: var(--primary);
 }
 
 .scene-save-status {

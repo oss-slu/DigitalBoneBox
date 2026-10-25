@@ -11,12 +11,16 @@ jest.mock("../js/annotationOverlay.js", () => ({
 jest.mock("../js/api.js", () => ({
     // Images are keyed by boneId so tests can confirm the correct parent's
     // images (not just any images) are displayed after a deselect.
-    fetchBoneData: jest.fn((boneId) => Promise.resolve({ images: [{ url: `${boneId}.jpg` }] })),
+    fetchBoneDataResult: jest.fn((boneId) => Promise.resolve({
+        status: "ok",
+        data: { images: [{ url: `${boneId}.jpg` }] },
+    })),
+    BONE_DATA_STATUS: { OK: "ok", MISSING: "missing", ERROR: "error" },
 }));
 
 const { loadDescription } = require("../js/description.js");
 const { showPlaceholder, displayBoneImages } = require("../js/imageDisplay.js");
-const { fetchBoneData } = require("../js/api.js");
+const { fetchBoneDataResult } = require("../js/api.js");
 const { setupDropdownListeners, populateBonesetDropdown } = require("../js/dropdowns.js");
 
 const combinedData = {
@@ -62,7 +66,7 @@ describe("Deselecting a bone/sub-bone reverts to parent info - Issue 248", () =>
         await new Promise(process.nextTick);
         loadDescription.mockClear();
         showPlaceholder.mockClear();
-        fetchBoneData.mockClear();
+        fetchBoneDataResult.mockClear();
         displayBoneImages.mockClear();
 
         selectValue(boneSelect, "");
@@ -73,7 +77,7 @@ describe("Deselecting a bone/sub-bone reverts to parent info - Issue 248", () =>
 
         // Confirm the boneset's own images were fetched and rendered, not the
         // bone's images left over from before the deselect (nor a placeholder).
-        expect(fetchBoneData).toHaveBeenCalledWith("bony_pelvis");
+        expect(fetchBoneDataResult).toHaveBeenCalledWith("bony_pelvis");
         expect(displayBoneImages).toHaveBeenCalledWith(
             [{ url: "bony_pelvis.jpg" }],
             expect.objectContaining({ boneId: "bony_pelvis" })
@@ -87,7 +91,7 @@ describe("Deselecting a bone/sub-bone reverts to parent info - Issue 248", () =>
         await new Promise(process.nextTick);
         loadDescription.mockClear();
         showPlaceholder.mockClear();
-        fetchBoneData.mockClear();
+        fetchBoneDataResult.mockClear();
         displayBoneImages.mockClear();
 
         selectValue(subboneSelect, "");
@@ -98,7 +102,7 @@ describe("Deselecting a bone/sub-bone reverts to parent info - Issue 248", () =>
 
         // Confirm the parent bone's own images were fetched and rendered, not the
         // sub-bone's images left over from before the deselect (nor a placeholder).
-        expect(fetchBoneData).toHaveBeenCalledWith("ilium");
+        expect(fetchBoneDataResult).toHaveBeenCalledWith("ilium");
         expect(displayBoneImages).toHaveBeenCalledWith(
             [{ url: "ilium.jpg" }],
             expect.objectContaining({ boneId: "ilium" })

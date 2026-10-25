@@ -167,6 +167,16 @@ function applyImagePatch(existingImage, fields) {
     return { image: merged };
 }
 
+// The bone viewer items a scene's images were imported from (Issue #469), so the
+// viewer can link an item to the scenes made from it.
+function legacySources(scene) {
+    const boneIds = (scene.images || [])
+        .filter((image) => image && image.source && image.source.type === "legacy-image")
+        .map((image) => image.source.boneId)
+        .filter((boneId) => typeof boneId === "string");
+    return [...new Set(boneIds)];
+}
+
 function isPlainObject(value) {
     return value !== null && typeof value === "object" && !Array.isArray(value);
 }
@@ -243,6 +253,7 @@ function toSummary(scene) {
         name: scene.name,
         imageCount: (scene.images || []).length,
         annotationCount: (scene.annotations || []).length,
+        sources: legacySources(scene),
         createdAt: scene.createdAt,
         updatedAt: scene.updatedAt,
     };

@@ -1,4 +1,5 @@
 import { renderScene } from "./sceneCanvas.js";
+import { OPEN_SCENE_EVENT, SHOW_IN_VIEWER_EVENT, sceneSources, readableName } from "./sceneLinks.js";
 
 const SCENES_URL = "/api/scenes";
 
@@ -528,7 +529,46 @@ function renderWorkspace() {
 
     dom.sceneTitle.textContent = scene.name;
     dom.sceneMeta.textContent = `${plural(scene.images.length, "image")} · ${plural(scene.annotations.length, "annotation")}`;
+    renderSceneSources(scene);
     renderCanvas();
+}
+
+/**
+ * Lists the bone viewer items this scene's images were imported from, each
+ * with a button that opens it in the bone viewer (Issue #469). The original
+ * viewer content is kept, so the user can always go back and compare.
+ */
+function renderSceneSources(scene) {
+    if (!dom.sceneSources) return;
+    dom.sceneSources.replaceChildren();
+    const sources = sceneSources(scene);
+    dom.sceneSources.hidden = sources.length === 0;
+    if (sources.length === 0) return;
+
+    dom.sceneSources.append("Made from: ");
+    sources.forEach((boneId, index) => {
+        if (index > 0) dom.sceneSources.append(", ");
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "scene-source-link";
+        button.textContent = readableName(boneId);
+        button.setAttribute("aria-label", `View ${readableName(boneId)} in the bone viewer`);
+        button.addEventListener("click", () => showInViewer(boneId));
+        dom.sceneSources.append(button);
+    });
+}
+
+function showInViewer(boneId) {
+    leaveEditor();
+    document.dispatchEvent(new CustomEvent(SHOW_IN_VIEWER_EVENT, { detail: { boneId } }));
+}
+
+/**
+ * Opens a scene from the bone viewer's "Open in the Scene Editor" link (Issue #469).
+ */
+function openSceneFromViewer(sceneId) {
+    if (dom.editorView.hidden) enterEditor();
+    openScene(sceneId);
 }
 
 function clearActiveScene() {
@@ -1574,6 +1614,7 @@ export function initializeSceneEditor(root = document) {
         titleRow: $("scene-title-row"),
         sceneTitle: $("scene-title"),
         sceneMeta: $("scene-meta"),
+        sceneSources: $("scene-sources"),
         saveStatus: $("scene-save-status"),
         saveButton: $("scene-save"),
         duplicateButton: $("scene-duplicate"),
@@ -1624,6 +1665,12 @@ export function initializeSceneEditor(root = document) {
         else leaveEditor();
     });
     dom.backButton.addEventListener("click", leaveEditor);
+    const editorView = dom.editorView;
+    document.addEventListener(OPEN_SCENE_EVENT, (event) => {
+        // Skip if this page was re-rendered and this editor is no longer on it.
+        if (!editorView.isConnected || !event.detail || !event.detail.sceneId) return;
+        openSceneFromViewer(event.detail.sceneId);
+    });
     dom.newButton.addEventListener("click", handleCreate);
     dom.emptyNewButton.addEventListener("click", handleCreate);
     dom.libraryRetry.addEventListener("click", loadLibrary);
