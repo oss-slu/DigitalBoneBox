@@ -50,14 +50,14 @@ const scene = {
     updatedAt: "2026-10-01T00:00:00.000Z",
 };
 const summary = {
-    id: scene.id, name: scene.name, imageCount: 2, annotationCount: 0,
+    id: scene.id, name: scene.name, status: "published", imageCount: 2, annotationCount: 0,
     sources: ["ilium", "iliac_crest"], createdAt: scene.createdAt, updatedAt: scene.updatedAt,
 };
 
 let scenesStatus;
 const respond = (status, body) => ({ ok: status >= 200 && status < 300, status, json: async () => body });
 async function fakeFetch(url) {
-    if (url === "/api/scenes") {
+    if (url === "/api/scenes" || url === "/api/scenes?status=published") {
         return scenesStatus === 200 ? respond(200, { scenes: [summary] }) : respond(scenesStatus, { error: "Down" });
     }
     if (url === `/api/scenes/${scene.id}`) return respond(200, JSON.parse(JSON.stringify(scene)));

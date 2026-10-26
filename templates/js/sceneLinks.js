@@ -20,7 +20,8 @@ export function readableName(boneId) {
 }
 
 /**
- * Gets the saved scenes that have images imported from this item.
+ * Gets the published scenes that have images imported from this item. Drafts
+ * are left out, so unfinished work isn't shown as final content (Issue #458).
  * Returns an empty list if scenes can't be loaded, so the viewer still works
  * when the scene store is down.
  * @param {string} boneId
@@ -28,7 +29,7 @@ export function readableName(boneId) {
  */
 export async function fetchScenesForItem(boneId) {
     try {
-        const response = await fetch("/api/scenes");
+        const response = await fetch("/api/scenes?status=published");
         if (!response.ok) return [];
         const body = await response.json();
         const scenes = Array.isArray(body.scenes) ? body.scenes : [];

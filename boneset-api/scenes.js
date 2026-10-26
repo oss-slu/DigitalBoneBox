@@ -247,10 +247,26 @@ function nextUpdatedAt(previous) {
     return new Date(Number.isFinite(previousMs) && previousMs >= now ? previousMs + 1 : now).toISOString();
 }
 
+// Issues #458/#459: a scene is a draft (unfinished, only shown in the Scene
+// Editor) until someone publishes it for the general bone viewer.
+const SCENE_STATUSES = ["draft", "published"];
+
+/**
+ * A scene's publication status. Scenes saved before statuses existed count as
+ * drafts, so nothing unfinished is ever shown as final content by accident.
+ * @param {object} scene
+ * @returns {"draft"|"published"}
+ */
+function sceneStatus(scene) {
+    return scene && scene.status === "published" ? "published" : "draft";
+}
+
 function toSummary(scene) {
     return {
         id: scene.id,
         name: scene.name,
+        status: sceneStatus(scene),
+        publishedAt: sceneStatus(scene) === "published" ? scene.publishedAt || null : null,
         imageCount: (scene.images || []).length,
         annotationCount: (scene.annotations || []).length,
         sources: legacySources(scene),
@@ -530,9 +546,14 @@ function createScenesRouter(store = resolveSceneStore(), options = {}) {
     /**
      * Lists all scenes (summaries only) for the scene picker. Issues #422, #423, #424.
      */
-    router.get("/", async (_req, res) => {
+    router.get("/", async (req, res) => {
+        const { status } = req.query;
+        if (status !== undefined && !SCENE_STATUSES.includes(status)) {
+            return res.status(400).json({ error: "status must be \"draft\" or \"published\"" });
+        }
         try {
-            const scenes = await store.list();
+            let scenes = await store.list();
+            if (status) scenes = scenes.filter((scene) => sceneStatus(scene) === status);
             scenes.sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
             res.json({ scenes: scenes.map(toSummary) });
         } catch (error) {
@@ -576,6 +597,8 @@ function createScenesRouter(store = resolveSceneStore(), options = {}) {
                 images: content.images,
                 annotations: content.annotations,
                 ...(content.importLog ? { importLog: content.importLog } : {}),
+                // New scenes always start unpublished (Issue #458).
+                status: "draft",
                 createdAt: now,
                 updatedAt: now,
             };
@@ -817,6 +840,42 @@ function createScenesRouter(store = resolveSceneStore(), options = {}) {
         }
     });
 
+
+
+        /**
+     * Publishes or unpublishes a scene (Issues #458, #459).
+     * Body: { status: "draft" | "published" }. Responds with the scene's summary.
+     * Only the status changes: the images, annotations, and `updatedAt` version
+     * (which Save uses to detect conflicts) stay exactly the same, so publishing
+     * never changes a scene's content and an open working copy can still be
+     * saved normally afterwards.
+     */
+    router.patch("/:sceneId/status", async (req, res) => {
+        const { sceneId } = req.params;
+        const status = isPlainObject(req.body) ? req.body.status : undefined;
+        if (!SCENE_STATUSES.includes(status)) {
+            return res.status(400).json({ error: "status must be \"draft\" or \"published\"" });
+        }
+        try {
+            await store.withLock(sceneId, async () => {
+                const scene = await store.get(sceneId);
+                if (!scene) {
+                    res.status(404).json({ error: "Scene not found" });
+                    return;
+                }
+                const updated = { ...scene, status };
+                if (status === "published") {
+                    updated.publishedAt = new Date().toISOString();
+                } else {
+                    delete updated.publishedAt;
+                }
+                await store.save(updated);
+                res.json(toSummary(updated));
+            });
+        } catch (error) {
+            sendStoreError(res, error, "Failed to change the scene's status");
+        }
+    });
     /**
      * Creates an independent copy of a saved scene with its own id and a
      * "<name> copy" name, numbered if taken (Issue #455).
@@ -835,9 +894,12 @@ function createScenesRouter(store = resolveSceneStore(), options = {}) {
                     ...JSON.parse(JSON.stringify(source)),
                     id: crypto.randomUUID(),
                     name: nextCopyName(await store.list(), source.name),
+                    // A copy is new, unfinished work even if the original is published.
+                    status: "draft",
                     createdAt: now,
                     updatedAt: now,
                 };
+                delete copy.publishedAt;
                 await store.save(copy);
                 res.status(201).location(`${req.baseUrl}/${copy.id}`).json(copy);
             });

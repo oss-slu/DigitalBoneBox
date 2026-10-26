@@ -208,6 +208,10 @@
                         <div class="scene-toolbar">
                             <div id="scene-title-row" class="scene-title-row">
                                 <h3 id="scene-title" tabindex="-1"></h3>
+                                <p class="scene-status-row">
+                                    <span id="scene-status-badge" class="scene-status-badge" data-status="draft">Draft</span>
+                                    <span id="scene-status-note" class="scene-status-note"></span>
+                                </p>
                                 <p id="scene-meta" class="scene-meta"></p>
                                 <p id="scene-sources" class="scene-sources" hidden></p>
                                 <p id="scene-save-status" class="scene-save-status"></p>
@@ -250,6 +254,7 @@
                                 <button id="scene-import-image" type="button" class="scene-btn scene-btn-secondary">Import image…</button>
                                 <input id="scene-import-input" type="file" accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml" multiple hidden />
                                 <button id="scene-fit-toggle" type="button" class="scene-btn scene-btn-secondary">Show actual size</button>
+                                <button id="scene-publish" type="button" class="scene-btn scene-btn-secondary">Publish</button>
                                 <button id="scene-rename" type="button" class="scene-btn scene-btn-secondary">Rename</button>
                                 <button id="scene-duplicate" type="button" class="scene-btn scene-btn-secondary">Duplicate</button>
                                 <button id="scene-delete" type="button" class="scene-btn scene-btn-danger">Delete</button>
