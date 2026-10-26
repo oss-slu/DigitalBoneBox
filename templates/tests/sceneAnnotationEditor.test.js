@@ -328,6 +328,62 @@ describe("Lines, pointer lines, and arrows (#431-#433)", () => {
         expect($("scene-tool-line").getAttribute("aria-pressed")).toBe("true");
     });
 
+    // An exception thrown inside an event listener doesn't reach dispatchEvent's
+    // caller; jsdom reports it as an "error" event on the window instead.
+    function collectListenerErrors() {
+        const errors = [];
+        const onError = (event) => {
+            errors.push(event.error);
+            event.preventDefault();
+        };
+        window.addEventListener("error", onError);
+        return { errors, stop: () => window.removeEventListener("error", onError) };
+    }
+
+    it("cancels a line drag with Escape, leaving no listener behind and adding nothing", async () => {
+        await openBlankScene();
+        const listenerErrors = collectListenerErrors();
+
+        click("scene-tool-line");
+        mouse("mousedown", canvasSvg(), [100, 100]);
+        document.dispatchEvent(new MouseEvent("mousemove", { clientX: 200, clientY: 150 }));
+        key("Escape");
+        // The button is still held: the drag goes on after Escape.
+        document.dispatchEvent(new MouseEvent("mousemove", { clientX: 300, clientY: 200 }));
+        document.dispatchEvent(new MouseEvent("mouseup", { clientX: 300, clientY: 200 }));
+        // The click a browser sends after that mouseup. The blank scene's canvas
+        // is gone once the tool is cancelled, so it lands on the canvas region.
+        mouse("click", $("scene-canvas"), [300, 200]);
+        listenerErrors.stop();
+
+        expect(listenerErrors.errors).toEqual([]);
+        expect(annotations()).toEqual([]);
+        expect(document.querySelector(".scene-draft")).toBeNull();
+        expect($("scene-tool-line").getAttribute("aria-pressed")).toBe("false");
+        expect(scenesModule.hasUnsavedChanges()).toBe(false);
+    });
+
+    it("switches tools during a line drag without finishing the line, and the new tool still draws", async () => {
+        await openBlankScene();
+        const listenerErrors = collectListenerErrors();
+
+        click("scene-tool-line");
+        mouse("mousedown", canvasSvg(), [100, 100]);
+        document.dispatchEvent(new MouseEvent("mousemove", { clientX: 200, clientY: 150 }));
+        click("scene-tool-arrow");
+        document.dispatchEvent(new MouseEvent("mousemove", { clientX: 300, clientY: 200 }));
+        document.dispatchEvent(new MouseEvent("mouseup", { clientX: 300, clientY: 200 }));
+
+        expect(listenerErrors.errors).toEqual([]);
+        expect(annotations()).toEqual([]);
+        expect($("scene-tool-arrow").getAttribute("aria-pressed")).toBe("true");
+
+        drag(canvasSvg(), [400, 100], [500, 100]);
+        listenerErrors.stop();
+        expect(listenerErrors.errors).toEqual([]);
+        expect(annotations()).toEqual([expect.objectContaining({ type: "arrow", x1: 400, y1: 100, x2: 500, y2: 100 })]);
+    });
+
     it("moves a line's endpoints and the whole line, then deletes it (#431)", async () => {
         await openBlankScene({ annotations: [{ id: "l", type: "line", x1: 100, y1: 100, x2: 300, y2: 100 }] });
         selectAnnotation(0);

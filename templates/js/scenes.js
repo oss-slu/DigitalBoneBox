@@ -231,6 +231,7 @@ function setActiveScene(scene) {
     state.saveAlert = null;
     deselectImage();
     deselectAnnotation();
+    endLineDraw();
     state.tool = null;
     state.draft = null;
 }
@@ -249,6 +250,9 @@ let dom = null;
 // same element regardless of how far the mouse moved in between, so without
 // this a move/resize drag would immediately deselect the image it just moved.
 let suppressNextClick = false;
+// Removes the document-level listeners of a line or arrow being drawn, or
+// null when none is (Issues #431/#433). Called through endLineDraw.
+let stopLineDraw = null;
 
 // Issues #411/#412: importing an image into a scene. The image is read as a
 // base64 data: URL - that same string is both the immediate preview `src` and
@@ -1388,6 +1392,7 @@ function setTool(tool) {
     if (!state.active) return;
     const next = tool === state.tool ? null : tool;
     if (next === "pointer" && (!selectedAnnotation() || selectedAnnotation().type !== "text")) return;
+    endLineDraw();
     state.tool = next;
     state.draft = null;
     if (next && next !== "pointer") {
@@ -1403,6 +1408,7 @@ function setTool(tool) {
 
 function cancelTool() {
     if (!state.tool) return;
+    endLineDraw();
     state.tool = null;
     state.draft = null;
     renderCanvas();
@@ -1471,8 +1477,21 @@ function addPointerLine(target) {
     dom.canvas.focus();
 }
 
+/**
+ * Stops a line or arrow drag that is still in progress, so its listeners
+ * never see a draft that was cleared (Escape, a tool change, another scene).
+ * The mouse button is still down, so the click that follows its release is
+ * ignored too. Safe to call when no drag is active.
+ */
+function endLineDraw() {
+    if (!stopLineDraw) return;
+    stopLineDraw();
+    suppressNextClick = true;
+}
+
 /** Issues #431/#433: draws a line or arrow by dragging from its start to its end. */
 function startLineDraw(event, svg) {
+    endLineDraw();
     const type = state.tool;
     const start = clientToScene(svg, event);
     const scale = getSceneScale(svg);
@@ -1480,7 +1499,14 @@ function startLineDraw(event, svg) {
     const startClientY = event.clientY;
     state.draft = { type, points: [start, start] };
 
+    function detach() {
+        document.removeEventListener("mousemove", onMouseMove);
+        document.removeEventListener("mouseup", onMouseUp);
+        if (stopLineDraw === detach) stopLineDraw = null;
+    }
+
     function onMouseMove(moveEvent) {
+        if (!state.draft) return;
         state.draft.points[1] = [
             round2(start[0] + (moveEvent.clientX - startClientX) * scale.x),
             round2(start[1] + (moveEvent.clientY - startClientY) * scale.y),
@@ -1489,8 +1515,7 @@ function startLineDraw(event, svg) {
     }
 
     function onMouseUp() {
-        document.removeEventListener("mousemove", onMouseMove);
-        document.removeEventListener("mouseup", onMouseUp);
+        detach();
         suppressNextClick = true;
         if (!state.draft) return;
         const [[x1, y1], [x2, y2]] = state.draft.points;
@@ -1507,6 +1532,7 @@ function startLineDraw(event, svg) {
 
     document.addEventListener("mousemove", onMouseMove);
     document.addEventListener("mouseup", onMouseUp);
+    stopLineDraw = detach;
     renderCanvas();
 }
 
