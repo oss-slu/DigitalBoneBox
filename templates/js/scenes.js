@@ -1,4 +1,5 @@
 import { renderScene } from "./sceneCanvas.js";
+import { OPEN_SCENE_EVENT, SHOW_IN_VIEWER_EVENT, sceneSources, readableName } from "./sceneLinks.js";
 
 const SCENES_URL = "/api/scenes";
 
@@ -80,6 +81,27 @@ export function saveScene(sceneId, content) {
  */
 export function duplicateScene(sceneId) {
     return request(`${scenePath(sceneId)}/duplicate`, { method: "POST", body: "{}" });
+}
+
+/**
+ * Publishes a scene for the general bone viewer, or makes it a draft again
+ * (Issues #458, #459). Only the status changes, never the scene's content.
+ * @param {string} sceneId
+ * @param {"draft"|"published"} status
+ * @returns {Promise<object>} The scene's updated summary.
+ */
+export function setSceneStatus(sceneId, status) {
+    return request(`${scenePath(sceneId)}/status`, { method: "PATCH", body: JSON.stringify({ status }) });
+}
+
+/**
+ * A scene's publication status. Scenes without one (saved before statuses
+ * existed) are drafts, matching the server.
+ * @param {object} scene
+ * @returns {"draft"|"published"}
+ */
+export function sceneStatusOf(scene) {
+    return scene && scene.status === "published" ? "published" : "draft";
 }
 
 export function deleteScene(sceneId) {
@@ -324,7 +346,9 @@ function updateControls() {
     dom.emptyNewButton.disabled = locked;
     dom.renameButton.disabled = locked || !state.active;
     dom.deleteButton.disabled = locked || !state.active;
+    
     dom.duplicateButton.disabled = locked || !state.active;
+    updatePublishControls(locked);
     dom.saveButton.disabled = locked || !hasUnsavedChanges();
     if (dom.importToggle) {
         dom.importToggle.disabled = state.busy || !state.active;
@@ -337,6 +361,34 @@ function updateControls() {
     else delete dom.saveStatus.dataset.state;
     syncUnloadGuard();
 }
+
+/**
+ * Shows the open scene's Draft/Published badge, a note on who can see it, and
+ * the matching Publish/Unpublish button (Issues #458, #459). A scene can only
+ * be published once its changes are saved, so what goes live is exactly what
+ * the editor sees.
+ * @param {boolean} locked - Another action is in progress.
+ */
+function updatePublishControls(locked) {
+    if (!dom.publishButton) return;
+    const scene = state.active;
+    const status = sceneStatusOf(scene);
+    const published = status === "published";
+    const needsSave = !published && hasUnsavedChanges();
+
+    dom.publishButton.textContent = published ? "Unpublish" : "Publish";
+    dom.publishButton.disabled = locked || !scene || needsSave;
+    dom.statusBadge.textContent = published ? "Published" : "Draft";
+    dom.statusBadge.dataset.status = status;
+    if (needsSave) {
+        dom.statusNote.textContent = "Save your changes before publishing.";
+    } else if (published) {
+        dom.statusNote.textContent = "Visible to everyone in the bone viewer.";
+    } else {
+        dom.statusNote.textContent = "Only visible in the Scene Editor until published.";
+    }
+}
+
 
 /** Records a change to the working copy (Issue #451). Callers re-render. */
 function markChanged() {
@@ -441,7 +493,12 @@ function renderLibrary() {
         meta.className = "scene-list-meta";
         meta.textContent = `${plural(scene.imageCount, "image")} · ${plural(scene.annotationCount, "annotation")}`;
 
-        button.append(name, meta);
+        const status = document.createElement("span");
+        status.className = "scene-status-badge";
+        status.dataset.status = sceneStatusOf(scene);
+        status.textContent = sceneStatusOf(scene) === "published" ? "Published" : "Draft";
+
+        button.append(name, meta, status);
         if (isActive) {
             const badge = document.createElement("span");
             badge.className = "scene-list-badge";
@@ -528,7 +585,46 @@ function renderWorkspace() {
 
     dom.sceneTitle.textContent = scene.name;
     dom.sceneMeta.textContent = `${plural(scene.images.length, "image")} · ${plural(scene.annotations.length, "annotation")}`;
+    renderSceneSources(scene);
     renderCanvas();
+}
+
+/**
+ * Lists the bone viewer items this scene's images were imported from, each
+ * with a button that opens it in the bone viewer (Issue #469). The original
+ * viewer content is kept, so the user can always go back and compare.
+ */
+function renderSceneSources(scene) {
+    if (!dom.sceneSources) return;
+    dom.sceneSources.replaceChildren();
+    const sources = sceneSources(scene);
+    dom.sceneSources.hidden = sources.length === 0;
+    if (sources.length === 0) return;
+
+    dom.sceneSources.append("Made from: ");
+    sources.forEach((boneId, index) => {
+        if (index > 0) dom.sceneSources.append(", ");
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "scene-source-link";
+        button.textContent = readableName(boneId);
+        button.setAttribute("aria-label", `View ${readableName(boneId)} in the bone viewer`);
+        button.addEventListener("click", () => showInViewer(boneId));
+        dom.sceneSources.append(button);
+    });
+}
+
+function showInViewer(boneId) {
+    leaveEditor();
+    document.dispatchEvent(new CustomEvent(SHOW_IN_VIEWER_EVENT, { detail: { boneId } }));
+}
+
+/**
+ * Opens a scene from the bone viewer's "Open in the Scene Editor" link (Issue #469).
+ */
+function openSceneFromViewer(sceneId) {
+    if (dom.editorView.hidden) enterEditor();
+    openScene(sceneId);
 }
 
 function clearActiveScene() {
@@ -637,6 +733,55 @@ async function openScene(sceneId, { force = false } = {}) {
         }
     }
 }
+
+/**
+ * Publishes the open scene, or makes it a draft again (Issues #458, #459).
+ * Publishing doesn't touch the working copy, so any unsaved edits (only
+ * possible when unpublishing) stay unsaved.
+ */
+async function handlePublishToggle() {
+    if (!state.active || state.busy || state.saving) return;
+    const { id, name } = state.active;
+    const publishing = sceneStatusOf(state.active) === "draft";
+    if (publishing && hasUnsavedChanges()) return;
+
+    setBusy(true);
+    hideWorkspaceError();
+    try {
+        const summary = await setSceneStatus(id, publishing ? "published" : "draft");
+        if (state.active && state.active.id === id) {
+            for (const scene of [state.active, state.saved]) {
+                if (!scene) continue;
+                scene.status = summary.status;
+                if (summary.publishedAt) scene.publishedAt = summary.publishedAt;
+                else delete scene.publishedAt;
+            }
+        }
+        const listed = state.scenes.find((s) => s.id === id);
+        if (listed) {
+            listed.status = summary.status;
+            listed.publishedAt = summary.publishedAt;
+        }
+        setBusy(false);
+        renderWorkspace();
+        renderLibrary();
+        announce(publishing
+            ? `Published ${name}. It's now visible in the bone viewer.`
+            : `${name} is a draft again and is hidden from the bone viewer.`);
+        dom.publishButton.focus();
+    } catch (error) {
+        setBusy(false);
+        const message = describeError(error, "publish");
+        if (error.status === 404) {
+            handleActiveSceneMissing(message);
+            await loadLibrary();
+        } else {
+            showWorkspaceError(message, { retry: handlePublishToggle });
+        }
+        announce(message);
+    }
+}
+
 
 async function handleCreate() {
     if (state.busy || state.saving) return;
@@ -1574,6 +1719,7 @@ export function initializeSceneEditor(root = document) {
         titleRow: $("scene-title-row"),
         sceneTitle: $("scene-title"),
         sceneMeta: $("scene-meta"),
+        sceneSources: $("scene-sources"),
         saveStatus: $("scene-save-status"),
         saveButton: $("scene-save"),
         duplicateButton: $("scene-duplicate"),
@@ -1585,6 +1731,9 @@ export function initializeSceneEditor(root = document) {
         renameCancel: $("scene-rename-cancel"),
         renameError: $("scene-rename-error"),
         fitToggle: $("scene-fit-toggle"),
+        publishButton: $("scene-publish"),
+        statusBadge: $("scene-status-badge"),
+        statusNote: $("scene-status-note"),
         canvas: $("scene-canvas"),
         canvasEmpty: $("scene-canvas-empty"),
         canvasNote: $("scene-canvas-note"),
@@ -1624,6 +1773,12 @@ export function initializeSceneEditor(root = document) {
         else leaveEditor();
     });
     dom.backButton.addEventListener("click", leaveEditor);
+    const editorView = dom.editorView;
+    document.addEventListener(OPEN_SCENE_EVENT, (event) => {
+        // Skip if this page was re-rendered and this editor is no longer on it.
+        if (!editorView.isConnected || !event.detail || !event.detail.sceneId) return;
+        openSceneFromViewer(event.detail.sceneId);
+    });
     dom.newButton.addEventListener("click", handleCreate);
     dom.emptyNewButton.addEventListener("click", handleCreate);
     dom.libraryRetry.addEventListener("click", loadLibrary);
@@ -1643,6 +1798,7 @@ export function initializeSceneEditor(root = document) {
     dom.deleteButton.addEventListener("click", handleDelete);
     if (dom.saveButton) dom.saveButton.addEventListener("click", () => handleSave());
     if (dom.duplicateButton) dom.duplicateButton.addEventListener("click", handleDuplicate);
+    if (dom.publishButton) dom.publishButton.addEventListener("click", handlePublishToggle);
     dom.fitToggle.addEventListener("click", () => setFitToWidth(!state.fitToWidth));
     if (dom.importToggle) {
         dom.importToggle.addEventListener("click", () => {

@@ -9,6 +9,7 @@ const { buildLegacyAnnotations } = require("./legacyAnnotations");
 const { listItems, migrate } = require("./scripts/migration-report");
 
 const DATA_DIR = path.join(__dirname, "data");
+const LONG_TEST = 30000; // going through every item can take longer than Jest's default 5 seconds
 const items = listItems();
 
 function readJson(file) {
@@ -37,7 +38,7 @@ describe("Migrated scene validation - Issue 468", () => {
             const row = await migrate(item);
             if (row.status !== "imported") expect(row.note.length).toBeGreaterThan(0);
         }
-    });
+    }, LONG_TEST);
 
     describe("every imported item", () => {
         let imported;
@@ -47,7 +48,7 @@ describe("Migrated scene validation - Issue 468", () => {
                 const result = await importItem(item.id).catch(() => null);
                 if (result) imported.push({ id: item.id, ...result });
             }
-        });
+        }, LONG_TEST);
 
         it("keeps the viewer's image order", () => {
             for (const { id, images } of imported) {
