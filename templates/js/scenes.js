@@ -1,4 +1,21 @@
-import { renderScene } from "./sceneCanvas.js";
+import { renderScene, displayedAnnotation, storeAnnotationGeometry, textBox } from "./sceneCanvas.js";
+import {
+    DEFAULT_HIGHLIGHT_COLOR,
+    DEFAULT_HIGHLIGHT_OPACITY,
+    DEFAULT_LINE_COLOR,
+    DEFAULT_TEXT_COLOR,
+    anchorOnBox,
+    clampHighlightOpacity,
+    clampStrokeWidth,
+    describeAnnotation,
+    isPointerLineFor,
+    labelEndIndex,
+    moveAnnotationPoint,
+    reanchorPointerLine,
+    resizeText,
+    toColorInputValue,
+    translateAnnotation,
+} from "./sceneAnnotations.js";
 
 const SCENES_URL = "/api/scenes";
 
@@ -176,6 +193,12 @@ const state = {
     busy: false,
     selectedImageIndex: null,
     cropMode: false,
+    // Issue #426: the selected annotation's index in `active.annotations`, the
+    // annotation tool in use ("text" | "line" | "arrow" | "polygon" |
+    // "pointer"), and the shape being drawn with it.
+    selectedAnnotationIndex: null,
+    tool: null,
+    draft: null,
     boneOptions: null,
     importRequest: 0,
 };
@@ -183,6 +206,10 @@ const state = {
 function deselectImage() {
     state.selectedImageIndex = null;
     state.cropMode = false;
+}
+
+function deselectAnnotation() {
+    state.selectedAnnotationIndex = null;
 }
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
@@ -203,6 +230,10 @@ function setActiveScene(scene) {
     state.missing = false;
     state.saveAlert = null;
     deselectImage();
+    deselectAnnotation();
+    endLineDraw();
+    state.tool = null;
+    state.draft = null;
 }
 
 /** The parts of a scene a save stores. */
@@ -219,6 +250,9 @@ let dom = null;
 // same element regardless of how far the mouse moved in between, so without
 // this a move/resize drag would immediately deselect the image it just moved.
 let suppressNextClick = false;
+// Removes the document-level listeners of a line or arrow being drawn, or
+// null when none is (Issues #431/#433). Called through endLineDraw.
+let stopLineDraw = null;
 
 // Issues #411/#412: importing an image into a scene. The image is read as a
 // base64 data: URL - that same string is both the immediate preview `src` and
@@ -478,7 +512,9 @@ function renderCanvas() {
     const scene = state.active;
     dom.canvas.replaceChildren();
     updateImageToolbar();
-    const isEmpty = scene.images.length === 0 && scene.annotations.length === 0;
+    updateAnnotationControls();
+    // A blank scene still shows its canvas while a tool is drawing on it.
+    const isEmpty = scene.images.length === 0 && scene.annotations.length === 0 && !state.tool;
     dom.canvasEmpty.hidden = !isEmpty;
     dom.canvas.hidden = isEmpty;
     dom.fitToggle.hidden = isEmpty;
@@ -488,6 +524,8 @@ function renderCanvas() {
     const { svg, unsupported, unlinked, width, height } = renderScene(scene, {
         selectedIndex: state.selectedImageIndex,
         cropMode: state.cropMode,
+        selectedAnnotationIndex: state.selectedAnnotationIndex,
+        draft: state.draft,
     });
     svg.setAttribute("aria-label", `Scene canvas for ${scene.name}`);
     if (state.fitToWidth) {
@@ -1234,6 +1272,567 @@ function resetSelectedImageCrop() {
     applySelectedImageUpdate({ cropX: 0, cropY: 0, cropWidth: image.width, cropHeight: image.height });
 }
 
+// ---------------------------------------------------------------------------
+// Annotations (Issue #426: #427-#438)
+// ---------------------------------------------------------------------------
+//
+// Labels, lines, arrows, and highlight polygons are created with a tool from
+// the "Add annotation" row, then selected on the canvas to move, reshape,
+// style, reorder, or delete them. Every change edits the working copy and is
+// stored with the next Save, like image edits. Edits are made on the
+// annotation as drawn and stored back through storeAnnotationGeometry, so an
+// annotation imported with a bone keeps following its image.
+
+const NUDGE_STEP = 1;
+const NUDGE_STEP_LARGE = 10;
+// A line shorter than this (scene pixels) is treated as a stray click.
+const MIN_LINE_LENGTH = 4;
+// A polygon click this close to the last corner is the second half of a double-click.
+const DUPLICATE_POINT_DISTANCE = 3;
+const DEFAULT_LABEL_TEXT = "New label";
+const DEFAULT_HIGHLIGHT_STROKE = "#b8860b";
+const TOOL_HINTS = {
+    text: "Click the canvas where the label should go.",
+    line: "Drag on the canvas to draw the line.",
+    arrow: "Drag from the arrow's tail to the point it should point at.",
+    polygon: "Click to place each corner, then choose Finish shape, press Enter, or click the first corner.",
+    pointer: "Click the feature the label points to.",
+};
+
+const round2 = (value) => Math.round(value * 100) / 100;
+
+function selectedAnnotation() {
+    const scene = state.active;
+    const index = state.selectedAnnotationIndex;
+    if (!scene || index === null || index < 0 || index >= scene.annotations.length) return null;
+    return scene.annotations[index];
+}
+
+function selectAnnotation(index) {
+    deselectImage();
+    state.selectedAnnotationIndex = index;
+}
+
+/** Where a mouse event is in scene coordinates. */
+function clientToScene(svg, event) {
+    const rect = svg.getBoundingClientRect();
+    const [viewX, viewY] = (svg.getAttribute("viewBox") || "0 0 0 0").split(" ").map(Number);
+    const scale = getSceneScale(svg);
+    return [
+        round2(viewX + (event.clientX - (rect.left || 0)) * scale.x),
+        round2(viewY + (event.clientY - (rect.top || 0)) * scale.y),
+    ];
+}
+
+/** Sets the value of a toolbar control, unless the user is typing in it. */
+function setIdleValue(input, value) {
+    const text = String(value);
+    if (document.activeElement !== input && input.value !== text) input.value = text;
+}
+
+/** Shows the annotation tools' state and the selected annotation's controls. */
+function updateAnnotationControls() {
+    if (!dom.annotationTools) return;
+    for (const button of dom.annotationTools.querySelectorAll("[data-tool]")) {
+        button.setAttribute("aria-pressed", String(state.tool === button.dataset.tool));
+    }
+    dom.toolHint.hidden = !state.tool;
+    dom.toolHint.textContent = state.tool ? TOOL_HINTS[state.tool] : "";
+    dom.toolCancel.hidden = !state.tool;
+    dom.polygonFinish.hidden = state.tool !== "polygon";
+    dom.polygonFinish.disabled = !state.draft || state.draft.points.length < 3;
+    dom.canvas.classList.toggle("is-drawing", Boolean(state.tool));
+
+    const annotation = selectedAnnotation();
+    dom.annotationToolbar.hidden = !annotation;
+    if (!annotation) {
+        dom.annotationTextError.hidden = true;
+        return;
+    }
+    const shown = displayedAnnotation(annotation, state.active);
+    const isText = annotation.type === "text";
+    const isLine = annotation.type === "line" || annotation.type === "arrow";
+    const isPolygon = annotation.type === "polygon";
+    dom.annotationLabel.textContent = `Selected ${describeAnnotation(annotation)}:`;
+    dom.annotationTextField.hidden = !isText;
+    dom.annotationSizeField.hidden = !isText;
+    dom.annotationPointer.hidden = !isText;
+    dom.annotationWidthField.hidden = !isLine;
+    dom.annotationOpacityField.hidden = !isPolygon;
+
+    if (isText) {
+        if (dom.annotationTextError.hidden) setIdleValue(dom.annotationText, annotation.text);
+        setIdleValue(dom.annotationSize, Math.round(textBox(shown).fontSize * 10) / 10);
+        setIdleValue(dom.annotationColor, toColorInputValue(annotation.color, DEFAULT_TEXT_COLOR));
+    } else if (isLine) {
+        setIdleValue(dom.annotationWidth, round2(typeof shown.strokeWidth === "number" ? shown.strokeWidth : 2));
+        setIdleValue(dom.annotationColor, toColorInputValue(annotation.stroke, DEFAULT_LINE_COLOR));
+    } else if (isPolygon) {
+        setIdleValue(dom.annotationColor, toColorInputValue(annotation.fill, DEFAULT_HIGHLIGHT_COLOR));
+        const opacity = typeof annotation.fillOpacity === "number" ? annotation.fillOpacity
+            : typeof annotation.opacity === "number" ? annotation.opacity
+                : DEFAULT_HIGHLIGHT_OPACITY;
+        setIdleValue(dom.annotationOpacity, clampHighlightOpacity(opacity));
+    }
+
+    const last = state.active.annotations.length - 1;
+    dom.annotationBack.disabled = state.selectedAnnotationIndex === 0;
+    dom.annotationBackward.disabled = state.selectedAnnotationIndex === 0;
+    dom.annotationForward.disabled = state.selectedAnnotationIndex === last;
+    dom.annotationFront.disabled = state.selectedAnnotationIndex === last;
+}
+
+/**
+ * Starts (or, given null or the tool already in use, stops) an annotation
+ * tool. Any other selection is cleared, except that the pointer tool keeps
+ * its label selected.
+ * @param {"text"|"line"|"arrow"|"polygon"|"pointer"|null} tool
+ */
+function setTool(tool) {
+    if (!state.active) return;
+    const next = tool === state.tool ? null : tool;
+    if (next === "pointer" && (!selectedAnnotation() || selectedAnnotation().type !== "text")) return;
+    endLineDraw();
+    state.tool = next;
+    state.draft = null;
+    if (next && next !== "pointer") {
+        deselectImage();
+        deselectAnnotation();
+    }
+    renderCanvas();
+    if (next) {
+        announce(TOOL_HINTS[next]);
+        dom.canvas.focus();
+    }
+}
+
+function cancelTool() {
+    if (!state.tool) return;
+    endLineDraw();
+    state.tool = null;
+    state.draft = null;
+    renderCanvas();
+    announce("Drawing cancelled.");
+}
+
+/** Adds a new annotation on top of the others and selects it. */
+function addAnnotation(annotation) {
+    state.active.annotations.push(annotation);
+    state.tool = null;
+    state.draft = null;
+    selectAnnotation(state.active.annotations.length - 1);
+    markChanged();
+    renderWorkspace();
+}
+
+/** Issue #427: places a new label with placeholder text, ready to type over. */
+function placeTextLabel([x, y]) {
+    addAnnotation({
+        id: crypto.randomUUID(),
+        type: "text",
+        text: DEFAULT_LABEL_TEXT,
+        x,
+        y,
+        fontSize: 18,
+        fontWeight: "600",
+        color: DEFAULT_TEXT_COLOR,
+    });
+    announce("Label added. Type its text in the Text box. Save to keep it.");
+    dom.annotationText.focus();
+    dom.annotationText.select();
+}
+
+/**
+ * Issue #432: adds a pointer line from the selected label to `target`. It
+ * starts on the label's edge, records the label's id, and follows the label's
+ * image if the label is linked to one.
+ */
+function addPointerLine(target) {
+    const label = selectedAnnotation();
+    if (!label || label.type !== "text") {
+        cancelTool();
+        return;
+    }
+    const scene = state.active;
+    if (typeof label.id !== "string") label.id = crypto.randomUUID();
+    const [x1, y1] = anchorOnBox(textBox(displayedAnnotation(label, scene)), target);
+    const line = {
+        id: crypto.randomUUID(),
+        type: "line",
+        x1,
+        y1,
+        x2: target[0],
+        y2: target[1],
+        stroke: toColorInputValue(label.color, DEFAULT_LINE_COLOR),
+        strokeWidth: 1.5,
+        labelId: label.id,
+    };
+    if (label.sourceImageId !== undefined && label.sourceImageFrame) {
+        line.sourceImageId = label.sourceImageId;
+        line.sourceImageFrame = { ...label.sourceImageFrame };
+        storeAnnotationGeometry(line, { ...line }, scene);
+    }
+    addAnnotation(line);
+    announce("Pointer line added. Drag its ends to adjust it. Save to keep it.");
+    dom.canvas.focus();
+}
+
+/**
+ * Stops a line or arrow drag that is still in progress, so its listeners
+ * never see a draft that was cleared (Escape, a tool change, another scene).
+ * The mouse button is still down, so the click that follows its release is
+ * ignored too. Safe to call when no drag is active.
+ */
+function endLineDraw() {
+    if (!stopLineDraw) return;
+    stopLineDraw();
+    suppressNextClick = true;
+}
+
+/** Issues #431/#433: draws a line or arrow by dragging from its start to its end. */
+function startLineDraw(event, svg) {
+    endLineDraw();
+    const type = state.tool;
+    const start = clientToScene(svg, event);
+    const scale = getSceneScale(svg);
+    const startClientX = event.clientX;
+    const startClientY = event.clientY;
+    state.draft = { type, points: [start, start] };
+
+    function detach() {
+        document.removeEventListener("mousemove", onMouseMove);
+        document.removeEventListener("mouseup", onMouseUp);
+        if (stopLineDraw === detach) stopLineDraw = null;
+    }
+
+    function onMouseMove(moveEvent) {
+        if (!state.draft) return;
+        state.draft.points[1] = [
+            round2(start[0] + (moveEvent.clientX - startClientX) * scale.x),
+            round2(start[1] + (moveEvent.clientY - startClientY) * scale.y),
+        ];
+        renderCanvas();
+    }
+
+    function onMouseUp() {
+        detach();
+        suppressNextClick = true;
+        if (!state.draft) return;
+        const [[x1, y1], [x2, y2]] = state.draft.points;
+        if (Math.hypot(x2 - x1, y2 - y1) < MIN_LINE_LENGTH) {
+            state.draft = null;
+            renderCanvas();
+            announce(`Drag on the canvas to draw the ${type}.`);
+            return;
+        }
+        addAnnotation({ id: crypto.randomUUID(), type, x1, y1, x2, y2, stroke: DEFAULT_LINE_COLOR, strokeWidth: 2 });
+        announce(`${type === "arrow" ? "Arrow" : "Line"} added. Drag its ends to adjust it. Save to keep it.`);
+        dom.canvas.focus();
+    }
+
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+    stopLineDraw = detach;
+    renderCanvas();
+}
+
+/** Issue #434: adds a corner to the highlight being drawn, or finishes it on its first corner. */
+function addPolygonPoint(point, target) {
+    if (!state.draft) state.draft = { type: "polygon", points: [] };
+    const points = state.draft.points;
+    if (points.length >= 3 && target && target.closest("[data-draft-start]")) {
+        finishPolygon();
+        return;
+    }
+    const last = points[points.length - 1];
+    if (last && Math.hypot(point[0] - last[0], point[1] - last[1]) < DUPLICATE_POINT_DISTANCE) return;
+    points.push(point);
+    renderCanvas();
+}
+
+function finishPolygon() {
+    const points = state.draft ? state.draft.points : [];
+    if (points.length < 3) {
+        announce("A highlight needs at least 3 corners.");
+        return;
+    }
+    addAnnotation({
+        id: crypto.randomUUID(),
+        type: "polygon",
+        points: points.map((point) => [...point]),
+        fill: DEFAULT_HIGHLIGHT_COLOR,
+        fillOpacity: DEFAULT_HIGHLIGHT_OPACITY,
+        stroke: DEFAULT_HIGHLIGHT_STROKE,
+        strokeWidth: 1.5,
+    });
+    announce("Highlight added. Drag its corners to reshape it. Save to keep it.");
+    dom.canvas.focus();
+}
+
+/** The selected label's pointer lines, each with its drawn geometry before the edit. */
+function pointerLinesOf(label, scene) {
+    if (label.type !== "text") return [];
+    return scene.annotations
+        .filter((other) => other !== label && isPointerLineFor(other, label))
+        .map((line) => ({ line, start: clone(displayedAnnotation(line, scene)) }));
+}
+
+/** Moves the label end of each pointer line by (dx, dy), so it stays on its moved label. */
+function movePointerLines(pointers, labelBox, dx, dy, scene) {
+    for (const { line, start } of pointers) {
+        storeAnnotationGeometry(line, moveAnnotationPoint(start, labelEndIndex(start, labelBox), dx, dy), scene);
+    }
+}
+
+/** Puts each pointer line created for a label back on its edge after the label changed size or text. */
+function reanchorPointerLines(label, scene) {
+    const shownLabel = displayedAnnotation(label, scene);
+    for (const line of scene.annotations) {
+        if (line === label || typeof line.labelId !== "string" || !isPointerLineFor(line, label)) continue;
+        storeAnnotationGeometry(line, reanchorPointerLine(displayedAnnotation(line, scene), shownLabel), scene);
+    }
+}
+
+/**
+ * Issues #429/#431/#433/#435: drags the selected annotation. "move" moves all
+ * of it (and a label's pointer lines with it), "point" moves one line end or
+ * polygon corner, and "resize" scales a label's text from its top-left corner.
+ * @param {MouseEvent} event
+ * @param {SVGSVGElement} svg
+ * @param {"move"|"point"|"resize"} mode
+ * @param {number} [pointIndex]
+ */
+function startAnnotationDrag(event, svg, mode, pointIndex) {
+    const scene = state.active;
+    const annotation = selectedAnnotation();
+    const start = clone(displayedAnnotation(annotation, scene));
+    const startBox = annotation.type === "text" ? textBox(start) : null;
+    const pointers = pointerLinesOf(annotation, scene);
+    const scale = getSceneScale(svg);
+    const startClientX = event.clientX;
+    const startClientY = event.clientY;
+    let didDrag = false;
+
+    function onMouseMove(moveEvent) {
+        const dxClient = moveEvent.clientX - startClientX;
+        const dyClient = moveEvent.clientY - startClientY;
+        if (Math.abs(dxClient) > DRAG_THRESHOLD || Math.abs(dyClient) > DRAG_THRESHOLD) didDrag = true;
+        if (!didDrag) return;
+        const dx = dxClient * scale.x;
+        const dy = dyClient * scale.y;
+
+        if (mode === "point") {
+            storeAnnotationGeometry(annotation, moveAnnotationPoint(start, pointIndex, dx, dy), scene);
+        } else if (mode === "resize" && startBox) {
+            const factor = startBox.width > 0 ? (startBox.width + dx) / startBox.width : 1;
+            storeAnnotationGeometry(annotation, resizeText(start, startBox.fontSize * factor), scene);
+            reanchorPointerLines(annotation, scene);
+        } else {
+            storeAnnotationGeometry(annotation, translateAnnotation(start, dx, dy), scene);
+            movePointerLines(pointers, startBox, dx, dy, scene);
+        }
+        renderWorkspace();
+    }
+
+    function onMouseUp() {
+        document.removeEventListener("mousemove", onMouseMove);
+        document.removeEventListener("mouseup", onMouseUp);
+        suppressNextClick = didDrag;
+        if (didDrag) markChanged();
+    }
+
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+}
+
+/** Moves the selected annotation by a few scene pixels with the arrow keys. */
+function nudgeSelectedAnnotation(dx, dy) {
+    const scene = state.active;
+    const annotation = selectedAnnotation();
+    if (!annotation) return;
+    const start = displayedAnnotation(annotation, scene);
+    const startBox = annotation.type === "text" ? textBox(start) : null;
+    const pointers = pointerLinesOf(annotation, scene);
+    storeAnnotationGeometry(annotation, translateAnnotation(start, dx, dy), scene);
+    movePointerLines(pointers, startBox, dx, dy, scene);
+    markChanged();
+    renderWorkspace();
+}
+
+/**
+ * Applies a toolbar change to the selected annotation.
+ * @param {(annotation: object, scene: object) => void} edit
+ * @param {{ reanchor?: boolean }} [options] - reanchor puts a label's
+ *   pointer lines back on its edge after its size or text changed.
+ */
+function editSelectedAnnotation(edit, { reanchor = false } = {}) {
+    const annotation = selectedAnnotation();
+    if (!annotation) return;
+    const scene = state.active;
+    edit(annotation, scene);
+    if (reanchor) reanchorPointerLines(annotation, scene);
+    markChanged();
+    renderWorkspace();
+}
+
+/** Issue #428: changes the selected label's text as the user types. An empty label isn't applied. */
+function handleAnnotationTextInput() {
+    const text = dom.annotationText.value;
+    if (!text.trim()) {
+        dom.annotationTextError.hidden = false;
+        dom.annotationTextError.textContent = "A label needs some text. Type its text, or use Delete annotation to remove it.";
+        dom.annotationText.setAttribute("aria-invalid", "true");
+        return;
+    }
+    dom.annotationTextError.hidden = true;
+    dom.annotationText.removeAttribute("aria-invalid");
+    editSelectedAnnotation((annotation) => {
+        annotation.text = text;
+    }, { reanchor: true });
+}
+
+/** Leaving the text box empty keeps the label's last text. */
+function handleAnnotationTextBlur() {
+    if (dom.annotationTextError.hidden) return;
+    dom.annotationTextError.hidden = true;
+    dom.annotationText.removeAttribute("aria-invalid");
+    const annotation = selectedAnnotation();
+    if (annotation && annotation.type === "text") {
+        dom.annotationText.value = annotation.text;
+        announce(`The label wasn't left empty; it still reads "${annotation.text}".`);
+    }
+}
+
+function handleAnnotationSizeChange() {
+    const fontSize = Number(dom.annotationSize.value);
+    if (!Number.isFinite(fontSize) || fontSize <= 0) return;
+    editSelectedAnnotation((annotation, scene) => {
+        storeAnnotationGeometry(annotation, resizeText(displayedAnnotation(annotation, scene), fontSize), scene);
+    }, { reanchor: true });
+}
+
+function handleAnnotationWidthChange() {
+    const width = Number(dom.annotationWidth.value);
+    if (!Number.isFinite(width) || width <= 0) return;
+    editSelectedAnnotation((annotation, scene) => {
+        const shown = displayedAnnotation(annotation, scene);
+        storeAnnotationGeometry(annotation, { ...shown, strokeWidth: clampStrokeWidth(width) }, scene);
+    });
+}
+
+/** Issue #436 (and the color of labels, lines, and arrows). */
+function handleAnnotationColorInput() {
+    const color = dom.annotationColor.value;
+    editSelectedAnnotation((annotation) => {
+        if (annotation.type === "text") {
+            annotation.color = color;
+        } else if (annotation.type === "polygon") {
+            annotation.fill = color;
+            annotation.stroke = color;
+        } else {
+            annotation.stroke = color;
+        }
+    });
+}
+
+/**
+ * Issue #436: a highlight's opacity applies to its fill only, so its outline
+ * stays clear. An imported region's whole-shape `opacity` is replaced by it.
+ */
+function handleAnnotationOpacityInput() {
+    const opacity = Number(dom.annotationOpacity.value);
+    if (!Number.isFinite(opacity)) return;
+    editSelectedAnnotation((annotation) => {
+        annotation.fillOpacity = clampHighlightOpacity(opacity);
+        delete annotation.opacity;
+    });
+}
+
+/**
+ * Issue #438: moves the selected annotation up or down the annotation stack.
+ * Images are always drawn under annotations, so their order never changes.
+ * @param {1|-1|"front"|"back"} direction
+ */
+function moveSelectedAnnotation(direction) {
+    const annotations = state.active ? state.active.annotations : null;
+    const index = state.selectedAnnotationIndex;
+    if (!annotations || !selectedAnnotation()) return;
+    const last = annotations.length - 1;
+    const target = direction === "front" ? last : direction === "back" ? 0 : index + direction;
+    if (target < 0 || target > last || target === index) return;
+    const [annotation] = annotations.splice(index, 1);
+    annotations.splice(target, 0, annotation);
+    state.selectedAnnotationIndex = target;
+    markChanged();
+    renderWorkspace();
+    const position = target === last ? "in front of all other annotations"
+        : target === 0 ? "behind all other annotations"
+            : `at layer ${target + 1} of ${annotations.length}`;
+    announce(`The ${describeAnnotation(annotation)} is now ${position}.`);
+}
+
+/** Issues #430/#437: deletes the selected annotation, and a label's pointer lines with it. */
+function deleteSelectedAnnotation() {
+    const annotation = selectedAnnotation();
+    if (!annotation) return;
+    const scene = state.active;
+    const removed = new Set([annotation, ...pointerLinesOf(annotation, scene).map(({ line }) => line)]);
+    scene.annotations = scene.annotations.filter((other) => !removed.has(other));
+    deselectAnnotation();
+    markChanged();
+    renderWorkspace();
+    const kind = describeAnnotation(annotation);
+    announce(removed.size > 1
+        ? `Label and its ${plural(removed.size - 1, "pointer line")} deleted. Save to keep the change.`
+        : `${kind.charAt(0).toUpperCase()}${kind.slice(1)} deleted. Save to keep the change.`);
+    dom.canvas.focus();
+}
+
+/** A click on the canvas while an annotation tool is in use. */
+function handleToolClick(event) {
+    const svg = dom.canvas.querySelector("svg");
+    if (!svg) return;
+    const point = clientToScene(svg, event);
+    if (state.tool === "text") placeTextLabel(point);
+    else if (state.tool === "pointer") addPointerLine(point);
+    else if (state.tool === "polygon") addPolygonPoint(point, event.target);
+}
+
+/** Keyboard use of annotations on the canvas. Returns whether the key was handled. */
+function handleAnnotationKey(event) {
+    if (event.key === "Escape" && state.tool) {
+        cancelTool();
+        return true;
+    }
+    if (state.tool === "polygon") {
+        if (event.key === "Enter") {
+            finishPolygon();
+            return true;
+        }
+        if (event.key === "Backspace" && state.draft && state.draft.points.length > 0) {
+            state.draft.points.pop();
+            renderCanvas();
+            return true;
+        }
+        return false;
+    }
+    if (state.tool || !selectedAnnotation()) return false;
+    if (event.key === "Escape") {
+        deselectAnnotation();
+        renderCanvas();
+        return true;
+    }
+    if (event.key === "Delete" || event.key === "Backspace") {
+        deleteSelectedAnnotation();
+        return true;
+    }
+    const step = event.shiftKey ? NUDGE_STEP_LARGE : NUDGE_STEP;
+    const deltas = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] };
+    if (!deltas[event.key]) return false;
+    nudgeSelectedAnnotation(...deltas[event.key]);
+    return true;
+}
+
 /**
  * Imports one or more image files into the currently open scene as new,
  * unselected image objects in the working copy (Issues #411/#412). They're
@@ -1616,6 +2215,28 @@ export function initializeSceneEditor(root = document) {
         importExtras: $("scene-import-extras"),
         importLabels: $("scene-import-labels"),
         importRegions: $("scene-import-regions"),
+        annotationTools: $("scene-annotation-tools"),
+        toolHint: $("scene-tool-hint"),
+        toolCancel: $("scene-tool-cancel"),
+        polygonFinish: $("scene-polygon-finish"),
+        annotationToolbar: $("scene-annotation-toolbar"),
+        annotationLabel: $("scene-annotation-label"),
+        annotationTextField: $("scene-annotation-text-field"),
+        annotationText: $("scene-annotation-text"),
+        annotationTextError: $("scene-annotation-text-error"),
+        annotationSizeField: $("scene-annotation-size-field"),
+        annotationSize: $("scene-annotation-size"),
+        annotationWidthField: $("scene-annotation-width-field"),
+        annotationWidth: $("scene-annotation-width"),
+        annotationColor: $("scene-annotation-color"),
+        annotationOpacityField: $("scene-annotation-opacity-field"),
+        annotationOpacity: $("scene-annotation-opacity"),
+        annotationPointer: $("scene-annotation-pointer"),
+        annotationBack: $("scene-annotation-back"),
+        annotationBackward: $("scene-annotation-backward"),
+        annotationForward: $("scene-annotation-forward"),
+        annotationFront: $("scene-annotation-front"),
+        annotationDelete: $("scene-annotation-delete"),
     };
     if (!dom.editorView || !dom.enterButton) return;
 
@@ -1668,6 +2289,21 @@ export function initializeSceneEditor(root = document) {
             suppressNextClick = false;
             return;
         }
+        if (state.tool) {
+            handleToolClick(event);
+            return;
+        }
+        if (event.target.closest("[data-annotation-handle]")) return;
+        const annotationTarget = event.target.closest("[data-scene-annotation-index]");
+        if (annotationTarget) {
+            if (state.cropMode) return;
+            const annotationIndex = Number(annotationTarget.dataset.sceneAnnotationIndex);
+            if (state.selectedAnnotationIndex === annotationIndex) deselectAnnotation();
+            else selectAnnotation(annotationIndex);
+            renderCanvas();
+            return;
+        }
+        deselectAnnotation();
         const target = event.target.closest("[data-scene-image-index]");
         const index = target ? Number(target.dataset.sceneImageIndex) : null;
         if (state.selectedImageIndex === index) {
@@ -1677,14 +2313,61 @@ export function initializeSceneEditor(root = document) {
         }
         renderCanvas();
     });
+    dom.canvas.addEventListener("dblclick", (event) => {
+        if (state.tool === "polygon") {
+            finishPolygon();
+            return;
+        }
+        if (state.tool) return;
+        const target = event.target.closest("[data-scene-annotation-index]");
+        if (!target) return;
+        const index = Number(target.dataset.sceneAnnotationIndex);
+        const annotation = state.active && state.active.annotations[index];
+        if (!annotation || annotation.type !== "text") return;
+        selectAnnotation(index);
+        renderCanvas();
+        dom.annotationText.focus();
+        dom.annotationText.select();
+    });
     dom.canvas.addEventListener("keydown", (event) => {
+        if (handleAnnotationKey(event)) {
+            event.preventDefault();
+            return;
+        }
         if (event.key === "Escape" && state.selectedImageIndex !== null) {
             deselectImage();
             renderCanvas();
         }
     });
     dom.canvas.addEventListener("mousedown", (event) => {
-        if (!state.active || state.selectedImageIndex === null) return;
+        // A drag's own click may never arrive (its node was redrawn away), so
+        // a new press always starts with clicks counting again.
+        suppressNextClick = false;
+        if (!state.active) return;
+        if (state.tool === "line" || state.tool === "arrow") {
+            const drawingSvg = dom.canvas.querySelector("svg");
+            if (!drawingSvg) return;
+            event.preventDefault();
+            startLineDraw(event, drawingSvg);
+            return;
+        }
+        if (state.tool) return;
+        if (selectedAnnotation()) {
+            const annotationSvg = dom.canvas.querySelector("svg");
+            const annotationHandle = event.target.closest("[data-annotation-handle]");
+            const annotationNode = event.target.closest("[data-scene-annotation-index]");
+            if (!annotationSvg) return;
+            if (annotationHandle) {
+                event.preventDefault();
+                startAnnotationDrag(event, annotationSvg, annotationHandle.dataset.annotationHandle,
+                    Number(annotationHandle.dataset.pointIndex));
+            } else if (annotationNode && Number(annotationNode.dataset.sceneAnnotationIndex) === state.selectedAnnotationIndex) {
+                event.preventDefault();
+                startAnnotationDrag(event, annotationSvg, "move");
+            }
+            return;
+        }
+        if (state.selectedImageIndex === null) return;
         const image = state.active.images[state.selectedImageIndex];
         if (!image) return;
 
@@ -1720,6 +2403,32 @@ export function initializeSceneEditor(root = document) {
     dom.imageRotateRight90.addEventListener("click", () => rotateSelectedImage(90));
     dom.imageFlipHorizontal.addEventListener("click", () => flipSelectedImage("horizontal"));
     dom.imageFlipVertical.addEventListener("click", () => flipSelectedImage("vertical"));
+
+    if (dom.annotationTools) {
+        for (const button of dom.annotationTools.querySelectorAll("[data-tool]")) {
+            button.addEventListener("click", () => setTool(button.dataset.tool));
+        }
+        dom.annotationTools.addEventListener("keydown", (event) => {
+            if (event.key === "Escape" && state.tool) cancelTool();
+        });
+        dom.toolCancel.addEventListener("click", () => {
+            cancelTool();
+            dom.canvas.focus();
+        });
+        dom.polygonFinish.addEventListener("click", finishPolygon);
+        dom.annotationText.addEventListener("input", handleAnnotationTextInput);
+        dom.annotationText.addEventListener("blur", handleAnnotationTextBlur);
+        dom.annotationSize.addEventListener("change", handleAnnotationSizeChange);
+        dom.annotationWidth.addEventListener("change", handleAnnotationWidthChange);
+        dom.annotationColor.addEventListener("input", handleAnnotationColorInput);
+        dom.annotationOpacity.addEventListener("input", handleAnnotationOpacityInput);
+        dom.annotationPointer.addEventListener("click", () => setTool("pointer"));
+        dom.annotationBack.addEventListener("click", () => moveSelectedAnnotation("back"));
+        dom.annotationBackward.addEventListener("click", () => moveSelectedAnnotation(-1));
+        dom.annotationForward.addEventListener("click", () => moveSelectedAnnotation(1));
+        dom.annotationFront.addEventListener("click", () => moveSelectedAnnotation("front"));
+        dom.annotationDelete.addEventListener("click", deleteSelectedAnnotation);
+    }
 
     renderWorkspace();
 }

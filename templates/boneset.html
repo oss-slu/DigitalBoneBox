@@ -269,12 +269,54 @@
                                 <button id="scene-image-crop-reset" type="button" class="scene-btn scene-btn-secondary" hidden>Reset crop</button>
                                 <button id="scene-image-remove" type="button" class="scene-btn scene-btn-danger">Remove image</button>
                             </div>
+
+                            <div id="scene-annotation-tools" class="scene-image-toolbar scene-annotation-tools" role="toolbar" aria-label="Add annotation">
+                                <span class="scene-image-toolbar-label">Add annotation:</span>
+                                <button id="scene-tool-text" type="button" class="scene-btn scene-btn-secondary" data-tool="text" aria-pressed="false">Text label</button>
+                                <button id="scene-tool-line" type="button" class="scene-btn scene-btn-secondary" data-tool="line" aria-pressed="false">Line</button>
+                                <button id="scene-tool-arrow" type="button" class="scene-btn scene-btn-secondary" data-tool="arrow" aria-pressed="false">Arrow</button>
+                                <button id="scene-tool-polygon" type="button" class="scene-btn scene-btn-secondary" data-tool="polygon" aria-pressed="false">Highlight region</button>
+                                <span id="scene-tool-hint" class="scene-tool-hint" hidden></span>
+                                <button id="scene-polygon-finish" type="button" class="scene-btn scene-btn-primary" hidden>Finish shape</button>
+                                <button id="scene-tool-cancel" type="button" class="scene-btn scene-btn-secondary" hidden>Cancel</button>
+                            </div>
+
+                            <div id="scene-annotation-toolbar" class="scene-image-toolbar scene-annotation-toolbar" hidden>
+                                <span id="scene-annotation-label" class="scene-image-toolbar-label">Selected annotation:</span>
+                                <div id="scene-annotation-text-field" class="scene-annotation-field scene-annotation-text-field">
+                                    <label for="scene-annotation-text">Text</label>
+                                    <textarea id="scene-annotation-text" rows="2" aria-describedby="scene-annotation-text-error"></textarea>
+                                    <p id="scene-annotation-text-error" class="scene-field-error" hidden></p>
+                                </div>
+                                <div id="scene-annotation-size-field" class="scene-annotation-field">
+                                    <label for="scene-annotation-size">Text size</label>
+                                    <input id="scene-annotation-size" type="number" min="8" max="200" step="1" />
+                                </div>
+                                <div id="scene-annotation-width-field" class="scene-annotation-field">
+                                    <label for="scene-annotation-width">Line width</label>
+                                    <input id="scene-annotation-width" type="number" min="1" max="20" step="0.5" />
+                                </div>
+                                <div class="scene-annotation-field">
+                                    <label for="scene-annotation-color">Color</label>
+                                    <input id="scene-annotation-color" type="color" />
+                                </div>
+                                <div id="scene-annotation-opacity-field" class="scene-annotation-field">
+                                    <label for="scene-annotation-opacity">Opacity</label>
+                                    <input id="scene-annotation-opacity" type="range" min="0.1" max="0.8" step="0.05" />
+                                </div>
+                                <button id="scene-annotation-pointer" type="button" class="scene-btn scene-btn-secondary">Add pointer line</button>
+                                <button id="scene-annotation-back" type="button" class="scene-btn scene-btn-secondary">Send to back</button>
+                                <button id="scene-annotation-backward" type="button" class="scene-btn scene-btn-secondary">Send backward</button>
+                                <button id="scene-annotation-forward" type="button" class="scene-btn scene-btn-secondary">Bring forward</button>
+                                <button id="scene-annotation-front" type="button" class="scene-btn scene-btn-secondary">Bring to front</button>
+                                <button id="scene-annotation-delete" type="button" class="scene-btn scene-btn-danger">Delete annotation</button>
+                            </div>
                         </div>
 
                         <div class="scene-canvas-frame">
                             <div id="scene-canvas-empty" class="scene-empty scene-canvas-empty">
                                 <p><strong>This scene is blank.</strong></p>
-                                <p>Images and annotations added to this scene will appear here. Use <strong>Import bone images</strong> to start from an existing bone, or import an image from your computer.</p>
+                                <p>Images and annotations added to this scene will appear here. Use <strong>Import bone images</strong> to start from an existing bone, import an image from your computer, or choose a tool under <strong>Add annotation</strong>.</p>
                                 <button id="scene-canvas-empty-import" type="button" class="scene-btn scene-btn-primary">Import image…</button>
                             </div>
                             <div id="scene-canvas" class="scene-canvas" role="region" aria-label="Scene canvas" tabindex="0" hidden></div>

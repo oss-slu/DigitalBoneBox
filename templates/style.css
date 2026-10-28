@@ -3008,6 +3008,99 @@ button:disabled {
     stroke-dasharray: 4 3;
 }
 
+/* Annotations (Issue #426) */
+.scene-annotation-tools .scene-btn[aria-pressed="true"] {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #ffffff;
+}
+
+.scene-tool-hint {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.scene-annotation-toolbar {
+    align-items: flex-end;
+}
+
+.scene-annotation-field {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.scene-annotation-field input[type="number"] {
+    width: 5rem;
+}
+
+.scene-annotation-text-field {
+    flex: 1 1 14rem;
+}
+
+.scene-annotation-text-field textarea {
+    width: 100%;
+    min-height: 2.5rem;
+    font: inherit;
+    resize: vertical;
+}
+
+.scene-annotation-text-field .scene-field-error {
+    margin: 0;
+}
+
+.scene-layer-annotations [data-scene-annotation-index] {
+    cursor: pointer;
+}
+
+.scene-annotation-hit {
+    fill: transparent;
+    stroke: none;
+}
+
+.scene-annotation-hit-line {
+    fill: none;
+    stroke: transparent;
+    pointer-events: stroke;
+}
+
+.scene-point-handle {
+    fill: #ffffff;
+    stroke: var(--accent);
+    stroke-width: 1.5;
+    cursor: move;
+}
+
+.scene-canvas.is-drawing,
+.scene-canvas.is-drawing [data-scene-annotation-index],
+.scene-canvas.is-drawing .scene-image-object {
+    cursor: crosshair;
+}
+
+.scene-draft-shape,
+.scene-draft-closing {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 2;
+}
+
+.scene-draft-closing {
+    stroke-dasharray: 5 4;
+}
+
+.scene-draft-point {
+    fill: #ffffff;
+    stroke: var(--accent);
+    stroke-width: 1.5;
+}
+
+.scene-draft-start {
+    fill: var(--accent);
+    cursor: pointer;
+}
+
 @media (max-width: 900px) {
     .scene-editor-layout {
         grid-template-columns: 1fr;
