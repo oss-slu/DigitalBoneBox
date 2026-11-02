@@ -724,3 +724,121 @@ describe("Annotation selection", () => {
         expect($("scene-canvas-empty").hidden).toBe(false);
     });
 });
+
+describe("Selecting objects (#440)", () => {
+    // One of each object type. Annotations are drawn over images, and later
+    // ones over earlier ones, so from the top down: highlight, arrow, line,
+    // label, image.
+    const content = {
+        images: [{ id: "img", src: "/images/a.png", x: 300, y: 300, width: 100, height: 100 }],
+        annotations: [
+            { id: "label", type: "text", text: "Ilium", x: 0, y: 0 },
+            { id: "line", type: "line", x1: 10, y1: 400, x2: 200, y2: 400 },
+            { id: "arrow", type: "arrow", x1: 10, y1: 450, x2: 200, y2: 450 },
+            { id: "poly", type: "polygon", points: [[500, 100], [600, 100], [550, 200]] },
+        ],
+    };
+    const imageNode = () => document.querySelector("[data-scene-image-index=\"0\"]");
+    const status = () => $("scene-editor-status").textContent;
+    const outlines = () => document.querySelectorAll(".scene-selection-outline");
+    /** Presses a key on the canvas; returns whether the editor handled it (prevented the default). */
+    function press(name, options = {}) {
+        return !$("scene-canvas").dispatchEvent(new KeyboardEvent("keydown", { key: name, bubbles: true, cancelable: true, ...options }));
+    }
+
+    it("selects each object type with a visible outline, and a second click keeps it selected", async () => {
+        await openBlankScene(content);
+
+        for (const index of [0, 1, 2, 3]) {
+            selectAnnotation(index);
+            expect($("scene-annotation-toolbar").hidden).toBe(false);
+            expect($("scene-image-toolbar").hidden).toBe(true);
+            expect(outlines()).toHaveLength(1);
+            selectAnnotation(index);
+            expect($("scene-annotation-toolbar").hidden).toBe(false);
+        }
+        clickAt(imageNode(), [350, 350]);
+        expect($("scene-image-toolbar").hidden).toBe(false);
+        expect($("scene-annotation-toolbar").hidden).toBe(true);
+        expect(outlines()).toHaveLength(1);
+        clickAt(imageNode(), [350, 350]);
+        expect($("scene-image-toolbar").hidden).toBe(false);
+    });
+
+    it("says which object was selected and where it is in the stack", async () => {
+        await openBlankScene(content);
+
+        selectAnnotation(0);
+        await waitFor(() => expect(status()).toBe("Selected label \"Ilium\", 4 of 5 objects."));
+        selectAnnotation(3);
+        await waitFor(() => expect(status()).toBe("Selected highlight, 1 of 5 objects."));
+        clickAt(imageNode(), [350, 350]);
+        await waitFor(() => expect(status()).toBe("Selected image, 5 of 5 objects."));
+    });
+
+    it("clears the selection with Escape or a click on empty canvas", async () => {
+        await openBlankScene(content);
+
+        clickAt(imageNode(), [350, 350]);
+        expect(press("Escape")).toBe(false);
+        expect($("scene-image-toolbar").hidden).toBe(true);
+        expect(outlines()).toHaveLength(0);
+        await waitFor(() => expect(status()).toBe("Nothing selected."));
+
+        selectAnnotation(1);
+        clickAt(canvasSvg(), [900, 550]);
+        expect($("scene-annotation-toolbar").hidden).toBe(true);
+        expect(outlines()).toHaveLength(0);
+    });
+
+    it("keeps an image selected when one of its corner handles is clicked without dragging", async () => {
+        await openBlankScene(content);
+        clickAt(imageNode(), [350, 350]);
+
+        clickAt(document.querySelector("[data-corner=\"se\"]"), [400, 400]);
+
+        expect($("scene-image-toolbar").hidden).toBe(false);
+        expect(scenesModule.getActiveScene().images[0]).toMatchObject({ x: 300, y: 300, width: 100, height: 100 });
+        expect(scenesModule.hasUnsavedChanges()).toBe(false);
+    });
+
+    it("steps through the objects from the top with Tab and back with Shift+Tab, then lets focus leave", async () => {
+        await openBlankScene(content);
+        const selected = () => {
+            if (!$("scene-image-toolbar").hidden) return "image";
+            if (!$("scene-annotation-toolbar").hidden) return "annotation";
+            return null;
+        };
+        const order = [];
+        for (let step = 0; step < 5; step += 1) {
+            expect(press("Tab")).toBe(true);
+            await waitFor(() => expect(status()).toMatch(new RegExp(`, ${step + 1} of 5 objects\\.$`)));
+            order.push(status());
+        }
+        expect(order.map((message) => message.replace(/, \d of 5 objects\.$/, ""))).toEqual([
+            "Selected highlight",
+            "Selected arrow",
+            "Selected line",
+            "Selected label \"Ilium\"",
+            "Selected image",
+        ]);
+        expect(selected()).toBe("image");
+
+        expect(press("Tab", { shiftKey: true })).toBe(true);
+        await waitFor(() => expect(status()).toBe("Selected label \"Ilium\", 4 of 5 objects."));
+
+        // Past the last object, Tab clears the selection and isn't held by the canvas.
+        press("Tab");
+        expect(press("Tab")).toBe(false);
+        expect(selected()).toBeNull();
+        // With nothing selected, Shift+Tab leaves the canvas too.
+        expect(press("Tab", { shiftKey: true })).toBe(false);
+    });
+
+    it("leaves Tab alone while a drawing tool is in use", async () => {
+        await openBlankScene(content);
+        click("scene-tool-line");
+        expect(press("Tab")).toBe(false);
+        expect(outlines()).toHaveLength(0);
+    });
+});

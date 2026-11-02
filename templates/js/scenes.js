@@ -191,25 +191,43 @@ const state = {
     openRequest: 0,
     fitToWidth: true,
     busy: false,
-    selectedImageIndex: null,
+    // Issue #440: the one selected object, `{ kind: "image" | "annotation",
+    // index }` (its index in `active.images` or `active.annotations`), or null.
+    selection: null,
     cropMode: false,
-    // Issue #426: the selected annotation's index in `active.annotations`, the
-    // annotation tool in use ("text" | "line" | "arrow" | "polygon" |
-    // "pointer"), and the shape being drawn with it.
-    selectedAnnotationIndex: null,
+    // Issue #426: the annotation tool in use ("text" | "line" | "arrow" |
+    // "polygon" | "pointer"), and the shape being drawn with it.
     tool: null,
     draft: null,
     boneOptions: null,
     importRequest: 0,
 };
 
-function deselectImage() {
-    state.selectedImageIndex = null;
-    state.cropMode = false;
+/** The selected image's index, or null when no image is selected. */
+function selectedImageIndex() {
+    return state.selection && state.selection.kind === "image" ? state.selection.index : null;
 }
 
-function deselectAnnotation() {
-    state.selectedAnnotationIndex = null;
+/** The selected annotation's index, or null when no annotation is selected. */
+function selectedAnnotationIndex() {
+    return state.selection && state.selection.kind === "annotation" ? state.selection.index : null;
+}
+
+/**
+ * Selects one object, replacing any other selection. Crop mode only lasts
+ * while the image it was started on stays selected.
+ * @param {"image"|"annotation"} kind
+ * @param {number} index
+ */
+function select(kind, index) {
+    const isSame = state.selection && state.selection.kind === kind && state.selection.index === index;
+    if (!isSame) state.cropMode = false;
+    state.selection = { kind, index };
+}
+
+function deselect() {
+    state.selection = null;
+    state.cropMode = false;
 }
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
@@ -229,8 +247,7 @@ function setActiveScene(scene) {
     state.conflictUpdatedAt = null;
     state.missing = false;
     state.saveAlert = null;
-    deselectImage();
-    deselectAnnotation();
+    deselect();
     endLineDraw();
     state.tool = null;
     state.draft = null;
@@ -497,7 +514,7 @@ function renderLibrary() {
  */
 function updateImageToolbar() {
     const scene = state.active;
-    const index = state.selectedImageIndex;
+    const index = selectedImageIndex();
     const hasSelection = Boolean(scene) && index !== null && index >= 0 && index < scene.images.length;
     dom.imageToolbar.hidden = !hasSelection;
     if (!hasSelection) return;
@@ -522,9 +539,9 @@ function renderCanvas() {
     if (isEmpty) return;
 
     const { svg, unsupported, unlinked, width, height } = renderScene(scene, {
-        selectedIndex: state.selectedImageIndex,
+        selectedIndex: selectedImageIndex(),
         cropMode: state.cropMode,
-        selectedAnnotationIndex: state.selectedAnnotationIndex,
+        selectedAnnotationIndex: selectedAnnotationIndex(),
         draft: state.draft,
     });
     svg.setAttribute("aria-label", `Scene canvas for ${scene.name}`);
@@ -983,11 +1000,11 @@ async function handleDuplicate() {
 
 /** Removes the selected image from the working copy (Issue #418). */
 function handleImageRemove() {
-    if (!state.active || state.selectedImageIndex === null) return;
-    const index = state.selectedImageIndex;
+    if (!state.active || selectedImageIndex() === null) return;
+    const index = selectedImageIndex();
     if (!state.active.images[index]) return;
     state.active.images.splice(index, 1);
-    deselectImage();
+    deselect();
     markChanged();
     renderWorkspace();
 }
@@ -999,8 +1016,8 @@ function handleImageRemove() {
  * @param {object} fields - The new values to set, e.g. `{ rotation: 90 }`.
  */
 function applySelectedImageUpdate(fields) {
-    if (!state.active || state.selectedImageIndex === null) return;
-    const image = state.active.images[state.selectedImageIndex];
+    if (!state.active || selectedImageIndex() === null) return;
+    const image = state.active.images[selectedImageIndex()];
     if (!image) return;
     Object.assign(image, fields);
     markChanged();
@@ -1013,8 +1030,8 @@ function applySelectedImageUpdate(fields) {
  * @param {number} deltaDegrees
  */
 function rotateSelectedImage(deltaDegrees) {
-    if (!state.active || state.selectedImageIndex === null) return;
-    const image = state.active.images[state.selectedImageIndex];
+    if (!state.active || selectedImageIndex() === null) return;
+    const image = state.active.images[selectedImageIndex()];
     if (!image) return;
     const current = typeof image.rotation === "number" ? image.rotation : 0;
     const next = ((current + deltaDegrees) % 360 + 360) % 360;
@@ -1026,8 +1043,8 @@ function rotateSelectedImage(deltaDegrees) {
  * @param {"horizontal" | "vertical"} axis
  */
 function flipSelectedImage(axis) {
-    if (!state.active || state.selectedImageIndex === null) return;
-    const image = state.active.images[state.selectedImageIndex];
+    if (!state.active || selectedImageIndex() === null) return;
+    const image = state.active.images[selectedImageIndex()];
     if (!image) return;
     const field = axis === "horizontal" ? "flipX" : "flipY";
     applySelectedImageUpdate({ [field]: !image[field] });
@@ -1041,13 +1058,13 @@ function flipSelectedImage(axis) {
  * @param {1 | -1} direction
  */
 function moveSelectedImage(direction) {
-    if (!state.active || state.selectedImageIndex === null) return;
+    if (!state.active || selectedImageIndex() === null) return;
     const images = state.active.images;
-    const index = state.selectedImageIndex;
+    const index = selectedImageIndex();
     const targetIndex = index + direction;
     if (targetIndex < 0 || targetIndex >= images.length) return;
     [images[index], images[targetIndex]] = [images[targetIndex], images[index]];
-    state.selectedImageIndex = targetIndex;
+    state.selection.index = targetIndex;
     markChanged();
     renderWorkspace();
 }
@@ -1109,7 +1126,7 @@ function unrotateVector(dx, dy, degrees) {
  */
 function startImageDrag(event, svg, corner) {
     const scene = state.active;
-    const index = state.selectedImageIndex;
+    const index = selectedImageIndex();
     const image = scene.images[index];
     const scale = getSceneScale(svg);
     const startClientX = event.clientX;
@@ -1216,7 +1233,7 @@ function computeCropRect(corner, start, localDelta, imageWidth, imageHeight) {
  */
 function startCropDrag(event, svg, corner) {
     const scene = state.active;
-    const index = state.selectedImageIndex;
+    const index = selectedImageIndex();
     const image = scene.images[index];
     const scale = getSceneScale(svg);
     const startClientX = event.clientX;
@@ -1252,7 +1269,7 @@ function startCropDrag(event, svg, corner) {
 
 /** Enters crop-editing mode for the selected image (Issue #417). */
 function enterCropMode() {
-    if (!state.active || state.selectedImageIndex === null) return;
+    if (!state.active || selectedImageIndex() === null) return;
     state.cropMode = true;
     renderCanvas();
 }
@@ -1266,8 +1283,8 @@ function exitCropMode() {
 
 /** Clears the selected image's crop back to fully visible. */
 function resetSelectedImageCrop() {
-    if (!state.active || state.selectedImageIndex === null) return;
-    const image = state.active.images[state.selectedImageIndex];
+    if (!state.active || selectedImageIndex() === null) return;
+    const image = state.active.images[selectedImageIndex()];
     if (!image) return;
     applySelectedImageUpdate({ cropX: 0, cropY: 0, cropWidth: image.width, cropHeight: image.height });
 }
@@ -1303,14 +1320,86 @@ const round2 = (value) => Math.round(value * 100) / 100;
 
 function selectedAnnotation() {
     const scene = state.active;
-    const index = state.selectedAnnotationIndex;
+    const index = selectedAnnotationIndex();
     if (!scene || index === null || index < 0 || index >= scene.annotations.length) return null;
     return scene.annotations[index];
 }
 
-function selectAnnotation(index) {
-    deselectImage();
-    state.selectedAnnotationIndex = index;
+// Issue #440: selecting objects with the mouse and keyboard. A click selects
+// the object under it (clicking it again keeps it selected); Escape or a
+// click on empty canvas clears the selection; Tab and Shift+Tab step through
+// the drawn objects from the top of the stack down.
+const MAX_ANNOUNCED_TEXT = 40;
+
+/**
+ * Every drawn object as { kind, index }, topmost first: annotations are
+ * drawn over images, and each later object over the ones before it.
+ * Objects the canvas can't draw aren't included.
+ */
+function selectableObjects() {
+    const svg = dom.canvas.querySelector("svg");
+    if (!svg) return [];
+    const annotationIndexes = new Set(
+        [...svg.querySelectorAll("[data-scene-annotation-index]")].map((node) => Number(node.dataset.sceneAnnotationIndex))
+    );
+    const imageIndexes = [...svg.querySelectorAll("[data-scene-image-index]")].map((node) => Number(node.dataset.sceneImageIndex));
+    return [
+        ...[...annotationIndexes].reverse().map((index) => ({ kind: "annotation", index })),
+        ...imageIndexes.reverse().map((index) => ({ kind: "image", index })),
+    ];
+}
+
+function announceSelection() {
+    const { kind, index } = state.selection;
+    let name = "image";
+    if (kind === "annotation") {
+        const annotation = selectedAnnotation();
+        name = describeAnnotation(annotation);
+        if (annotation.type === "text") {
+            const text = annotation.text.replace(/\s+/g, " ").trim();
+            name += ` "${text.length > MAX_ANNOUNCED_TEXT ? `${text.slice(0, MAX_ANNOUNCED_TEXT)}…` : text}"`;
+        }
+    }
+    const objects = selectableObjects();
+    const position = objects.findIndex((object) => object.kind === kind && object.index === index);
+    announce(position === -1 ? `Selected ${name}.` : `Selected ${name}, ${position + 1} of ${plural(objects.length, "object")}.`);
+}
+
+/** Selects an object the user picked, and says which one it is. */
+function selectObject(kind, index) {
+    select(kind, index);
+    renderCanvas();
+    announceSelection();
+}
+
+/** Clears the selection the user dismissed. `quiet` skips the announcement. */
+function clearSelection({ quiet = false } = {}) {
+    if (!state.selection) return;
+    deselect();
+    renderCanvas();
+    if (!quiet) announce("Nothing selected.");
+}
+
+/**
+ * Tab and Shift+Tab on the canvas select the next or previous object. Past
+ * either end the selection is cleared and focus leaves the canvas as usual.
+ * @returns {boolean} Whether the key was handled.
+ */
+function handleSelectionTab(event) {
+    if (event.key !== "Tab" || event.altKey || event.ctrlKey || event.metaKey) return false;
+    if (!state.active || state.tool || state.cropMode) return false;
+    const objects = selectableObjects();
+    const current = state.selection
+        ? objects.findIndex((object) => object.kind === state.selection.kind && object.index === state.selection.index)
+        : -1;
+    if (current === -1 && event.shiftKey) return false;
+    const next = event.shiftKey ? current - 1 : current + 1;
+    if (next < 0 || next >= objects.length) {
+        clearSelection({ quiet: true });
+        return false;
+    }
+    selectObject(objects[next].kind, objects[next].index);
+    return true;
 }
 
 /** Where a mouse event is in scene coordinates. */
@@ -1376,10 +1465,10 @@ function updateAnnotationControls() {
     }
 
     const last = state.active.annotations.length - 1;
-    dom.annotationBack.disabled = state.selectedAnnotationIndex === 0;
-    dom.annotationBackward.disabled = state.selectedAnnotationIndex === 0;
-    dom.annotationForward.disabled = state.selectedAnnotationIndex === last;
-    dom.annotationFront.disabled = state.selectedAnnotationIndex === last;
+    dom.annotationBack.disabled = selectedAnnotationIndex() === 0;
+    dom.annotationBackward.disabled = selectedAnnotationIndex() === 0;
+    dom.annotationForward.disabled = selectedAnnotationIndex() === last;
+    dom.annotationFront.disabled = selectedAnnotationIndex() === last;
 }
 
 /**
@@ -1395,10 +1484,7 @@ function setTool(tool) {
     endLineDraw();
     state.tool = next;
     state.draft = null;
-    if (next && next !== "pointer") {
-        deselectImage();
-        deselectAnnotation();
-    }
+    if (next && next !== "pointer") deselect();
     renderCanvas();
     if (next) {
         announce(TOOL_HINTS[next]);
@@ -1420,7 +1506,7 @@ function addAnnotation(annotation) {
     state.active.annotations.push(annotation);
     state.tool = null;
     state.draft = null;
-    selectAnnotation(state.active.annotations.length - 1);
+    select("annotation", state.active.annotations.length - 1);
     markChanged();
     renderWorkspace();
 }
@@ -1755,14 +1841,14 @@ function handleAnnotationOpacityInput() {
  */
 function moveSelectedAnnotation(direction) {
     const annotations = state.active ? state.active.annotations : null;
-    const index = state.selectedAnnotationIndex;
+    const index = selectedAnnotationIndex();
     if (!annotations || !selectedAnnotation()) return;
     const last = annotations.length - 1;
     const target = direction === "front" ? last : direction === "back" ? 0 : index + direction;
     if (target < 0 || target > last || target === index) return;
     const [annotation] = annotations.splice(index, 1);
     annotations.splice(target, 0, annotation);
-    state.selectedAnnotationIndex = target;
+    state.selection.index = target;
     markChanged();
     renderWorkspace();
     const position = target === last ? "in front of all other annotations"
@@ -1778,7 +1864,7 @@ function deleteSelectedAnnotation() {
     const scene = state.active;
     const removed = new Set([annotation, ...pointerLinesOf(annotation, scene).map(({ line }) => line)]);
     scene.annotations = scene.annotations.filter((other) => !removed.has(other));
-    deselectAnnotation();
+    deselect();
     markChanged();
     renderWorkspace();
     const kind = describeAnnotation(annotation);
@@ -1818,8 +1904,7 @@ function handleAnnotationKey(event) {
     }
     if (state.tool || !selectedAnnotation()) return false;
     if (event.key === "Escape") {
-        deselectAnnotation();
-        renderCanvas();
+        clearSelection();
         return true;
     }
     if (event.key === "Delete" || event.key === "Backspace") {
@@ -2293,25 +2378,17 @@ export function initializeSceneEditor(root = document) {
             handleToolClick(event);
             return;
         }
-        if (event.target.closest("[data-annotation-handle]")) return;
+        // A click on a handle belongs to the selected object, even without a drag.
+        if (event.target.closest("[data-annotation-handle], [data-corner]")) return;
         const annotationTarget = event.target.closest("[data-scene-annotation-index]");
         if (annotationTarget) {
             if (state.cropMode) return;
-            const annotationIndex = Number(annotationTarget.dataset.sceneAnnotationIndex);
-            if (state.selectedAnnotationIndex === annotationIndex) deselectAnnotation();
-            else selectAnnotation(annotationIndex);
-            renderCanvas();
+            selectObject("annotation", Number(annotationTarget.dataset.sceneAnnotationIndex));
             return;
         }
-        deselectAnnotation();
-        const target = event.target.closest("[data-scene-image-index]");
-        const index = target ? Number(target.dataset.sceneImageIndex) : null;
-        if (state.selectedImageIndex === index) {
-            deselectImage();
-        } else {
-            state.selectedImageIndex = index;
-        }
-        renderCanvas();
+        const imageTarget = event.target.closest("[data-scene-image-index]");
+        if (imageTarget) selectObject("image", Number(imageTarget.dataset.sceneImageIndex));
+        else clearSelection();
     });
     dom.canvas.addEventListener("dblclick", (event) => {
         if (state.tool === "polygon") {
@@ -2324,20 +2401,17 @@ export function initializeSceneEditor(root = document) {
         const index = Number(target.dataset.sceneAnnotationIndex);
         const annotation = state.active && state.active.annotations[index];
         if (!annotation || annotation.type !== "text") return;
-        selectAnnotation(index);
+        select("annotation", index);
         renderCanvas();
         dom.annotationText.focus();
         dom.annotationText.select();
     });
     dom.canvas.addEventListener("keydown", (event) => {
-        if (handleAnnotationKey(event)) {
+        if (handleAnnotationKey(event) || handleSelectionTab(event)) {
             event.preventDefault();
             return;
         }
-        if (event.key === "Escape" && state.selectedImageIndex !== null) {
-            deselectImage();
-            renderCanvas();
-        }
+        if (event.key === "Escape" && state.selection) clearSelection();
     });
     dom.canvas.addEventListener("mousedown", (event) => {
         // A drag's own click may never arrive (its node was redrawn away), so
@@ -2361,14 +2435,14 @@ export function initializeSceneEditor(root = document) {
                 event.preventDefault();
                 startAnnotationDrag(event, annotationSvg, annotationHandle.dataset.annotationHandle,
                     Number(annotationHandle.dataset.pointIndex));
-            } else if (annotationNode && Number(annotationNode.dataset.sceneAnnotationIndex) === state.selectedAnnotationIndex) {
+            } else if (annotationNode && Number(annotationNode.dataset.sceneAnnotationIndex) === selectedAnnotationIndex()) {
                 event.preventDefault();
                 startAnnotationDrag(event, annotationSvg, "move");
             }
             return;
         }
-        if (state.selectedImageIndex === null) return;
-        const image = state.active.images[state.selectedImageIndex];
+        if (selectedImageIndex() === null) return;
+        const image = state.active.images[selectedImageIndex()];
         if (!image) return;
 
         const handle = event.target.closest("[data-corner]");
@@ -2384,7 +2458,7 @@ export function initializeSceneEditor(root = document) {
 
         const imageNode = event.target.closest("[data-scene-image-index]");
         const isSelectedImageNode =
-            imageNode && Number(imageNode.dataset.sceneImageIndex) === state.selectedImageIndex;
+            imageNode && Number(imageNode.dataset.sceneImageIndex) === selectedImageIndex();
         if (!handle && !isSelectedImageNode) return;
 
         event.preventDefault();
