@@ -1,7 +1,4 @@
-<<<<<<< HEAD
-import { renderScene } from "./sceneCanvas.js";
 import { OPEN_SCENE_EVENT, SHOW_IN_VIEWER_EVENT, sceneSources, readableName } from "./sceneLinks.js";
-=======
 import { renderScene, displayedAnnotation, storeAnnotationGeometry, textBox } from "./sceneCanvas.js";
 import {
     DEFAULT_HIGHLIGHT_COLOR,
@@ -20,7 +17,6 @@ import {
     toColorInputValue,
     translateAnnotation,
 } from "./sceneAnnotations.js";
->>>>>>> upstream/main
 
 const SCENES_URL = "/api/scenes";
 
@@ -384,7 +380,7 @@ function updateControls() {
     dom.emptyNewButton.disabled = locked;
     dom.renameButton.disabled = locked || !state.active;
     dom.deleteButton.disabled = locked || !state.active;
-    
+
     dom.duplicateButton.disabled = locked || !state.active;
     updatePublishControls(locked);
     dom.saveButton.disabled = locked || !hasUnsavedChanges();
@@ -1071,7 +1067,15 @@ async function saveAsNewScene() {
             await loadLibrary();
             return;
         }
-        Object.assign(scene, { id: created.id, name: created.name, createdAt: created.createdAt, updatedAt: created.updatedAt });
+        Object.assign(scene, {
+            id: created.id,
+            name: created.name,
+            createdAt: created.createdAt,
+            updatedAt: created.updatedAt,
+            status: created.status
+        });
+        if (created.publishedAt) scene.publishedAt = created.publishedAt;
+        else delete scene.publishedAt;
         state.saved = clone(created);
         state.savedRevision = revision;
         state.missing = false;

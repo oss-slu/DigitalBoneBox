@@ -268,6 +268,28 @@ describe("Scene editor: publish and unpublish (Issue 459)", () => {
         await waitFor(() => expect($("scene-title").textContent).toBe("Untitled Scene 1"));
         expect($("scene-status-badge").textContent).toBe("Published");
     });
+
+    it("treats a published scene saved as new after being deleted as a draft", async () => {
+        await openNewScene();
+        await publish();
+        makeUnsavedChange();
+
+        backend.scenes.delete("scene-1");
+        click("scene-save");
+        await waitFor(() => expect($("scene-workspace-retry").textContent).toBe("Save as new scene"));
+
+        click("scene-workspace-retry");
+        await waitFor(() => expect($("scene-save-status").textContent).toBe("Saved"));
+
+        const active = scenesModule.getActiveScene();
+        expect(active.id).not.toBe("scene-1");
+        expect(backend.scenes.get(active.id).status).toBe("draft");
+        expect(active.status).toBe("draft");
+        expect(active.publishedAt).toBeUndefined();
+        expect(active.annotations.map((a) => a.id)).toEqual(["note"]);
+        expect($("scene-status-badge").textContent).toBe("Draft");
+        expect($("scene-publish").textContent).toBe("Publish");
+       });
 });
 
 describe("Bone viewer shows only published scenes (Issues 458, 459)", () => {

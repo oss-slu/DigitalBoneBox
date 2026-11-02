@@ -354,4 +354,3 @@ describe("fetchBoneDataResult classifies responses - Issue 469", () => {
         await expect(realApi.fetchBoneData("ilium")).resolves.toBeNull();
     });
 });
-
