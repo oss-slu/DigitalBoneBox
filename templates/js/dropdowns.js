@@ -80,7 +80,7 @@ async function loadBoneImages(boneId, options = {}) {
   resetStage();
 
   // Links to any scenes made from this item (hidden when there are none).
-  showSceneLinks(boneId || null);
+  void showSceneLinks(boneId || null);
 
   if (!boneId) {
     showPlaceholder();
@@ -189,7 +189,7 @@ bonesetSelect.addEventListener("change", (e) => {
   if (!selectedBonesetId || relatedBones.length === 0) {
     const stage = getImageStage();
     if (stage) { clearAnnotations(stage); stage.classList.remove("with-annotations"); }
-    loadBoneImages(null);
+    void loadBoneImages(null);
     return;
   }
 
@@ -241,7 +241,7 @@ boneSelect.addEventListener("change", (e) => {
       loadDescription(selectedBonesetId);
       loadBoneImages(selectedBonesetId, { boneId: selectedBonesetId });
     } else {
-      loadBoneImages(null);
+      void loadBoneImages(null);
     }
   }
 });
@@ -273,7 +273,7 @@ subboneSelect.addEventListener("change", (e) => {
       loadDescription(selectedBoneId);
       loadBoneImages(selectedBoneId, { boneId: selectedBoneId });
     } else {
-      loadBoneImages(null);
+      void loadBoneImages(null);
     }
   }
 });

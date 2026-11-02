@@ -662,7 +662,7 @@ function showInViewer(boneId) {
  */
 function openSceneFromViewer(sceneId) {
     if (dom.editorView.hidden) enterEditor();
-    openScene(sceneId);
+    void openScene(sceneId);
 }
 
 function clearActiveScene() {
