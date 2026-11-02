@@ -555,6 +555,111 @@ function renderAnnotation(annotation, defs) {
     }
 }
 
+// Issue #441: finding every object under a point, so overlapping objects can
+// be reached and not only the one drawn on top. This repeats the browser's
+// hit testing in scene geometry, matching what renderScene draws and what
+// its hit areas make clickable.
+
+/** Whether a point is inside a polygon (even-odd rule). */
+function pointInPolygon([px, py], points) {
+    let inside = false;
+    for (let i = 0, j = points.length - 1; i < points.length; j = i, i += 1) {
+        const [xi, yi] = points[i];
+        const [xj, yj] = points[j];
+        if ((yi > py) !== (yj > py) && px < ((xj - xi) * (py - yi)) / (yj - yi) + xi) inside = !inside;
+    }
+    return inside;
+}
+
+function distanceToSegment([px, py], [ax, ay], [bx, by]) {
+    const dx = bx - ax;
+    const dy = by - ay;
+    const lengthSquared = dx * dx + dy * dy;
+    const t = lengthSquared ? Math.min(1, Math.max(0, ((px - ax) * dx + (py - ay) * dy) / lengthSquared)) : 0;
+    return Math.hypot(px - (ax + t * dx), py - (ay + t * dy));
+}
+
+/** Whether a point is within `tolerance` of a polyline (or a closed polygon's outline). */
+function isNearPolyline(point, points, tolerance, closed = false) {
+    const segments = closed ? points.length : points.length - 1;
+    for (let i = 0; i < segments; i += 1) {
+        if (distanceToSegment(point, points[i], points[(i + 1) % points.length]) <= tolerance) return true;
+    }
+    return false;
+}
+
+/** The visible (cropped) area of an image as drawn - flipped and rotated - or null if it isn't drawn. */
+function imageHitArea(image) {
+    if (!image || typeof image.src !== "string" || !SAFE_IMAGE_SRC.test(image.src)) return null;
+    if (!isValidBox(image)) return null;
+    const crop = cropRectFor(image);
+    const corners = [
+        [image.x + crop.x, image.y + crop.y],
+        [image.x + crop.x + crop.width, image.y + crop.y],
+        [image.x + crop.x + crop.width, image.y + crop.y + crop.height],
+        [image.x + crop.x, image.y + crop.y + crop.height],
+    ];
+    return corners.map(imageTransform(image, image).toScreen);
+}
+
+/** Whether a drawn annotation (displayed geometry) covers a point. */
+function annotationHit(annotation, point) {
+    switch (annotation.type) {
+        case "text": {
+            if (typeof annotation.text !== "string" || !isNumber(annotation.x) || !isNumber(annotation.y)) return false;
+            const box = textBox(annotation);
+            const [x, y] = point;
+            return x >= box.x && x <= box.x + box.width && y >= box.y && y <= box.y + box.height;
+        }
+        case "line":
+        case "arrow": {
+            const points = linePoints(annotation);
+            const width = isNumber(annotation.strokeWidth) ? annotation.strokeWidth : 2;
+            return Boolean(points) && isNearPolyline(point, points, Math.max(LINE_HIT_WIDTH, width + 8) / 2);
+        }
+        case "polygon": {
+            const points = toPoints(annotation.points);
+            if (!points || points.length < 3) return false;
+            const width = isNumber(annotation.strokeWidth) ? annotation.strokeWidth : 1.5;
+            return pointInPolygon(point, points) || isNearPolyline(point, points, width / 2, true);
+        }
+        default:
+            return false;
+    }
+}
+
+/**
+ * Every object drawn at a scene point, topmost first, as { kind, index }:
+ * annotations (each later one before the ones under it), then images. Objects
+ * the canvas can't draw are left out, and a colored region clipped to its
+ * image's crop only counts inside the visible crop area.
+ * @param {{ images: object[], annotations: object[] }} scene
+ * @param {[number, number]} point - Scene pixels.
+ * @returns {{ kind: "image" | "annotation", index: number }[]}
+ */
+export function objectsAt(scene, point) {
+    const hits = [];
+    const images = scene.images || [];
+    const annotations = scene.annotations || [];
+    for (let index = annotations.length - 1; index >= 0; index -= 1) {
+        const annotation = annotations[index];
+        if (!annotation) continue;
+        const transform = linkedTransform(annotation, scene);
+        if (!annotationHit(transform ? mapLinkedAnnotation(annotation, transform) : annotation, point)) continue;
+        if (transform && clipsToCrop(annotation)) {
+            const image = images.find((candidate) => candidate && candidate.id === annotation.sourceImageId);
+            const visible = visibleCropPolygon(image, transform);
+            if (visible && !pointInPolygon(point, visible)) continue;
+        }
+        hits.push({ kind: "annotation", index });
+    }
+    for (let index = images.length - 1; index >= 0; index -= 1) {
+        const area = imageHitArea(images[index]);
+        if (area && pointInPolygon(point, area)) hits.push({ kind: "image", index });
+    }
+    return hits;
+}
+
 /**
  * Renders a scene's images and annotations into an SVG element. Optionally draws a
  * non-interactive selection outline around one image, identified by its index in

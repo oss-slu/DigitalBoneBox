@@ -2983,6 +2983,12 @@ button:disabled {
     color: #92400e;
 }
 
+.scene-selection-hint {
+    margin: var(--space-2) 0 0;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
 .scene-image-object {
     cursor: pointer;
 }

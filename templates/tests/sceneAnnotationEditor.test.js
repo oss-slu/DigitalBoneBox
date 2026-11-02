@@ -91,8 +91,18 @@ function drag(target, from, to) {
 function key(name, options = {}) {
     $("scene-canvas").dispatchEvent(new KeyboardEvent("keydown", { key: name, bubbles: true, ...options }));
 }
+/** A point on a drawn annotation, where a user would click it. */
+function pointOn(node) {
+    if (node.tagName === "text") return [Number(node.getAttribute("x")) + 1, Number(node.getAttribute("y")) + 1];
+    const points = (node.getAttribute("points") || "").trim().split(/\s+/).map((pair) => pair.split(",").map(Number));
+    if (node.tagName === "polygon") {
+        return [0, 1].map((axis) => points.reduce((sum, point) => sum + point[axis], 0) / points.length);
+    }
+    return [(points[0][0] + points[1][0]) / 2, (points[0][1] + points[1][1]) / 2];
+}
 function selectAnnotation(index) {
-    clickAt(annotationNode(index), [0, 0]);
+    const node = annotationNode(index);
+    clickAt(node, pointOn(node));
 }
 function typeText(text) {
     $("scene-annotation-text").focus();
@@ -233,7 +243,10 @@ describe("Text labels (#427-#430)", () => {
 
     it("opens a label's text for editing on double-click", async () => {
         await openBlankScene({ annotations: [{ id: "a", type: "text", text: "Ilium", x: 10, y: 10 }] });
-        mouse("dblclick", annotationNode(0), [0, 0]);
+        // A browser sends both clicks before the dblclick.
+        clickAt(annotationNode(0), [12, 12]);
+        clickAt(annotationNode(0), [12, 12]);
+        mouse("dblclick", annotationNode(0), [12, 12]);
         expect(document.activeElement).toBe($("scene-annotation-text"));
         expect($("scene-annotation-toolbar").hidden).toBe(false);
     });
@@ -840,5 +853,106 @@ describe("Selecting objects (#440)", () => {
         click("scene-tool-line");
         expect(press("Tab")).toBe(false);
         expect(outlines()).toHaveLength(0);
+    });
+});
+
+describe("Selecting overlapping objects (#441)", () => {
+    // A label on a highlight on an image: at (320, 315) all three overlap; at
+    // (390, 390) the highlight and the image; at (285, 285) only the highlight.
+    const content = {
+        images: [{ id: "img", src: "/images/a.png", x: 300, y: 300, width: 100, height: 100 }],
+        annotations: [
+            { id: "poly", type: "polygon", points: [[280, 280], [420, 280], [420, 420], [280, 420]] },
+            { id: "label", type: "text", text: "Ilium", x: 310, y: 310 },
+        ],
+    };
+    const status = () => $("scene-editor-status").textContent;
+    const hint = () => $("scene-selection-hint");
+    const selected = () => {
+        if (!$("scene-image-toolbar").hidden) return "image";
+        if ($("scene-annotation-toolbar").hidden) return null;
+        return $("scene-annotation-label").textContent.includes("label") ? "label" : "highlight";
+    };
+    function altClickAt(target, [x, y]) {
+        target.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, clientX: x, clientY: y, altKey: true }));
+        document.dispatchEvent(new MouseEvent("mouseup", { clientX: x, clientY: y, altKey: true }));
+        target.dispatchEvent(new MouseEvent("click", { bubbles: true, clientX: x, clientY: y, altKey: true }));
+    }
+
+    it("selects the topmost object, then each one below on clicks in the same spot, wrapping to the top", async () => {
+        await openBlankScene(content);
+        const order = [];
+        for (let i = 0; i < 4; i += 1) {
+            // The browser reports the topmost node as clicked every time.
+            clickAt(annotationNode(1), [320, 315]);
+            order.push(selected());
+        }
+        expect(order).toEqual(["label", "highlight", "image", "label"]);
+    });
+
+    it("shows and announces a hint while objects overlap, and hides it for a single object", async () => {
+        await openBlankScene(content);
+
+        clickAt(annotationNode(1), [320, 315]);
+        expect(hint().hidden).toBe(false);
+        expect(hint().textContent).toBe(
+            "3 objects overlap here. Click again in the same spot, or Alt+click, to select the next one down."
+        );
+        await waitFor(() => expect(status()).toBe(
+            "Selected label \"Ilium\", 1 of 3 objects. 3 objects overlap here. Click again in the same spot, or Alt+click, to select the next one down."
+        ));
+
+        clickAt(annotationNode(0), [285, 285]);
+        expect(selected()).toBe("highlight");
+        expect(hint().hidden).toBe(true);
+
+        clickAt(annotationNode(1), [320, 315]);
+        key("Escape");
+        expect(hint().hidden).toBe(true);
+    });
+
+    it("selects the topmost object again when the click is in a different spot", async () => {
+        await openBlankScene(content);
+        clickAt(annotationNode(0), [390, 390]);
+        clickAt(annotationNode(0), [390, 390]);
+        expect(selected()).toBe("image");
+
+        clickAt(annotationNode(0), [395, 380]);
+        expect(selected()).toBe("highlight");
+    });
+
+    it("steps down the stack with Alt+click from anywhere on it", async () => {
+        await openBlankScene(content);
+
+        altClickAt(annotationNode(0), [390, 390]);
+        expect(selected()).toBe("image");
+        // The image is under the label too, so the next Alt+click wraps to the top there.
+        altClickAt(annotationNode(1), [320, 315]);
+        expect(selected()).toBe("label");
+        altClickAt(annotationNode(1), [322, 316]);
+        expect(selected()).toBe("highlight");
+    });
+
+    it("keeps stepping down on quick clicks instead of a double-click jumping back to the label", async () => {
+        await openBlankScene(content);
+        clickAt(annotationNode(1), [320, 315]);
+        clickAt(annotationNode(1), [320, 315]);
+        mouse("dblclick", annotationNode(1), [320, 315]);
+        expect(selected()).toBe("highlight");
+        expect(document.activeElement).not.toBe($("scene-annotation-text"));
+
+        clickAt(annotationNode(1), [320, 315]);
+        expect(selected()).toBe("image");
+    });
+
+    it("clears the hint once the selected object is edited", async () => {
+        await openBlankScene(content);
+        clickAt(annotationNode(1), [320, 315]);
+        expect(hint().hidden).toBe(false);
+
+        key("ArrowRight");
+
+        expect(hint().hidden).toBe(true);
+        expect(selected()).toBe("label");
     });
 });

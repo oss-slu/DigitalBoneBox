@@ -1,4 +1,4 @@
-import { renderScene, displayedAnnotation, storeAnnotationGeometry, textBox } from "./sceneCanvas.js";
+import { renderScene, displayedAnnotation, objectsAt, storeAnnotationGeometry, textBox } from "./sceneCanvas.js";
 import {
     DEFAULT_HIGHLIGHT_COLOR,
     DEFAULT_HIGHLIGHT_OPACITY,
@@ -194,6 +194,9 @@ const state = {
     // Issue #440: the one selected object, `{ kind: "image" | "annotation",
     // index }` (its index in `active.images` or `active.annotations`), or null.
     selection: null,
+    // Issue #441: how many objects were under the click that made the
+    // selection, while that's more than one (for the "click again" hint).
+    overlapCount: 0,
     cropMode: false,
     // Issue #426: the annotation tool in use ("text" | "line" | "arrow" |
     // "polygon" | "pointer"), and the shape being drawn with it.
@@ -223,11 +226,18 @@ function select(kind, index) {
     const isSame = state.selection && state.selection.kind === kind && state.selection.index === index;
     if (!isSame) state.cropMode = false;
     state.selection = { kind, index };
+    state.overlapCount = 0;
 }
 
 function deselect() {
     state.selection = null;
     state.cropMode = false;
+    state.overlapCount = 0;
+}
+
+/** Whether `object` ({ kind, index }) is the selected object. */
+function isSelected(object) {
+    return Boolean(state.selection) && object.kind === state.selection.kind && object.index === state.selection.index;
 }
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
@@ -394,6 +404,8 @@ function markChanged() {
     if (!state.active) return;
     const wasSaved = !hasUnsavedChanges();
     state.revision += 1;
+    // The overlap hint described the click before this edit.
+    state.overlapCount = 0;
     if (wasSaved) announce("Unsaved changes.");
     updateControls();
 }
@@ -536,6 +548,9 @@ function renderCanvas() {
     dom.canvas.hidden = isEmpty;
     dom.fitToggle.hidden = isEmpty;
     dom.canvasNote.hidden = true;
+    const showOverlapHint = Boolean(state.selection) && state.overlapCount > 1;
+    dom.selectionHint.hidden = !showOverlapHint;
+    dom.selectionHint.textContent = showOverlapHint ? overlapHint() : "";
     if (isEmpty) return;
 
     const { svg, unsupported, unlinked, width, height } = renderScene(scene, {
@@ -1326,10 +1341,17 @@ function selectedAnnotation() {
 }
 
 // Issue #440: selecting objects with the mouse and keyboard. A click selects
-// the object under it (clicking it again keeps it selected); Escape or a
-// click on empty canvas clears the selection; Tab and Shift+Tab step through
-// the drawn objects from the top of the stack down.
+// the object under it; Escape or a click on empty canvas clears the
+// selection; Tab and Shift+Tab step through the drawn objects from the top of
+// the stack down.
+// Issue #441: where objects overlap, clicking again in the same spot (or
+// Alt+clicking anywhere on the stack) selects the next object down, wrapping
+// back to the top, so an image under a highlight can still be reached.
 const MAX_ANNOUNCED_TEXT = 40;
+// How far apart, in screen pixels, two clicks can be and still count as the same spot.
+const SAME_SPOT_DISTANCE = 4;
+// Where the last selecting click was, in client coordinates, or null.
+let lastSelectClick = null;
 
 /**
  * Every drawn object as { kind, index }, topmost first: annotations are
@@ -1362,21 +1384,89 @@ function announceSelection() {
     }
     const objects = selectableObjects();
     const position = objects.findIndex((object) => object.kind === kind && object.index === index);
-    announce(position === -1 ? `Selected ${name}.` : `Selected ${name}, ${position + 1} of ${plural(objects.length, "object")}.`);
+    const message = position === -1 ? `Selected ${name}.` : `Selected ${name}, ${position + 1} of ${plural(objects.length, "object")}.`;
+    announce(state.overlapCount > 1 ? `${message} ${overlapHint()}` : message);
 }
 
-/** Selects an object the user picked, and says which one it is. */
-function selectObject(kind, index) {
+function overlapHint() {
+    return `${state.overlapCount} objects overlap here. Click again in the same spot, or Alt+click, to select the next one down.`;
+}
+
+/**
+ * Selects an object the user picked, and says which one it is.
+ * @param {"image"|"annotation"} kind
+ * @param {number} index
+ * @param {{ overlapCount?: number }} [options] - how many objects were under the click.
+ */
+function selectObject(kind, index, { overlapCount = 0 } = {}) {
     select(kind, index);
-    renderCanvas();
+    state.overlapCount = overlapCount;
+    keepCanvasInPlace(renderCanvas);
     announceSelection();
+}
+
+/**
+ * Redraws while keeping the canvas where it is on screen. Selecting shows the
+ * image or annotation toolbar above the canvas (and clearing hides it), which
+ * would otherwise push the scene out from under the pointer, so the next
+ * click "in the same spot" would land on a different part of it.
+ */
+function keepCanvasInPlace(redraw) {
+    const before = dom.canvas.getBoundingClientRect().top;
+    redraw();
+    const shift = dom.canvas.getBoundingClientRect().top - before;
+    // Instant, not the page's smooth scrolling, so a quick next click finds the canvas already back.
+    if (shift) window.scrollBy({ top: shift, behavior: "instant" });
+}
+
+/** The object a canvas node belongs to, as { kind, index }, or null. */
+function objectOfNode(node) {
+    const annotationNode = node.closest("[data-scene-annotation-index]");
+    if (annotationNode) return { kind: "annotation", index: Number(annotationNode.dataset.sceneAnnotationIndex) };
+    const imageNode = node.closest("[data-scene-image-index]");
+    return imageNode ? { kind: "image", index: Number(imageNode.dataset.sceneImageIndex) } : null;
+}
+
+/**
+ * Every object under a mouse event, topmost first. The one the browser
+ * reports as clicked always comes first, so the result agrees with what the
+ * user sees on top even where hit areas and geometry differ slightly.
+ */
+function objectsUnderEvent(event) {
+    const svg = dom.canvas.querySelector("svg");
+    const clicked = objectOfNode(event.target);
+    const stack = svg && svg.contains(event.target) ? objectsAt(state.active, clientToScene(svg, event)) : [];
+    if (!clicked) return stack;
+    return [clicked, ...stack.filter((object) => object.kind !== clicked.kind || object.index !== clicked.index)];
+}
+
+/** A click on the canvas with no tool in use: selects, steps down a stack of objects, or clears. */
+function handleSelectClick(event) {
+    const sameSpot = Boolean(lastSelectClick) &&
+        Math.hypot(event.clientX - lastSelectClick.x, event.clientY - lastSelectClick.y) <= SAME_SPOT_DISTANCE;
+    lastSelectClick = { x: event.clientX, y: event.clientY };
+    let stack = objectsUnderEvent(event);
+    if (state.cropMode) {
+        // While cropping, annotations can't be selected; a click on one does nothing.
+        if (stack.length > 0 && stack[0].kind === "annotation") return;
+        stack = stack.filter((object) => object.kind === "image");
+    }
+    if (stack.length === 0) {
+        clearSelection();
+        return;
+    }
+    const current = stack.findIndex(isSelected);
+    let target = stack[0];
+    if (current !== -1 && (sameSpot || event.altKey)) target = stack[(current + 1) % stack.length];
+    else if (event.altKey && stack.length > 1) target = stack[1];
+    selectObject(target.kind, target.index, { overlapCount: stack.length });
 }
 
 /** Clears the selection the user dismissed. `quiet` skips the announcement. */
 function clearSelection({ quiet = false } = {}) {
     if (!state.selection) return;
     deselect();
-    renderCanvas();
+    keepCanvasInPlace(renderCanvas);
     if (!quiet) announce("Nothing selected.");
 }
 
@@ -1389,9 +1479,7 @@ function handleSelectionTab(event) {
     if (event.key !== "Tab" || event.altKey || event.ctrlKey || event.metaKey) return false;
     if (!state.active || state.tool || state.cropMode) return false;
     const objects = selectableObjects();
-    const current = state.selection
-        ? objects.findIndex((object) => object.kind === state.selection.kind && object.index === state.selection.index)
-        : -1;
+    const current = objects.findIndex(isSelected);
     if (current === -1 && event.shiftKey) return false;
     const next = event.shiftKey ? current - 1 : current + 1;
     if (next < 0 || next >= objects.length) {
@@ -2272,6 +2360,7 @@ export function initializeSceneEditor(root = document) {
         canvas: $("scene-canvas"),
         canvasEmpty: $("scene-canvas-empty"),
         canvasNote: $("scene-canvas-note"),
+        selectionHint: $("scene-selection-hint"),
         importButton: $("scene-import-image"),
         importButtonEmpty: $("scene-canvas-empty-import"),
         importInput: $("scene-import-input"),
@@ -2380,15 +2469,7 @@ export function initializeSceneEditor(root = document) {
         }
         // A click on a handle belongs to the selected object, even without a drag.
         if (event.target.closest("[data-annotation-handle], [data-corner]")) return;
-        const annotationTarget = event.target.closest("[data-scene-annotation-index]");
-        if (annotationTarget) {
-            if (state.cropMode) return;
-            selectObject("annotation", Number(annotationTarget.dataset.sceneAnnotationIndex));
-            return;
-        }
-        const imageTarget = event.target.closest("[data-scene-image-index]");
-        if (imageTarget) selectObject("image", Number(imageTarget.dataset.sceneImageIndex));
-        else clearSelection();
+        handleSelectClick(event);
     });
     dom.canvas.addEventListener("dblclick", (event) => {
         if (state.tool === "polygon") {
@@ -2396,13 +2477,10 @@ export function initializeSceneEditor(root = document) {
             return;
         }
         if (state.tool) return;
-        const target = event.target.closest("[data-scene-annotation-index]");
-        if (!target) return;
-        const index = Number(target.dataset.sceneAnnotationIndex);
-        const annotation = state.active && state.active.annotations[index];
+        // The two clicks have already picked the object (stepping down a
+        // stack of overlapping ones, #441), so only a selected label opens.
+        const annotation = selectedAnnotation();
         if (!annotation || annotation.type !== "text") return;
-        select("annotation", index);
-        renderCanvas();
         dom.annotationText.focus();
         dom.annotationText.select();
     });
