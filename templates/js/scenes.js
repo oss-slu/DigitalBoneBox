@@ -1022,6 +1022,7 @@ function handleImageRemove() {
     deselect();
     markChanged();
     renderWorkspace();
+    announce("Image removed. Save to keep the change.");
 }
 
 /**
@@ -1063,6 +1064,29 @@ function flipSelectedImage(axis) {
     if (!image) return;
     const field = axis === "horizontal" ? "flipX" : "flipY";
     applySelectedImageUpdate({ [field]: !image[field] });
+}
+
+/**
+ * Issue #442: keyboard use of the selected image on the canvas, matching
+ * annotations - the arrow keys move it (1 scene pixel, or 10 with Shift)
+ * and Delete or Backspace removes it. Not while its crop is being edited.
+ * @returns {boolean} Whether the key was handled.
+ */
+function handleImageKey(event) {
+    if (state.tool || state.cropMode || event.altKey || event.ctrlKey || event.metaKey) return false;
+    const image = state.active && selectedImageIndex() !== null ? state.active.images[selectedImageIndex()] : null;
+    if (!image) return false;
+    if (event.key === "Delete" || event.key === "Backspace") {
+        handleImageRemove();
+        dom.canvas.focus();
+        return true;
+    }
+    const step = event.shiftKey ? NUDGE_STEP_LARGE : NUDGE_STEP;
+    const deltas = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] };
+    if (!deltas[event.key]) return false;
+    const [dx, dy] = deltas[event.key];
+    applySelectedImageUpdate({ x: image.x + dx, y: image.y + dy });
+    return true;
 }
 
 /**
@@ -2485,7 +2509,7 @@ export function initializeSceneEditor(root = document) {
         dom.annotationText.select();
     });
     dom.canvas.addEventListener("keydown", (event) => {
-        if (handleAnnotationKey(event) || handleSelectionTab(event)) {
+        if (handleAnnotationKey(event) || handleImageKey(event) || handleSelectionTab(event)) {
             event.preventDefault();
             return;
         }
@@ -2504,16 +2528,19 @@ export function initializeSceneEditor(root = document) {
             return;
         }
         if (state.tool) return;
+        // Issue #442: a press anywhere on the selected object drags it, even
+        // where another object is drawn over it (it was reached with #441's
+        // click-again), and a press on anything else never moves anything.
+        const isOnSelected = () => objectsUnderEvent(event).some(isSelected);
         if (selectedAnnotation()) {
             const annotationSvg = dom.canvas.querySelector("svg");
             const annotationHandle = event.target.closest("[data-annotation-handle]");
-            const annotationNode = event.target.closest("[data-scene-annotation-index]");
             if (!annotationSvg) return;
             if (annotationHandle) {
                 event.preventDefault();
                 startAnnotationDrag(event, annotationSvg, annotationHandle.dataset.annotationHandle,
                     Number(annotationHandle.dataset.pointIndex));
-            } else if (annotationNode && Number(annotationNode.dataset.sceneAnnotationIndex) === selectedAnnotationIndex()) {
+            } else if (isOnSelected()) {
                 event.preventDefault();
                 startAnnotationDrag(event, annotationSvg, "move");
             }
@@ -2534,10 +2561,7 @@ export function initializeSceneEditor(root = document) {
             return;
         }
 
-        const imageNode = event.target.closest("[data-scene-image-index]");
-        const isSelectedImageNode =
-            imageNode && Number(imageNode.dataset.sceneImageIndex) === selectedImageIndex();
-        if (!handle && !isSelectedImageNode) return;
+        if (!handle && !isOnSelected()) return;
 
         event.preventDefault();
         startImageDrag(event, svg, handle ? handle.dataset.corner : null);

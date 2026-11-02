@@ -956,3 +956,102 @@ describe("Selecting overlapping objects (#441)", () => {
         expect(selected()).toBe("label");
     });
 });
+
+describe("Moving and resizing selected objects (#442)", () => {
+    // A crowded scene: image "a" under a highlight and a label, image "b" to
+    // its right, and a line below.
+    const content = () => ({
+        images: [
+            { id: "a", src: "/images/a.png", x: 300, y: 300, width: 100, height: 100 },
+            { id: "b", src: "/images/b.png", x: 600, y: 300, width: 100, height: 100 },
+        ],
+        annotations: [
+            { id: "poly", type: "polygon", points: [[280, 280], [420, 280], [420, 420], [280, 420]] },
+            { id: "label", type: "text", text: "Ilium", x: 310, y: 310 },
+            { id: "line", type: "line", x1: 10, y1: 500, x2: 200, y2: 500 },
+        ],
+    });
+    const images = () => scenesModule.getActiveScene().images;
+    const storedImages = () => backend.scenes.get("scene-1").images;
+    const imageNode = (index) => document.querySelector(`[data-scene-image-index="${index}"]`);
+    const status = () => $("scene-editor-status").textContent;
+    /** Selects image "a" the way a user reaches it under the highlight: clicking twice in one spot. */
+    function selectCoveredImage() {
+        clickAt(annotationNode(0), [390, 390]);
+        clickAt(annotationNode(0), [390, 390]);
+        expect($("scene-image-toolbar").hidden).toBe(false);
+    }
+
+    it("moves, nudges, and resizes an image covered by a highlight, and keeps it after reopening", async () => {
+        await openBlankScene(content());
+        selectCoveredImage();
+
+        // The press lands on the highlight, but the selected image is under it, so the image moves.
+        drag(annotationNode(0), [390, 390], [440, 400]);
+        expect(images()[0]).toMatchObject({ x: 350, y: 310 });
+        expect($("scene-image-toolbar").hidden).toBe(false);
+
+        key("ArrowRight");
+        key("ArrowDown", { shiftKey: true });
+        expect(images()[0]).toMatchObject({ x: 351, y: 320 });
+
+        // The se handle is at (451, 420); dragging it 50 right scales 100 -> 150 about the center.
+        drag(document.querySelector("[data-corner=\"se\"]"), [451, 420], [501, 420]);
+        expect(images()[0]).toMatchObject({ x: 326, y: 295, width: 150, height: 150 });
+
+        await saveAndReopen();
+        expect(storedImages()[0]).toMatchObject({ x: 326, y: 295, width: 150, height: 150 });
+        expect(storedImages()[1]).toEqual(content().images[1]);
+        expect(stored()).toEqual(content().annotations);
+    });
+
+    it("never moves an object that isn't selected", async () => {
+        await openBlankScene(content());
+        selectCoveredImage();
+
+        // Pressing and dragging on the line or on image "b" moves nothing.
+        drag(annotationNode(2), [100, 500], [150, 550]);
+        drag(imageNode(1), [650, 350], [700, 400]);
+
+        expect(images()).toEqual(content().images);
+        expect(annotations()).toEqual(content().annotations);
+        expect(scenesModule.hasUnsavedChanges()).toBe(false);
+    });
+
+    it("moves a selected highlight when the press lands on the label drawn over it", async () => {
+        await openBlankScene(content());
+        clickAt(annotationNode(0), [390, 390]);
+
+        drag(annotationNode(1), [320, 315], [330, 325]);
+
+        expect(annotations()[0].points).toEqual([[290, 290], [430, 290], [430, 430], [290, 430]]);
+        expect(annotations()[1]).toEqual(content().annotations[1]);
+        expect(images()).toEqual(content().images);
+    });
+
+    it("removes the selected image with Delete or Backspace", async () => {
+        await openBlankScene(content());
+        selectCoveredImage();
+
+        key("Delete");
+        expect(images().map((image) => image.id)).toEqual(["b"]);
+        expect($("scene-image-toolbar").hidden).toBe(true);
+        await waitFor(() => expect(status()).toBe("Image removed. Save to keep the change."));
+
+        clickAt(imageNode(0), [650, 350]);
+        key("Backspace");
+        expect(images()).toEqual([]);
+        expect(annotations()).toEqual(content().annotations);
+    });
+
+    it("leaves the arrow keys and Delete alone while an image's crop is being edited", async () => {
+        await openBlankScene(content());
+        clickAt(imageNode(1), [650, 350]);
+        click("scene-image-crop-start");
+
+        key("ArrowLeft");
+        key("Delete");
+
+        expect(images()).toEqual(content().images);
+    });
+});
