@@ -2966,7 +2966,12 @@ button:disabled {
 .scene-canvas {
     max-height: 70vh;
     overflow: auto;
+    /* Issue #446: dragging on the canvas edits the scene; it shouldn't also
+        select text on the page. */
+    -webkit-user-select: none;
+    user-select: none;
 }
+
 
 .scene-svg {
     display: block;

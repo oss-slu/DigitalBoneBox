@@ -1069,6 +1069,65 @@ const CORNER_GROWTH_SIGN = {
     sw: { x: -1, y: 1 },
 };
 
+// Issue #446: every canvas drag goes through followDrag, which tracks the
+// same kind of input the drag started with. A drag started by a pointer event
+// (mouse, and later touch and pen) follows that one pointer; a drag started
+// by a plain mouse event (browsers without Pointer Events, and jsdom tests)
+// follows the mouse. Only one drag runs at a time.
+let activeDrag = null;
+
+/**
+ * Calls `onMove` for each move of the input that started the drag, and
+ * `onEnd` once when it is released or cancelled. Returns a function that
+ * stops the drag early without calling `onEnd`.
+ * @param {PointerEvent|MouseEvent} startEvent
+ * @param {(event: PointerEvent|MouseEvent) => void} onMove
+ * @param {(event: PointerEvent|MouseEvent) => void} onEnd
+ * @returns {() => void}
+ */
+function followDrag(startEvent, onMove, onEnd) {
+    if (activeDrag) activeDrag.stop();
+    const isPointer = startEvent.type === "pointerdown";
+    const moveType = isPointer ? "pointermove" : "mousemove";
+    const endTypes = isPointer ? ["pointerup", "pointercancel"] : ["mouseup"];
+    const pointerId = isPointer ? startEvent.pointerId : null;
+    const isSameInput = (event) => !isPointer || event.pointerId === pointerId;
+
+    function stop() {
+        document.removeEventListener(moveType, handleMove);
+        for (const type of endTypes) document.removeEventListener(type, handleEnd);
+        window.removeEventListener("blur", handleBlur);
+        if (activeDrag === drag) activeDrag = null;
+    }
+    function handleMove(event) {
+        if (!isSameInput(event)) return;
+        // The mouse button was let go outside the window, where the page
+        // never hears the release: end the drag rather than let it stick.
+        if (isPointer && event.pointerType === "mouse" && event.buttons === 0) {
+            handleEnd(event);
+            return;
+        }
+        onMove(event);
+    }
+    function handleEnd(event) {
+        if (!isSameInput(event)) return;
+        stop();
+        onEnd(event);
+    }
+    // Switching to another window mid-drag ends the drag where it is.
+    function handleBlur(event) {
+        stop();
+        onEnd(event);
+    }
+
+    const drag = { stop, isPointer };
+    activeDrag = drag;
+    document.addEventListener(moveType, handleMove);
+    for (const type of endTypes) document.addEventListener(type, handleEnd);
+    window.addEventListener("blur", handleBlur);
+    return stop;
+}
+
 function getSceneScale(svg) {
     const rect = svg.getBoundingClientRect();
     // Parsed from the attribute directly, not `.viewBox.baseVal` - jsdom's
@@ -1121,7 +1180,7 @@ function startImageDrag(event, svg, corner) {
     const rotation = typeof image.rotation === "number" ? image.rotation : 0;
     let didDrag = false;
 
-    function onMouseMove(moveEvent) {
+    function onMove(moveEvent) {
         const dxClient = moveEvent.clientX - startClientX;
         const dyClient = moveEvent.clientY - startClientY;
         if (Math.abs(dxClient) > DRAG_THRESHOLD || Math.abs(dyClient) > DRAG_THRESHOLD) didDrag = true;
@@ -1148,15 +1207,12 @@ function startImageDrag(event, svg, corner) {
         renderWorkspace();
     }
 
-    function onMouseUp() {
-        document.removeEventListener("mousemove", onMouseMove);
-        document.removeEventListener("mouseup", onMouseUp);
+    function onEnd() {
         suppressNextClick = didDrag;
         if (didDrag) markChanged();
     }
 
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
+    followDrag(event, onMove, onEnd);
 }
 
 // Issue #417: non-destructive cropping. The crop rect lives in the image's
@@ -1225,7 +1281,7 @@ function startCropDrag(event, svg, corner) {
     const rotation = typeof image.rotation === "number" ? image.rotation : 0;
     let didDrag = false;
 
-    function onMouseMove(moveEvent) {
+    function onMove(moveEvent) {
         const dxClient = moveEvent.clientX - startClientX;
         const dyClient = moveEvent.clientY - startClientY;
         if (Math.abs(dxClient) > DRAG_THRESHOLD || Math.abs(dyClient) > DRAG_THRESHOLD) didDrag = true;
@@ -1239,15 +1295,12 @@ function startCropDrag(event, svg, corner) {
         renderWorkspace();
     }
 
-    function onMouseUp() {
-        document.removeEventListener("mousemove", onMouseMove);
-        document.removeEventListener("mouseup", onMouseUp);
+    function onEnd() {
         suppressNextClick = didDrag;
         if (didDrag) markChanged();
     }
 
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
+    followDrag(event, onMove, onEnd);
 }
 
 /** Enters crop-editing mode for the selected image (Issue #417). */
@@ -1500,12 +1553,11 @@ function startLineDraw(event, svg) {
     state.draft = { type, points: [start, start] };
 
     function detach() {
-        document.removeEventListener("mousemove", onMouseMove);
-        document.removeEventListener("mouseup", onMouseUp);
+        stopFollowing();
         if (stopLineDraw === detach) stopLineDraw = null;
     }
 
-    function onMouseMove(moveEvent) {
+    function onMove(moveEvent) {
         if (!state.draft) return;
         state.draft.points[1] = [
             round2(start[0] + (moveEvent.clientX - startClientX) * scale.x),
@@ -1514,8 +1566,8 @@ function startLineDraw(event, svg) {
         renderCanvas();
     }
 
-    function onMouseUp() {
-        detach();
+    function onEnd() {
+        if (stopLineDraw === detach) stopLineDraw = null;
         suppressNextClick = true;
         if (!state.draft) return;
         const [[x1, y1], [x2, y2]] = state.draft.points;
@@ -1530,8 +1582,7 @@ function startLineDraw(event, svg) {
         dom.canvas.focus();
     }
 
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
+    const stopFollowing = followDrag(event, onMove, onEnd);
     stopLineDraw = detach;
     renderCanvas();
 }
@@ -1613,7 +1664,7 @@ function startAnnotationDrag(event, svg, mode, pointIndex) {
     const startClientY = event.clientY;
     let didDrag = false;
 
-    function onMouseMove(moveEvent) {
+    function onMove(moveEvent) {
         const dxClient = moveEvent.clientX - startClientX;
         const dyClient = moveEvent.clientY - startClientY;
         if (Math.abs(dxClient) > DRAG_THRESHOLD || Math.abs(dyClient) > DRAG_THRESHOLD) didDrag = true;
@@ -1634,15 +1685,12 @@ function startAnnotationDrag(event, svg, mode, pointIndex) {
         renderWorkspace();
     }
 
-    function onMouseUp() {
-        document.removeEventListener("mousemove", onMouseMove);
-        document.removeEventListener("mouseup", onMouseUp);
+    function onEnd() {
         suppressNextClick = didDrag;
         if (didDrag) markChanged();
     }
 
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
+    followDrag(event, onMove, onEnd);
 }
 
 /** Moves the selected annotation by a few scene pixels with the arrow keys. */
@@ -2339,7 +2387,20 @@ export function initializeSceneEditor(root = document) {
             renderCanvas();
         }
     });
+    // Issue #446: presses come in as pointer events (mouse, touch, pen) where
+    // the browser supports them, with plain mouse events as the fallback. A
+    // pointer drag cancels the browser's follow-up mouse events, and a stray
+    // one is ignored while a pointer drag runs, so each press is handled once.
+    dom.canvas.addEventListener("pointerdown", handleCanvasPress);
     dom.canvas.addEventListener("mousedown", (event) => {
+        if (activeDrag && activeDrag.isPointer) return;
+        handleCanvasPress(event);
+    });
+    function handleCanvasPress(event) {
+        // Only the main button (left mouse button, a finger, or a pen tip)
+        // edits; the other buttons keep their usual browser behavior.
+        if (event.button !== undefined && event.button !== 0) return;
+        if (event.isPrimary === false) return;
         // A drag's own click may never arrive (its node was redrawn away), so
         // a new press always starts with clicks counting again.
         suppressNextClick = false;
@@ -2389,7 +2450,7 @@ export function initializeSceneEditor(root = document) {
 
         event.preventDefault();
         startImageDrag(event, svg, handle ? handle.dataset.corner : null);
-    });
+    }
 
     dom.imageForward.addEventListener("click", () => moveSelectedImage(1));
     dom.imageBackward.addEventListener("click", () => moveSelectedImage(-1));

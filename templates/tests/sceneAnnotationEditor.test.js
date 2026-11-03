@@ -724,3 +724,227 @@ describe("Annotation selection", () => {
         expect($("scene-canvas-empty").hidden).toBe(false);
     });
 });
+// Issue #446: the same edits made with pointer events, which is what a mouse
+// sends in browsers that support them (and touch and pen, later). jsdom may
+// not have PointerEvent, so the fields the editor reads are set by hand.
+describe("Mouse editing with pointer events (#446)", () => {
+    // Like a browser, `buttons` says which buttons are held: the pressed one
+    // until it is let go.
+    const BUTTONS_HELD = { 0: 1, 1: 4, 2: 2 };
+    function pointer(type, target, [x, y], { pointerId = 1, button = 0, isPrimary = true, buttons } = {}) {
+        const released = type === "pointerup" || type === "pointercancel";
+        const held = buttons !== undefined ? buttons : released ? 0 : BUTTONS_HELD[button];
+        const init = { bubbles: true, clientX: x, clientY: y, button, buttons: held, pointerId, pointerType: "mouse", isPrimary };
+        const event = typeof PointerEvent === "function" ? new PointerEvent(type, init) : new MouseEvent(type, init);
+        for (const [name, value] of Object.entries({ pointerId, isPrimary, pointerType: "mouse" })) {
+            if (event[name] !== value) Object.defineProperty(event, name, { value });
+        }
+        target.dispatchEvent(event);
+    }
+    function pointerDrag(target, from, to, options) {
+        pointer("pointerdown", target, from, options);
+        pointer("pointermove", document, to, options);
+        pointer("pointerup", document, to, options);
+    }
+    const imageNode = () => document.querySelector("#scene-canvas [data-scene-image-index=\"0\"]");
+    const images = () => scenesModule.getActiveScene().images;
+    async function openSceneWithImage() {
+        await openBlankScene({ images: [{ id: "img-a", src: "/images/a.png", x: 100, y: 100, width: 200, height: 100 }] });
+        clickAt(imageNode(), [150, 150]);
+        expect(document.querySelectorAll(".scene-selection-outline")).toHaveLength(1);
+    }
+
+    it("moves and resizes an image and keeps the change", async () => {
+        await openSceneWithImage();
+
+        pointerDrag(imageNode(), [150, 150], [180, 170]);
+        expect(images()[0]).toMatchObject({ x: 130, y: 120 });
+        pointerDrag(document.querySelector("[data-corner=\"se\"]"), [330, 220], [370, 220]);
+        expect(images()[0].width).toBeCloseTo(240);
+        expect(images()[0].height).toBeCloseTo(120);
+
+        expect(scenesModule.hasUnsavedChanges()).toBe(true);
+        await saveAndReopen();
+        expect(backend.scenes.get("scene-1").images[0].width).toBeCloseTo(240);
+    });
+
+    it("crops an image", async () => {
+        await openSceneWithImage();
+        click("scene-image-crop-start");
+
+        pointerDrag(document.querySelector("[data-corner=\"se\"]"), [300, 200], [250, 180]);
+
+        expect(images()[0]).toMatchObject({ cropX: 0, cropY: 0, cropWidth: 150, cropHeight: 80 });
+    });
+
+    it("draws a line, moves its end and the whole line", async () => {
+        await openBlankScene();
+
+        click("scene-tool-line");
+        pointerDrag(canvasSvg(), [100, 100], [300, 100]);
+        expect(annotations()).toEqual([expect.objectContaining({ type: "line", x1: 100, y1: 100, x2: 300, y2: 100 })]);
+
+        pointerDrag(document.querySelector("[data-point-index=\"1\"]"), [300, 100], [300, 250]);
+        expect(annotations()[0]).toMatchObject({ x2: 300, y2: 250 });
+        pointerDrag(annotationNode(0), [200, 175], [210, 185]);
+        expect(annotations()[0]).toMatchObject({ x1: 110, y1: 110, x2: 310, y2: 260 });
+    });
+
+    it("moves a label", async () => {
+        await openBlankScene({ annotations: [{ id: "t", type: "text", text: "Ilium", x: 100, y: 100 }] });
+        selectAnnotation(0);
+
+        pointerDrag(annotationNode(0), [110, 100], [160, 140]);
+
+        expect(annotations()[0]).toMatchObject({ x: 150, y: 140 });
+    });
+
+    it("handles each press once, ignoring the mouse events a browser sends after a pointer press", async () => {
+        await openSceneWithImage();
+
+        pointer("pointerdown", imageNode(), [150, 150]);
+        mouse("mousedown", imageNode(), [150, 150]);
+        pointer("pointermove", document, [180, 170]);
+        document.dispatchEvent(new MouseEvent("mousemove", { clientX: 400, clientY: 400 }));
+        pointer("pointerup", document, [180, 170]);
+        document.dispatchEvent(new MouseEvent("mouseup", { clientX: 400, clientY: 400 }));
+
+        expect(images()[0]).toMatchObject({ x: 130, y: 120 });
+    });
+
+    it("doesn't edit with the right or middle mouse button", async () => {
+        await openSceneWithImage();
+
+        pointerDrag(imageNode(), [150, 150], [180, 170], { button: 2 });
+        pointerDrag(imageNode(), [150, 150], [180, 170], { button: 1 });
+        click("scene-tool-line");
+        pointerDrag(canvasSvg(), [100, 100], [300, 100], { button: 2 });
+
+        expect(images()[0]).toMatchObject({ x: 100, y: 100 });
+        expect(annotations()).toEqual([]);
+        expect(scenesModule.hasUnsavedChanges()).toBe(false);
+    });
+
+    it("follows only the pointer that started the drag", async () => {
+        await openSceneWithImage();
+
+        pointer("pointerdown", imageNode(), [150, 150], { pointerId: 1 });
+        pointer("pointermove", document, [500, 500], { pointerId: 2 });
+        pointer("pointerup", document, [500, 500], { pointerId: 2 });
+        pointer("pointermove", document, [160, 155], { pointerId: 1 });
+        pointer("pointerup", document, [160, 155], { pointerId: 1 });
+
+        expect(images()[0]).toMatchObject({ x: 110, y: 105 });
+    });
+
+    it("stops a drag the browser cancels, keeping the move made so far", async () => {
+        await openSceneWithImage();
+
+        pointer("pointerdown", imageNode(), [150, 150]);
+        pointer("pointermove", document, [180, 170]);
+        pointer("pointercancel", document, [180, 170]);
+        pointer("pointermove", document, [400, 400]);
+
+        expect(images()[0]).toMatchObject({ x: 130, y: 120 });
+        expect(scenesModule.hasUnsavedChanges()).toBe(true);
+    });
+
+    it("ends a drag whose button was let go outside the window", async () => {
+        await openSceneWithImage();
+
+        pointer("pointerdown", imageNode(), [150, 150]);
+        pointer("pointermove", document, [180, 170]);
+        // Back over the page with the button already up: no pointerup came.
+        pointer("pointermove", document, [400, 400], { buttons: 0 });
+        pointer("pointermove", document, [500, 500], { buttons: 0 });
+
+        expect(images()[0]).toMatchObject({ x: 130, y: 120 });
+        expect(scenesModule.hasUnsavedChanges()).toBe(true);
+    });
+
+    it("ends a drag when the window loses focus, keeping the move made so far", async () => {
+        await openSceneWithImage();
+
+        pointer("pointerdown", imageNode(), [150, 150]);
+        pointer("pointermove", document, [180, 170]);
+        window.dispatchEvent(new Event("blur"));
+        pointer("pointermove", document, [400, 400]);
+
+        expect(images()[0]).toMatchObject({ x: 130, y: 120 });
+        expect(scenesModule.hasUnsavedChanges()).toBe(true);
+    });
+
+    it("keeps an image selected after a drag instead of the click that follows deselecting it", async () => {
+        await openSceneWithImage();
+
+        pointerDrag(imageNode(), [150, 150], [180, 170]);
+        // A browser clicks after the release; the image was redrawn, so the
+        // click lands on the new node.
+        mouse("click", imageNode(), [180, 170]);
+
+        expect(document.querySelectorAll(".scene-selection-outline")).toHaveLength(1);
+    });
+
+    it("completes the main editing workflow with a mouse: create, select, move, resize, delete", async () => {
+        await openSceneWithImage();
+        // A press the browser turns into a click, as a pointer press.
+        const pointerClick = (target, point) => {
+            pointer("pointerdown", target, point);
+            pointer("pointerup", document, point);
+            mouse("click", target, point);
+        };
+
+        // Image: move, resize, remove.
+        pointerDrag(imageNode(), [150, 150], [160, 160]);
+        pointerDrag(document.querySelector("[data-corner=\"se\"]"), [310, 210], [330, 210]);
+        expect(images()[0].x).toBeCloseTo(100);
+        expect(images()[0].y).toBeCloseTo(105);
+        expect(images()[0].width).toBeCloseTo(220);
+        click("scene-image-remove");
+        expect(images()).toEqual([]);
+
+        // Label: create, select, move, delete.
+        click("scene-tool-text");
+        pointerClick(canvasSvg(), [100, 100]);
+        typeText("Ilium");
+        $("scene-annotation-text").dispatchEvent(new Event("blur"));
+
+        // A new label starts selected: click empty canvas to let it go, then select it.
+        pointerClick(canvasSvg(), [600, 500]);
+        expect($("scene-annotation-toolbar").hidden).toBe(true);
+        pointerClick(annotationNode(0), [110, 100]);
+        expect($("scene-annotation-toolbar").hidden).toBe(false);
+        expect($("scene-annotation-label").textContent).toBe("Selected label:");
+        pointerDrag(annotationNode(0), [110, 100], [160, 140]);
+        expect(annotations()[0]).toMatchObject({ text: "Ilium", x: 150, y: 140 });
+
+        // Line: create, move an end (resize), delete.
+        click("scene-tool-line");
+        pointerDrag(canvasSvg(), [100, 300], [300, 300]);
+        pointerDrag(document.querySelector("[data-point-index=\"1\"]"), [300, 300], [400, 350]);
+        expect(annotations()[1]).toMatchObject({ type: "line", x1: 100, y1: 300, x2: 400, y2: 350 });
+        click("scene-annotation-delete");
+        expect(annotations().map((a) => a.type)).toEqual(["text"]);
+
+        pointerClick(annotationNode(0), [150, 140]);
+        click("scene-annotation-delete");
+        expect(annotations()).toEqual([]);
+
+        await saveAndReopen();
+        expect(backend.scenes.get("scene-1")).toMatchObject({ images: [], annotations: [] });
+    });
+
+    it("cancels a line drag with Escape and stops following the pointer", async () => {
+        await openBlankScene();
+
+        click("scene-tool-line");
+        pointer("pointerdown", canvasSvg(), [100, 100]);
+        pointer("pointermove", document, [200, 150]);
+        key("Escape");
+        pointer("pointermove", document, [300, 200]);
+        pointer("pointerup", document, [300, 200]);
+
+        expect(annotations()).toEqual([]);
+        expect(document.querySelector(".scene-draft")).toBeNull();
+    });
+});
