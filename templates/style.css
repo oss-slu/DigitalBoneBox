@@ -3160,6 +3160,14 @@ button:disabled {
     color: var(--text-muted);
 }
 
+/* Issue #450: the hint is about the mouse and keyboard; on touch screens
+   pinching and swiping are what people try anyway. */
+@media (pointer: coarse) {
+    .scene-view-hint {
+        display: none;
+    }
+}
+
 /* Issue #449: dragging empty space pans a canvas that is larger than its box. */
 .scene-canvas.can-pan svg {
     cursor: grab;
@@ -3316,6 +3324,14 @@ button:disabled {
 @media (max-width: 768px) {
     #scene-editor-view {
         padding: var(--space-2);
+    }
+
+    /* Issue #450: less padding around the editor on narrow screens, so the
+       canvas gets most of the width. */
+    .scene-editor-container,
+    .scene-library,
+    .scene-workspace {
+        padding: var(--space-3);
     }
 
     .main-navigation {
