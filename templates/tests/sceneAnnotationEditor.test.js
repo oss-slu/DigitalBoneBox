@@ -948,3 +948,295 @@ describe("Mouse editing with pointer events (#446)", () => {
         expect(document.querySelector(".scene-draft")).toBeNull();
     });
 });
+// Issue #447: the same editor used with a finger. A tap is a pointerdown and
+// pointerup that the browser follows with a click.
+describe("Touch editing (#447)", () => {
+    function touch(type, target, [x, y], { pointerId = 1, isPrimary = true } = {}) {
+        const released = type === "pointerup" || type === "pointercancel";
+        const init = {
+            bubbles: true, clientX: x, clientY: y, button: 0, buttons: released ? 0 : 1,
+            pointerId, pointerType: "touch", isPrimary,
+        };
+        const event = typeof PointerEvent === "function" ? new PointerEvent(type, init) : new MouseEvent(type, init);
+        for (const [name, value] of Object.entries({ pointerId, isPrimary, pointerType: "touch" })) {
+            if (event[name] !== value) Object.defineProperty(event, name, { value });
+        }
+        target.dispatchEvent(event);
+    }
+    function fingerDrag(target, from, to) {
+        touch("pointerdown", target, from);
+        touch("pointermove", document, to);
+        touch("pointerup", document, to);
+    }
+    // A tap whose finger wobbles a little before lifting, as real taps do.
+    function tap(target, point, wobble = [0, 0]) {
+        const lifted = [point[0] + wobble[0], point[1] + wobble[1]];
+        touch("pointerdown", target, point);
+        touch("pointermove", document, lifted);
+        touch("pointerup", document, lifted);
+        mouse("click", target, lifted);
+    }
+    const imageNode = () => document.querySelector("#scene-canvas [data-scene-image-index=\"0\"]");
+    const images = () => scenesModule.getActiveScene().images;
+    const isSelected = () => document.querySelectorAll(".scene-selection-outline").length === 1;
+    async function openSceneWithImage(extra = {}) {
+        await openBlankScene({
+            images: [{ id: "img-a", src: "/images/a.png", x: 100, y: 100, width: 200, height: 100 }],
+            ...extra,
+        });
+    }
+
+    it("selects an image and an annotation with a tap", async () => {
+        await openSceneWithImage({ annotations: [{ id: "t", type: "text", text: "Ilium", x: 400, y: 400 }] });
+
+        tap(imageNode(), [150, 150], [3, 2]);
+        expect(isSelected()).toBe(true);
+        expect($("scene-image-toolbar").hidden).toBe(false);
+
+        tap(annotationNode(0), [410, 410], [-2, 3]);
+        expect($("scene-annotation-toolbar").hidden).toBe(false);
+        expect($("scene-annotation-label").textContent).toBe("Selected label:");
+    });
+
+    it("doesn't nudge a selected image when a tap wobbles a few pixels", async () => {
+        await openSceneWithImage();
+        tap(imageNode(), [150, 150]);
+
+        touch("pointerdown", imageNode(), [150, 150]);
+        touch("pointermove", document, [155, 154]);
+        touch("pointerup", document, [155, 154]);
+
+        expect(images()[0]).toMatchObject({ x: 100, y: 100 });
+        expect(scenesModule.hasUnsavedChanges()).toBe(false);
+    });
+
+    it("moves and resizes an image with a finger and keeps the change", async () => {
+        await openSceneWithImage();
+        tap(imageNode(), [150, 150]);
+
+        fingerDrag(imageNode(), [150, 150], [180, 170]);
+        expect(images()[0]).toMatchObject({ x: 130, y: 120 });
+        fingerDrag(document.querySelector("[data-corner=\"se\"]"), [330, 220], [370, 220]);
+        expect(images()[0].width).toBeCloseTo(240);
+        expect(images()[0].height).toBeCloseTo(120);
+
+        await saveAndReopen();
+        expect(backend.scenes.get("scene-1").images[0].width).toBeCloseTo(240);
+    });
+
+    it("creates a label with a tap and a line with a finger drag", async () => {
+        await openBlankScene();
+
+        click("scene-tool-text");
+        tap(canvasSvg(), [100, 100]);
+        typeText("Ilium");
+        click("scene-tool-line");
+        fingerDrag(canvasSvg(), [100, 300], [300, 300]);
+
+        expect(annotations()).toEqual([
+            expect.objectContaining({ type: "text", text: "Ilium", x: 100, y: 100 }),
+            expect.objectContaining({ type: "line", x1: 100, y1: 300, x2: 300, y2: 300 }),
+        ]);
+    });
+
+    it("creates a highlight corner by corner with taps", async () => {
+        await openBlankScene();
+
+        click("scene-tool-polygon");
+        tap(canvasSvg(), [100, 100]);
+        tap(canvasSvg(), [200, 100]);
+        tap(canvasSvg(), [150, 200]);
+        click("scene-polygon-finish");
+
+        expect(annotations()).toEqual([expect.objectContaining({ type: "polygon" })]);
+        expect(annotations()[0].points).toHaveLength(3);
+    });
+
+    it("moves a label, resizes it, and moves a line's end with a finger", async () => {
+        await openBlankScene({
+            annotations: [
+                { id: "t", type: "text", text: "Ilium", x: 10, y: 10, fontSize: 20 },
+                { id: "l", type: "line", x1: 100, y1: 300, x2: 300, y2: 300 },
+            ],
+        });
+
+        tap(annotationNode(0), [15, 15]);
+        fingerDrag(annotationNode(0), [15, 15], [65, 55]);
+        expect(annotations()[0]).toMatchObject({ x: 60, y: 50 });
+        // The label is 60 wide at 20px; dragging its corner 60 to the right doubles it.
+        fingerDrag(document.querySelector("[data-annotation-handle=\"resize\"]"), [113, 103], [173, 103]);
+        expect(annotations()[0].fontSize).toBe(40);
+
+        tap(annotationNode(1), [200, 300]);
+        fingerDrag(document.querySelector("[data-point-index=\"1\"]"), [300, 300], [300, 400]);
+        expect(annotations()[1]).toMatchObject({ x1: 100, y1: 300, x2: 300, y2: 400 });
+    });
+
+    it("ignores a second finger during a drag", async () => {
+        await openSceneWithImage();
+        tap(imageNode(), [150, 150]);
+
+        touch("pointerdown", imageNode(), [150, 150], { pointerId: 1 });
+        touch("pointerdown", imageNode(), [300, 300], { pointerId: 2, isPrimary: false });
+        touch("pointermove", document, [500, 500], { pointerId: 2, isPrimary: false });
+        touch("pointermove", document, [180, 170], { pointerId: 1 });
+        touch("pointerup", document, [500, 500], { pointerId: 2, isPrimary: false });
+        touch("pointerup", document, [180, 170], { pointerId: 1 });
+
+        expect(images()[0]).toMatchObject({ x: 130, y: 120 });
+    });
+
+    it("marks what a finger drag would edit, so the page doesn't scroll there", async () => {
+        const css = require("fs").readFileSync(require("path").join(__dirname, "..", "style.css"), "utf8");
+        const noScroll = css.match(/([^{}]+)\{\s*touch-action:\s*none;\s*\}/);
+        expect(noScroll).not.toBeNull();
+        for (const selector of [".is-drawing svg", ".is-selected", ".scene-resize-handle", ".scene-point-handle"]) {
+            expect(noScroll[1]).toContain(selector);
+        }
+
+        await openSceneWithImage({ annotations: [{ id: "t", type: "text", text: "Ilium", x: 400, y: 400 }] });
+        expect(document.querySelectorAll("#scene-canvas .is-selected")).toHaveLength(0);
+
+        tap(imageNode(), [150, 150]);
+        expect(imageNode().closest(".is-selected")).not.toBeNull();
+
+        tap(annotationNode(0), [410, 410]);
+        expect(imageNode().closest(".is-selected")).toBeNull();
+        expect(document.querySelectorAll("#scene-canvas [data-scene-annotation-index=\"0\"].is-selected").length)
+            .toBeGreaterThan(0);
+
+        click("scene-tool-line");
+        expect($("scene-canvas").classList.contains("is-drawing")).toBe(true);
+    });
+
+    it("sizes handles for a fingertip from how large the canvas is drawn", async () => {
+        await openSceneWithImage();
+        // jsdom draws the 960-wide scene 1:1: a 10-unit handle is 10px, so it needs 3.2x.
+        tap(imageNode(), [150, 150]);
+        expect($("scene-canvas").style.getPropertyValue("--touch-target-scale")).toBe("3.2");
+
+        // Drawn at half size (a phone), the handle is 5px and needs 6.4x.
+        jest.spyOn(Element.prototype, "getBoundingClientRect").mockReturnValue({ left: 0, top: 0, width: 480, height: 300 });
+        tap(imageNode(), [150, 150]);
+        expect($("scene-canvas").style.getPropertyValue("--touch-target-scale")).toBe("6.4");
+    });
+});
+// Issue #448: a pen or stylus. Browsers send it as pointer events with
+// pointerType "pen": the tip is the main button, the eraser end is button 5
+// and the barrel button is button 2.
+describe("Stylus editing (#448)", () => {
+    const BUTTONS_HELD = { 0: 1, 2: 2, 5: 32 };
+    function press(type, target, [x, y], { pointerType = "pen", pointerId = 1, button = 0, isPrimary = true } = {}) {
+        const released = type === "pointerup" || type === "pointercancel";
+        const init = {
+            bubbles: true, clientX: x, clientY: y, button, buttons: released ? 0 : BUTTONS_HELD[button],
+            pointerId, pointerType, isPrimary,
+        };
+        const event = typeof PointerEvent === "function" ? new PointerEvent(type, init) : new MouseEvent(type, init);
+        for (const [name, value] of Object.entries({ pointerId, isPrimary, pointerType })) {
+            if (event[name] !== value) Object.defineProperty(event, name, { value });
+        }
+        target.dispatchEvent(event);
+    }
+    function dragWith(target, from, to, options) {
+        press("pointerdown", target, from, options);
+        press("pointermove", document, to, options);
+        press("pointerup", document, to, options);
+    }
+    function tapWith(target, point, options) {
+        press("pointerdown", target, point, options);
+        press("pointerup", document, point, options);
+        mouse("click", target, point);
+    }
+    function contextMenuIsBlocked(target) {
+        const event = new MouseEvent("contextmenu", { bubbles: true, cancelable: true });
+        target.dispatchEvent(event);
+        return event.defaultPrevented;
+    }
+    const imageNode = () => document.querySelector("#scene-canvas [data-scene-image-index=\"0\"]");
+    const images = () => scenesModule.getActiveScene().images;
+    async function openSceneWithImage(extra = {}) {
+        await openBlankScene({
+            images: [{ id: "img-a", src: "/images/a.png", x: 100, y: 100, width: 200, height: 100 }],
+            ...extra,
+        });
+    }
+
+    it.each(["mouse", "touch", "pen"])("edits the same way with a %s: select, move, resize, draw", async (pointerType) => {
+        await openSceneWithImage();
+        const input = { pointerType };
+
+        tapWith(imageNode(), [150, 150], input);
+        dragWith(imageNode(), [150, 150], [180, 170], input);
+        dragWith(document.querySelector("[data-corner=\"se\"]"), [330, 220], [370, 220], input);
+        click("scene-tool-line");
+        dragWith(canvasSvg(), [100, 300], [300, 300], input);
+
+        expect(images()[0].x).toBeCloseTo(110);
+        expect(images()[0].y).toBeCloseTo(110);
+        expect(images()[0].width).toBeCloseTo(240);
+        expect(images()[0].height).toBeCloseTo(120);
+        expect(annotations()).toEqual([expect.objectContaining({ type: "line", x1: 100, y1: 300, x2: 300, y2: 300 })]);
+    });
+
+    it("selects and moves a label, and crops an image, with a pen", async () => {
+        await openSceneWithImage({ annotations: [{ id: "t", type: "text", text: "Ilium", x: 400, y: 400 }] });
+
+        tapWith(annotationNode(0), [410, 410]);
+        dragWith(annotationNode(0), [410, 410], [460, 450]);
+        expect(annotations()[0]).toMatchObject({ x: 450, y: 440 });
+
+        tapWith(imageNode(), [150, 150]);
+        click("scene-image-crop-start");
+        dragWith(document.querySelector("[data-corner=\"se\"]"), [300, 200], [250, 180]);
+        expect(images()[0]).toMatchObject({ cropWidth: 150, cropHeight: 80 });
+    });
+
+    it("doesn't edit with the pen's eraser or barrel button", async () => {
+        await openSceneWithImage();
+        tapWith(imageNode(), [150, 150]);
+
+        dragWith(imageNode(), [150, 150], [180, 170], { button: 5 });
+        dragWith(imageNode(), [150, 150], [180, 170], { button: 2 });
+        click("scene-tool-line");
+        dragWith(canvasSvg(), [100, 300], [300, 300], { button: 5 });
+
+        expect(images()[0]).toMatchObject({ x: 100, y: 100 });
+        expect(annotations()).toEqual([]);
+        expect(scenesModule.hasUnsavedChanges()).toBe(false);
+    });
+
+    it("doesn't let a palm resting on the screen take over a pen drag or change the selection", async () => {
+        await openSceneWithImage({ annotations: [{ id: "t", type: "text", text: "Ilium", x: 400, y: 400 }] });
+        tapWith(imageNode(), [150, 150]);
+        const palm = { pointerType: "touch", pointerId: 2 };
+
+        press("pointerdown", imageNode(), [150, 150], { pointerId: 1 });
+        press("pointerdown", annotationNode(0), [410, 410], palm);
+        press("pointermove", document, [460, 450], palm);
+        press("pointerup", document, [460, 450], palm);
+        mouse("click", annotationNode(0), [460, 450]);
+        press("pointermove", document, [180, 170], { pointerId: 1 });
+        press("pointerup", document, [180, 170], { pointerId: 1 });
+
+        expect(images()[0]).toMatchObject({ x: 130, y: 120 });
+        expect(annotations()[0]).toMatchObject({ x: 400, y: 400 });
+        expect(document.querySelectorAll(".scene-selection-outline")).toHaveLength(1);
+        expect($("scene-annotation-toolbar").hidden).toBe(true);
+    });
+
+    it("keeps a pen or finger long press from opening the right-click menu, but not a mouse right click", async () => {
+        await openSceneWithImage();
+
+        press("pointerdown", canvasSvg(), [500, 500], { pointerType: "pen" });
+        expect(contextMenuIsBlocked(canvasSvg())).toBe(true);
+        press("pointerup", document, [500, 500], { pointerType: "pen" });
+
+        press("pointerdown", canvasSvg(), [500, 500], { pointerType: "touch" });
+        expect(contextMenuIsBlocked(canvasSvg())).toBe(true);
+        press("pointerup", document, [500, 500], { pointerType: "touch" });
+
+        press("pointerdown", canvasSvg(), [500, 500], { pointerType: "mouse", button: 2 });
+        expect(contextMenuIsBlocked(canvasSvg())).toBe(false);
+    });
+});
