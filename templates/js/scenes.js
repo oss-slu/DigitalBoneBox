@@ -508,6 +508,19 @@ function updateImageToolbar() {
     dom.imageCropReset.hidden = !state.cropMode;
 }
 
+// Issue #447: handles are drawn in scene units, so on a small screen they can
+// shrink below what a fingertip can hit. On touch screens the styles scale them
+// by --touch-target-scale, which keeps them about TOUCH_TARGET_SIZE screen
+// pixels across however large the canvas is drawn.
+const TOUCH_TARGET_SIZE = 32;
+const HANDLE_SIZE = 10; // sceneCanvas.js's RESIZE_HANDLE_SIZE
+
+function setTouchTargetScale(svg) {
+    const unitsPerPixel = getSceneScale(svg).x;
+    const scale = Math.max(1, (TOUCH_TARGET_SIZE * unitsPerPixel) / HANDLE_SIZE);
+    dom.canvas.style.setProperty("--touch-target-scale", String(round2(scale)));
+}
+
 function renderCanvas() {
     const scene = state.active;
     dom.canvas.replaceChildren();
@@ -536,6 +549,7 @@ function renderCanvas() {
         svg.style.height = `${height}px`;
     }
     dom.canvas.append(svg);
+    setTouchTargetScale(svg);
 
     const notes = [];
     if (unsupported > 0) {
@@ -1062,6 +1076,14 @@ function moveSelectedImage(direction) {
 // can't do for real.
 const MIN_IMAGE_SIZE = 10;
 const DRAG_THRESHOLD = 2;
+// Issue #447: a fingertip wobbles a few pixels during a tap, so a touch has to
+// move further than a mouse before it counts as a drag rather than a tap.
+const TOUCH_DRAG_THRESHOLD = 8;
+
+/** How far, in screen pixels, the input that started a drag must move to drag. */
+function dragThreshold(event) {
+    return event.pointerType === "touch" ? TOUCH_DRAG_THRESHOLD : DRAG_THRESHOLD;
+}
 const CORNER_GROWTH_SIGN = {
     nw: { x: -1, y: -1 },
     ne: { x: 1, y: -1 },
@@ -1179,11 +1201,13 @@ function startImageDrag(event, svg, corner) {
     const startHeight = image.height;
     const rotation = typeof image.rotation === "number" ? image.rotation : 0;
     let didDrag = false;
+    const threshold = dragThreshold(event);
 
     function onMove(moveEvent) {
         const dxClient = moveEvent.clientX - startClientX;
         const dyClient = moveEvent.clientY - startClientY;
-        if (Math.abs(dxClient) > DRAG_THRESHOLD || Math.abs(dyClient) > DRAG_THRESHOLD) didDrag = true;
+        if (Math.abs(dxClient) > threshold || Math.abs(dyClient) > threshold) didDrag = true;
+        if (!didDrag) return;
         const globalDx = dxClient * scale.x;
         const globalDy = dyClient * scale.y;
 
@@ -1280,11 +1304,13 @@ function startCropDrag(event, svg, corner) {
     const startCrop = currentCropRect(image);
     const rotation = typeof image.rotation === "number" ? image.rotation : 0;
     let didDrag = false;
+    const threshold = dragThreshold(event);
 
     function onMove(moveEvent) {
         const dxClient = moveEvent.clientX - startClientX;
         const dyClient = moveEvent.clientY - startClientY;
-        if (Math.abs(dxClient) > DRAG_THRESHOLD || Math.abs(dyClient) > DRAG_THRESHOLD) didDrag = true;
+        if (Math.abs(dxClient) > threshold || Math.abs(dyClient) > threshold) didDrag = true;
+        if (!didDrag) return;
         const local = unrotateVector(dxClient * scale.x, dyClient * scale.y, rotation);
 
         const next = computeCropRect(corner, startCrop, local, image.width, image.height);
@@ -1663,11 +1689,12 @@ function startAnnotationDrag(event, svg, mode, pointIndex) {
     const startClientX = event.clientX;
     const startClientY = event.clientY;
     let didDrag = false;
+    const threshold = dragThreshold(event);
 
     function onMove(moveEvent) {
         const dxClient = moveEvent.clientX - startClientX;
         const dyClient = moveEvent.clientY - startClientY;
-        if (Math.abs(dxClient) > DRAG_THRESHOLD || Math.abs(dyClient) > DRAG_THRESHOLD) didDrag = true;
+        if (Math.abs(dxClient) > threshold || Math.abs(dyClient) > threshold) didDrag = true;
         if (!didDrag) return;
         const dx = dxClient * scale.x;
         const dy = dyClient * scale.y;
