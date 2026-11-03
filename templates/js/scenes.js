@@ -212,6 +212,8 @@ const state = {
     saveAlert: null,
     openRequest: 0,
     fitToWidth: true,
+    // Issue #449: how much larger than its default size the canvas is drawn.
+    zoom: 1,
     busy: false,
     selectedImageIndex: null,
     cropMode: false,
@@ -256,6 +258,7 @@ function setActiveScene(scene) {
     endLineDraw();
     state.tool = null;
     state.draft = null;
+    state.zoom = 1;
 }
 
 /** The parts of a scene a save stores. */
@@ -565,6 +568,130 @@ function updateImageToolbar() {
     dom.imageCropReset.hidden = !state.cropMode;
 }
 
+// Issue #447: handles are drawn in scene units, so on a small screen they can
+// shrink below what a fingertip can hit. On touch screens the styles scale them
+// by --touch-target-scale, which keeps them about TOUCH_TARGET_SIZE screen
+// pixels across however large the canvas is drawn.
+const TOUCH_TARGET_SIZE = 32;
+const HANDLE_SIZE = 10; // sceneCanvas.js's RESIZE_HANDLE_SIZE
+
+function setTouchTargetScale(svg) {
+    const unitsPerPixel = getSceneScale(svg).x;
+    const scale = Math.max(1, (TOUCH_TARGET_SIZE * unitsPerPixel) / HANDLE_SIZE);
+    dom.canvas.style.setProperty("--touch-target-scale", String(round2(scale)));
+}
+
+// Issue #449: zoom and pan. Zooming changes only how large the scene is drawn:
+// images and annotations keep their scene coordinates and are drawn together
+// in one SVG, and every drag converts screen movement through the canvas's
+// drawn size, so editing stays aligned at any zoom. Panning scrolls the
+// canvas. Neither one changes the scene.
+const MIN_ZOOM = 0.25;
+const MAX_ZOOM = 8;
+const ZOOM_STEP = 1.25;
+
+function clampZoom(zoom) {
+    return Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom));
+}
+
+/** Where a scene point is drawn on screen (the inverse of clientToScene). */
+function sceneToClient(svg, [x, y]) {
+    const rect = svg.getBoundingClientRect();
+    const [viewX, viewY] = (svg.getAttribute("viewBox") || "0 0 0 0").split(" ").map(Number);
+    const scale = getSceneScale(svg);
+    return { x: (rect.left || 0) + (x - viewX) / scale.x, y: (rect.top || 0) + (y - viewY) / scale.y };
+}
+
+/**
+ * Zooms to `zoom`, keeping the scene point under `anchor` (a point on screen,
+ * the middle of the canvas by default) in the same place on screen.
+ * @param {number} zoom
+ * @param {{clientX: number, clientY: number}} [anchor]
+ * @param {{announce?: boolean}} [options]
+ */
+function setZoom(zoom, anchor, { announce: speak = true } = {}) {
+    const next = clampZoom(zoom);
+    if (!state.active || Math.abs(next - state.zoom) < 0.001) return;
+    const box = dom.canvas.getBoundingClientRect();
+    const point = anchor || { clientX: (box.left || 0) + box.width / 2, clientY: (box.top || 0) + box.height / 2 };
+    const oldSvg = dom.canvas.querySelector("svg");
+    const scenePoint = oldSvg ? clientToScene(oldSvg, point) : null;
+
+    state.zoom = next;
+    renderCanvas();
+
+    const svg = dom.canvas.querySelector("svg");
+    if (svg && scenePoint) {
+        const drawnAt = sceneToClient(svg, scenePoint);
+        dom.canvas.scrollLeft += drawnAt.x - point.clientX;
+        dom.canvas.scrollTop += drawnAt.y - point.clientY;
+    }
+    if (speak) announce(`Zoom ${Math.round(next * 100)}%.`);
+}
+
+/** Back to the default view: 100% zoom, scrolled to the top left. */
+function resetView() {
+    if (!state.active) return;
+    state.zoom = 1;
+    renderCanvas();
+    dom.canvas.scrollLeft = 0;
+    dom.canvas.scrollTop = 0;
+    announce("View reset to 100%.");
+}
+
+function canPan() {
+    return dom.canvas.scrollWidth > dom.canvas.clientWidth || dom.canvas.scrollHeight > dom.canvas.clientHeight;
+}
+
+function updateViewControls() {
+    dom.zoomLevel.textContent = `${Math.round(state.zoom * 100)}%`;
+    dom.zoomOut.disabled = state.zoom <= MIN_ZOOM;
+    dom.zoomIn.disabled = state.zoom >= MAX_ZOOM;
+    dom.canvas.classList.toggle("can-pan", canPan());
+}
+// Issue #450: when the editor changes size (a resized window, a rotated phone),
+// the scene is drawn again at the new size. Objects keep their scene positions
+// and are drawn in one SVG, so they stay aligned; the view keeps the same part
+// of the scene in the middle; and a drag in progress ends where it is, since
+// its screen-to-scene scale belongs to the old size.
+let viewCenter = null;
+
+/** Notes which scene point is in the middle of the visible canvas. */
+function rememberViewCenter() {
+    const svg = dom.canvas.querySelector("svg");
+    if (!svg || dom.canvas.hidden) {
+        viewCenter = null;
+        return;
+    }
+    const box = dom.canvas.getBoundingClientRect();
+    viewCenter = clientToScene(svg, {
+        clientX: (box.left || 0) + box.width / 2,
+        clientY: (box.top || 0) + box.height / 2,
+    });
+}
+
+let lastCanvasWidth = null;
+
+function handleCanvasResize() {
+    // Only a change of width is a new layout; the canvas also grows taller and
+    // shorter with the scene as it is edited and zoomed. offsetWidth includes
+    // the scrollbar, so one appearing mid-drag isn't mistaken for a resize.
+    const width = dom.canvas.offsetWidth;
+    if (width === lastCanvasWidth) return;
+    lastCanvasWidth = width;
+    const svg = dom.canvas.querySelector("svg");
+    if (!state.active || dom.canvas.hidden || !svg) return;
+    if (activeDrag) activeDrag.finish();
+    setTouchTargetScale(svg);
+    if (viewCenter) {
+        const box = dom.canvas.getBoundingClientRect();
+        const drawnAt = sceneToClient(svg, viewCenter);
+        dom.canvas.scrollLeft += drawnAt.x - ((box.left || 0) + box.width / 2);
+        dom.canvas.scrollTop += drawnAt.y - ((box.top || 0) + box.height / 2);
+    }
+    updateViewControls();
+    rememberViewCenter();
+}
 function renderCanvas() {
     const scene = state.active;
     dom.canvas.replaceChildren();
@@ -575,6 +702,7 @@ function renderCanvas() {
     dom.canvasEmpty.hidden = !isEmpty;
     dom.canvas.hidden = isEmpty;
     dom.fitToggle.hidden = isEmpty;
+    dom.viewControls.hidden = isEmpty;
     dom.canvasNote.hidden = true;
     if (isEmpty) return;
 
@@ -585,15 +713,18 @@ function renderCanvas() {
         draft: state.draft,
     });
     svg.setAttribute("aria-label", `Scene canvas for ${scene.name}`);
+    // Issue #449: zooming only draws the whole scene larger or smaller.
     if (state.fitToWidth) {
-        svg.style.width = "100%";
+        svg.style.width = `${round2(state.zoom * 100)}%`;
         svg.style.height = "auto";
     } else {
-        svg.style.width = `${width}px`;
-        svg.style.height = `${height}px`;
+        svg.style.width = `${round2(width * state.zoom)}px`;
+        svg.style.height = `${round2(height * state.zoom)}px`;
     }
     dom.canvas.append(svg);
-
+    setTouchTargetScale(svg);
+    updateViewControls();
+    rememberViewCenter();
     const notes = [];
     if (unsupported > 0) {
         notes.push(`${plural(unsupported, "object")} can't be displayed yet but are still stored with this scene.`);
@@ -1215,6 +1346,14 @@ function moveSelectedImage(direction) {
 // can't do for real.
 const MIN_IMAGE_SIZE = 10;
 const DRAG_THRESHOLD = 2;
+// Issue #447: a fingertip wobbles a few pixels during a tap, so a touch has to
+// move further than a mouse before it counts as a drag rather than a tap.
+const TOUCH_DRAG_THRESHOLD = 8;
+
+/** How far, in screen pixels, the input that started a drag must move to drag. */
+function dragThreshold(event) {
+    return event.pointerType === "touch" ? TOUCH_DRAG_THRESHOLD : DRAG_THRESHOLD;
+}
 const CORNER_GROWTH_SIGN = {
     nw: { x: -1, y: -1 },
     ne: { x: 1, y: -1 },
@@ -1228,6 +1367,9 @@ const CORNER_GROWTH_SIGN = {
 // by a plain mouse event (browsers without Pointer Events, and jsdom tests)
 // follows the mouse. Only one drag runs at a time.
 let activeDrag = null;
+// Issue #448: the kind of pointer ("mouse", "touch" or "pen") of the latest
+// press on the canvas, for events that don't say themselves.
+let lastPressPointerType = "mouse";
 
 /**
  * Calls `onMove` for each move of the input that started the drag, and
@@ -1273,7 +1415,8 @@ function followDrag(startEvent, onMove, onEnd) {
         onEnd(event);
     }
 
-    const drag = { stop, isPointer };
+   // finish() ends the drag as if it were let go now (Issue #450).
+    const drag = { stop, isPointer, finish: handleBlur };
     activeDrag = drag;
     document.addEventListener(moveType, handleMove);
     for (const type of endTypes) document.addEventListener(type, handleEnd);
@@ -1332,11 +1475,13 @@ function startImageDrag(event, svg, corner) {
     const startHeight = image.height;
     const rotation = typeof image.rotation === "number" ? image.rotation : 0;
     let didDrag = false;
+    const threshold = dragThreshold(event);
 
     function onMove(moveEvent) {
         const dxClient = moveEvent.clientX - startClientX;
         const dyClient = moveEvent.clientY - startClientY;
-        if (Math.abs(dxClient) > DRAG_THRESHOLD || Math.abs(dyClient) > DRAG_THRESHOLD) didDrag = true;
+        if (Math.abs(dxClient) > threshold || Math.abs(dyClient) > threshold) didDrag = true;
+        if (!didDrag) return;
         const globalDx = dxClient * scale.x;
         const globalDy = dyClient * scale.y;
 
@@ -1433,11 +1578,13 @@ function startCropDrag(event, svg, corner) {
     const startCrop = currentCropRect(image);
     const rotation = typeof image.rotation === "number" ? image.rotation : 0;
     let didDrag = false;
+    const threshold = dragThreshold(event);
 
     function onMove(moveEvent) {
         const dxClient = moveEvent.clientX - startClientX;
         const dyClient = moveEvent.clientY - startClientY;
-        if (Math.abs(dxClient) > DRAG_THRESHOLD || Math.abs(dyClient) > DRAG_THRESHOLD) didDrag = true;
+        if (Math.abs(dxClient) > threshold || Math.abs(dyClient) > threshold) didDrag = true;
+        if (!didDrag) return;
         const local = unrotateVector(dxClient * scale.x, dyClient * scale.y, rotation);
 
         const next = computeCropRect(corner, startCrop, local, image.width, image.height);
@@ -1816,11 +1963,12 @@ function startAnnotationDrag(event, svg, mode, pointIndex) {
     const startClientX = event.clientX;
     const startClientY = event.clientY;
     let didDrag = false;
+    const threshold = dragThreshold(event);
 
     function onMove(moveEvent) {
         const dxClient = moveEvent.clientX - startClientX;
         const dyClient = moveEvent.clientY - startClientY;
-        if (Math.abs(dxClient) > DRAG_THRESHOLD || Math.abs(dyClient) > DRAG_THRESHOLD) didDrag = true;
+        if (Math.abs(dxClient) > threshold || Math.abs(dyClient) > threshold) didDrag = true;
         if (!didDrag) return;
         const dx = dxClient * scale.x;
         const dy = dyClient * scale.y;
@@ -2392,6 +2540,11 @@ export function initializeSceneEditor(root = document) {
         canvas: $("scene-canvas"),
         canvasEmpty: $("scene-canvas-empty"),
         canvasNote: $("scene-canvas-note"),
+        viewControls: $("scene-view-controls"),
+        zoomOut: $("scene-zoom-out"),
+        zoomIn: $("scene-zoom-in"),
+        zoomLevel: $("scene-zoom-level"),
+        zoomReset: $("scene-zoom-reset"),
         importButton: $("scene-import-image"),
         importButtonEmpty: $("scene-canvas-empty-import"),
         importInput: $("scene-import-input"),
@@ -2477,6 +2630,26 @@ export function initializeSceneEditor(root = document) {
     if (dom.duplicateButton) dom.duplicateButton.addEventListener("click", handleDuplicate);
     if (dom.publishButton) dom.publishButton.addEventListener("click", handlePublishToggle);
     dom.fitToggle.addEventListener("click", () => setFitToWidth(!state.fitToWidth));
+    dom.zoomOut.addEventListener("click", () => setZoom(state.zoom / ZOOM_STEP));
+    dom.zoomIn.addEventListener("click", () => setZoom(state.zoom * ZOOM_STEP));
+    dom.zoomReset.addEventListener("click", resetView);
+    // Ctrl + the scroll wheel (also what a trackpad pinch sends) zooms around
+    // the pointer; the scroll wheel on its own still scrolls, which pans.
+    dom.canvas.addEventListener("wheel", (event) => {
+        if (!event.ctrlKey && !event.metaKey) return;
+        event.preventDefault();
+        setZoom(state.zoom * Math.exp(-event.deltaY * 0.002), event, { announce: false });
+    }, { passive: false });
+    // While a new width hasn't been handled yet, a scroll is the browser
+    // fitting the old scroll position to the new size, not the user moving.
+    dom.canvas.addEventListener("scroll", () => {
+        if (dom.canvas.offsetWidth === lastCanvasWidth) rememberViewCenter();
+    });
+    if (typeof ResizeObserver === "function") {
+        new ResizeObserver(handleCanvasResize).observe(dom.canvas);
+    } else {
+        window.addEventListener("resize", handleCanvasResize);
+    }
     if (dom.importToggle) {
         dom.importToggle.addEventListener("click", () => {
             if (dom.importForm.hidden) showImportForm();
@@ -2497,6 +2670,9 @@ export function initializeSceneEditor(root = document) {
         event.target.value = "";
     });
     dom.canvas.addEventListener("click", (event) => {
+        // Issue #448: a tap that lands mid-drag (a palm during a pen stroke)
+        // doesn't select or deselect anything.
+        if (activeDrag && activeDrag.isPointer) return;
         if (suppressNextClick) {
             suppressNextClick = false;
             return;
@@ -2542,6 +2718,19 @@ export function initializeSceneEditor(root = document) {
         dom.annotationText.select();
     });
     dom.canvas.addEventListener("keydown", (event) => {
+        if (!event.ctrlKey && !event.metaKey && !event.altKey && state.active) {
+            const zoomKey = { "+": ZOOM_STEP, "=": ZOOM_STEP, "-": 1 / ZOOM_STEP }[event.key];
+            if (zoomKey) {
+                event.preventDefault();
+                setZoom(state.zoom * zoomKey);
+                return;
+            }
+            if (event.key === "0") {
+                event.preventDefault();
+                resetView();
+                return;
+            }
+        }
         if (handleAnnotationKey(event)) {
             event.preventDefault();
             return;
@@ -2556,15 +2745,91 @@ export function initializeSceneEditor(root = document) {
     // pointer drag cancels the browser's follow-up mouse events, and a stray
     // one is ignored while a pointer drag runs, so each press is handled once.
     dom.canvas.addEventListener("pointerdown", handleCanvasPress);
+    // Issue #448: a long press with a pen or finger opens the browser's
+    // right-click menu on some systems; on the canvas it is an edit instead.
+    // A mouse's right click keeps its menu.
+    dom.canvas.addEventListener("contextmenu", (event) => {
+        const type = event.pointerType || lastPressPointerType;
+        if (type === "pen" || type === "touch") event.preventDefault();
+    });
     dom.canvas.addEventListener("mousedown", (event) => {
         if (activeDrag && activeDrag.isPointer) return;
         handleCanvasPress(event);
     });
+// Issue #449: a mouse or pen press that didn't start an edit (on empty
+    // space or an unselected object) drags the view instead. These run after
+    // the press handlers above, so an edit always wins and a pan never moves
+    // an object. A finger already pans by scrolling the canvas.
+    dom.canvas.addEventListener("pointerdown", startPanFromPress);
+    dom.canvas.addEventListener("mousedown", startPanFromPress);
+    function startPanFromPress(event) {
+        if (activeDrag || !state.active || state.tool) return;
+        if (event.button !== undefined && event.button !== 0) return;
+        if (event.isPrimary === false || event.pointerType === "touch" || !canPan()) return;
+        startPan(event);
+    }
+    function startPan(event) {
+        const startX = event.clientX;
+        const startY = event.clientY;
+        const startLeft = dom.canvas.scrollLeft;
+        const startTop = dom.canvas.scrollTop;
+        const threshold = dragThreshold(event);
+        let panned = false;
+        dom.canvas.classList.add("is-panning");
+        followDrag(event, (moveEvent) => {
+            const dx = moveEvent.clientX - startX;
+            const dy = moveEvent.clientY - startY;
+            if (Math.abs(dx) > threshold || Math.abs(dy) > threshold) panned = true;
+            if (!panned) return;
+            dom.canvas.scrollLeft = startLeft - dx;
+            dom.canvas.scrollTop = startTop - dy;
+        }, () => {
+            dom.canvas.classList.remove("is-panning");
+            // Letting go after a pan doesn't select what it ends over.
+            suppressNextClick = panned;
+        });
+    }
+
+    // Issue #449: pinching two fingers on the canvas zooms around the point
+    // between them. A finger that is already editing an object keeps editing.
+    const fingers = new Map();
+    let pinch = null;
+    const fingerGap = ([a, b]) => Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+    const fingerMiddle = ([a, b]) => ({ clientX: (a.clientX + b.clientX) / 2, clientY: (a.clientY + b.clientY) / 2 });
+    dom.canvas.addEventListener("pointerdown", (event) => {
+        if (event.pointerType !== "touch") return;
+        fingers.set(event.pointerId, { clientX: event.clientX, clientY: event.clientY });
+        if (fingers.size === 2 && !(activeDrag && activeDrag.isPointer)) {
+            const pair = [...fingers.values()];
+            pinch = { gap: fingerGap(pair), zoom: state.zoom };
+        }
+    });
+    document.addEventListener("pointermove", (event) => {
+        if (!fingers.has(event.pointerId)) return;
+        fingers.set(event.pointerId, { clientX: event.clientX, clientY: event.clientY });
+        if (!pinch || fingers.size !== 2) return;
+        const pair = [...fingers.values()];
+        if (pinch.gap > 0) setZoom(pinch.zoom * (fingerGap(pair) / pinch.gap), fingerMiddle(pair), { announce: false });
+    });
+    const liftFinger = (event) => {
+        if (!fingers.delete(event.pointerId)) return;
+        if (fingers.size < 2 && pinch) {
+            pinch = null;
+            announce(`Zoom ${Math.round(state.zoom * 100)}%.`);
+        }
+    };
+    document.addEventListener("pointerup", liftFinger);
+    document.addEventListener("pointercancel", liftFinger);
     function handleCanvasPress(event) {
+        if (event.pointerType) lastPressPointerType = event.pointerType;
         // Only the main button (left mouse button, a finger, or a pen tip)
-        // edits; the other buttons keep their usual browser behavior.
+        // edits; the other buttons, including a pen's barrel button and
+        // eraser, keep their usual browser behavior.
         if (event.button !== undefined && event.button !== 0) return;
         if (event.isPrimary === false) return;
+        // Issue #448: while one pointer is dragging, another press (a palm
+        // resting on the screen during a pen stroke) doesn't take over.
+        if (event.type === "pointerdown" && activeDrag && activeDrag.isPointer) return;
         // A drag's own click may never arrive (its node was redrawn away), so
         // a new press always starts with clicks counting again.
         suppressNextClick = false;

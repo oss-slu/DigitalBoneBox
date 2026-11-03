@@ -326,6 +326,13 @@
                                 <p>Images and annotations added to this scene will appear here. Use <strong>Import bone images</strong> to start from an existing bone, import an image from your computer, or choose a tool under <strong>Add annotation</strong>.</p>
                                 <button id="scene-canvas-empty-import" type="button" class="scene-btn scene-btn-primary">Import image…</button>
                             </div>
+                            <div id="scene-view-controls" class="scene-view-controls" role="group" aria-label="Zoom" hidden>
+                                <button id="scene-zoom-out" type="button" class="scene-btn scene-btn-secondary" aria-label="Zoom out" title="Zoom out (−)">−</button>
+                                <span id="scene-zoom-level" class="scene-zoom-level" aria-label="Zoom level">100%</span>
+                                <button id="scene-zoom-in" type="button" class="scene-btn scene-btn-secondary" aria-label="Zoom in" title="Zoom in (+)">+</button>
+                                <button id="scene-zoom-reset" type="button" class="scene-btn scene-btn-secondary" title="Back to 100% (0)">Reset view</button>
+                                <span class="scene-view-hint">Ctrl + scroll or pinch to zoom. Drag empty space to pan.</span>
+                            </div>
                             <div id="scene-canvas" class="scene-canvas" role="region" aria-label="Scene canvas" tabindex="0" hidden></div>
                         </div>
                         <p id="scene-canvas-note" class="scene-canvas-note" hidden></p>
