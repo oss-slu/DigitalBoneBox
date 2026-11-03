@@ -1097,6 +1097,9 @@ const CORNER_GROWTH_SIGN = {
 // by a plain mouse event (browsers without Pointer Events, and jsdom tests)
 // follows the mouse. Only one drag runs at a time.
 let activeDrag = null;
+// Issue #448: the kind of pointer ("mouse", "touch" or "pen") of the latest
+// press on the canvas, for events that don't say themselves.
+let lastPressPointerType = "mouse";
 
 /**
  * Calls `onMove` for each move of the input that started the drag, and
@@ -2360,6 +2363,9 @@ export function initializeSceneEditor(root = document) {
         event.target.value = "";
     });
     dom.canvas.addEventListener("click", (event) => {
+        // Issue #448: a tap that lands mid-drag (a palm during a pen stroke)
+        // doesn't select or deselect anything.
+        if (activeDrag && activeDrag.isPointer) return;        
         if (suppressNextClick) {
             suppressNextClick = false;
             return;
@@ -2419,15 +2425,27 @@ export function initializeSceneEditor(root = document) {
     // pointer drag cancels the browser's follow-up mouse events, and a stray
     // one is ignored while a pointer drag runs, so each press is handled once.
     dom.canvas.addEventListener("pointerdown", handleCanvasPress);
+    // Issue #448: a long press with a pen or finger opens the browser's
+    // right-click menu on some systems; on the canvas it is an edit instead.
+    // A mouse's right click keeps its menu.
+    dom.canvas.addEventListener("contextmenu", (event) => {
+        const type = event.pointerType || lastPressPointerType;
+        if (type === "pen" || type === "touch") event.preventDefault();
+    });
     dom.canvas.addEventListener("mousedown", (event) => {
         if (activeDrag && activeDrag.isPointer) return;
         handleCanvasPress(event);
     });
     function handleCanvasPress(event) {
+        if (event.pointerType) lastPressPointerType = event.pointerType;
         // Only the main button (left mouse button, a finger, or a pen tip)
-        // edits; the other buttons keep their usual browser behavior.
+        // edits; the other buttons, including a pen's barrel button and
+        // eraser, keep their usual browser behavior.
         if (event.button !== undefined && event.button !== 0) return;
         if (event.isPrimary === false) return;
+        // Issue #448: while one pointer is dragging, another press (a palm
+        // resting on the screen during a pen stroke) doesn't take over.
+        if (event.type === "pointerdown" && activeDrag && activeDrag.isPointer) return;
         // A drag's own click may never arrive (its node was redrawn away), so
         // a new press always starts with clicks counting again.
         suppressNextClick = false;

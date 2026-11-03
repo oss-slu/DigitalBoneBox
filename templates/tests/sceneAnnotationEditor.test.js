@@ -1121,3 +1121,122 @@ describe("Touch editing (#447)", () => {
         expect($("scene-canvas").style.getPropertyValue("--touch-target-scale")).toBe("6.4");
     });
 });
+// Issue #448: a pen or stylus. Browsers send it as pointer events with
+// pointerType "pen": the tip is the main button, the eraser end is button 5
+// and the barrel button is button 2.
+describe("Stylus editing (#448)", () => {
+    const BUTTONS_HELD = { 0: 1, 2: 2, 5: 32 };
+    function press(type, target, [x, y], { pointerType = "pen", pointerId = 1, button = 0, isPrimary = true } = {}) {
+        const released = type === "pointerup" || type === "pointercancel";
+        const init = {
+            bubbles: true, clientX: x, clientY: y, button, buttons: released ? 0 : BUTTONS_HELD[button],
+            pointerId, pointerType, isPrimary,
+        };
+        const event = typeof PointerEvent === "function" ? new PointerEvent(type, init) : new MouseEvent(type, init);
+        for (const [name, value] of Object.entries({ pointerId, isPrimary, pointerType })) {
+            if (event[name] !== value) Object.defineProperty(event, name, { value });
+        }
+        target.dispatchEvent(event);
+    }
+    function dragWith(target, from, to, options) {
+        press("pointerdown", target, from, options);
+        press("pointermove", document, to, options);
+        press("pointerup", document, to, options);
+    }
+    function tapWith(target, point, options) {
+        press("pointerdown", target, point, options);
+        press("pointerup", document, point, options);
+        mouse("click", target, point);
+    }
+    function contextMenuIsBlocked(target) {
+        const event = new MouseEvent("contextmenu", { bubbles: true, cancelable: true });
+        target.dispatchEvent(event);
+        return event.defaultPrevented;
+    }
+    const imageNode = () => document.querySelector("#scene-canvas [data-scene-image-index=\"0\"]");
+    const images = () => scenesModule.getActiveScene().images;
+    async function openSceneWithImage(extra = {}) {
+        await openBlankScene({
+            images: [{ id: "img-a", src: "/images/a.png", x: 100, y: 100, width: 200, height: 100 }],
+            ...extra,
+        });
+    }
+
+    it.each(["mouse", "touch", "pen"])("edits the same way with a %s: select, move, resize, draw", async (pointerType) => {
+        await openSceneWithImage();
+        const input = { pointerType };
+
+        tapWith(imageNode(), [150, 150], input);
+        dragWith(imageNode(), [150, 150], [180, 170], input);
+        dragWith(document.querySelector("[data-corner=\"se\"]"), [330, 220], [370, 220], input);
+        click("scene-tool-line");
+        dragWith(canvasSvg(), [100, 300], [300, 300], input);
+
+        expect(images()[0].x).toBeCloseTo(110);
+        expect(images()[0].y).toBeCloseTo(110);
+        expect(images()[0].width).toBeCloseTo(240);
+        expect(images()[0].height).toBeCloseTo(120);
+        expect(annotations()).toEqual([expect.objectContaining({ type: "line", x1: 100, y1: 300, x2: 300, y2: 300 })]);
+    });
+
+    it("selects and moves a label, and crops an image, with a pen", async () => {
+        await openSceneWithImage({ annotations: [{ id: "t", type: "text", text: "Ilium", x: 400, y: 400 }] });
+
+        tapWith(annotationNode(0), [410, 410]);
+        dragWith(annotationNode(0), [410, 410], [460, 450]);
+        expect(annotations()[0]).toMatchObject({ x: 450, y: 440 });
+
+        tapWith(imageNode(), [150, 150]);
+        click("scene-image-crop-start");
+        dragWith(document.querySelector("[data-corner=\"se\"]"), [300, 200], [250, 180]);
+        expect(images()[0]).toMatchObject({ cropWidth: 150, cropHeight: 80 });
+    });
+
+    it("doesn't edit with the pen's eraser or barrel button", async () => {
+        await openSceneWithImage();
+        tapWith(imageNode(), [150, 150]);
+
+        dragWith(imageNode(), [150, 150], [180, 170], { button: 5 });
+        dragWith(imageNode(), [150, 150], [180, 170], { button: 2 });
+        click("scene-tool-line");
+        dragWith(canvasSvg(), [100, 300], [300, 300], { button: 5 });
+
+        expect(images()[0]).toMatchObject({ x: 100, y: 100 });
+        expect(annotations()).toEqual([]);
+        expect(scenesModule.hasUnsavedChanges()).toBe(false);
+    });
+
+    it("doesn't let a palm resting on the screen take over a pen drag or change the selection", async () => {
+        await openSceneWithImage({ annotations: [{ id: "t", type: "text", text: "Ilium", x: 400, y: 400 }] });
+        tapWith(imageNode(), [150, 150]);
+        const palm = { pointerType: "touch", pointerId: 2 };
+
+        press("pointerdown", imageNode(), [150, 150], { pointerId: 1 });
+        press("pointerdown", annotationNode(0), [410, 410], palm);
+        press("pointermove", document, [460, 450], palm);
+        press("pointerup", document, [460, 450], palm);
+        mouse("click", annotationNode(0), [460, 450]);
+        press("pointermove", document, [180, 170], { pointerId: 1 });
+        press("pointerup", document, [180, 170], { pointerId: 1 });
+
+        expect(images()[0]).toMatchObject({ x: 130, y: 120 });
+        expect(annotations()[0]).toMatchObject({ x: 400, y: 400 });
+        expect(document.querySelectorAll(".scene-selection-outline")).toHaveLength(1);
+        expect($("scene-annotation-toolbar").hidden).toBe(true);
+    });
+
+    it("keeps a pen or finger long press from opening the right-click menu, but not a mouse right click", async () => {
+        await openSceneWithImage();
+
+        press("pointerdown", canvasSvg(), [500, 500], { pointerType: "pen" });
+        expect(contextMenuIsBlocked(canvasSvg())).toBe(true);
+        press("pointerup", document, [500, 500], { pointerType: "pen" });
+
+        press("pointerdown", canvasSvg(), [500, 500], { pointerType: "touch" });
+        expect(contextMenuIsBlocked(canvasSvg())).toBe(true);
+        press("pointerup", document, [500, 500], { pointerType: "touch" });
+
+        press("pointerdown", canvasSvg(), [500, 500], { pointerType: "mouse", button: 2 });
+        expect(contextMenuIsBlocked(canvasSvg())).toBe(false);
+    });
+});
