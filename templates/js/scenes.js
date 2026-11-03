@@ -2617,7 +2617,7 @@ export function initializeSceneEditor(root = document) {
     dom.canvas.addEventListener("click", (event) => {
         // Issue #448: a tap that lands mid-drag (a palm during a pen stroke)
         // doesn't select or deselect anything.
-        if (activeDrag && activeDrag.isPointer) return;        
+        if (activeDrag && activeDrag.isPointer) return;
         if (suppressNextClick) {
             suppressNextClick = false;
             return;
