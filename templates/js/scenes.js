@@ -53,7 +53,9 @@ async function request(path = "", options = {}) {
     return body;
 }
 
-const scenePath = (sceneId) => `/${encodeURIComponent(sceneId)}`;
+const scenePath = 
+      
+      => `/${encodeURIComponent(sceneId)}`;
 
 export async function listScenes() {
     const body = await request();
