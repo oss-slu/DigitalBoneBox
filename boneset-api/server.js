@@ -60,9 +60,10 @@ function isValidBoneId(boneId) {
         return false;
     }
 
-    // Only allow alphanumeric characters and underscores
+    // Only allow letters, numbers, underscores, and hyphens.
     // This prevents path traversal and URL injection attacks
-    const validBoneIdPattern = /^[a-z0-9_]+$/i;
+    // (hyphens are needed for ids like 2nd-5th_metatarsals, Issue #469).
+    const validBoneIdPattern = /^[a-z0-9_-]+$/i;
     return validBoneIdPattern.test(boneId) && boneId.length > 0 && boneId.length <= 100;
 }
 
@@ -304,7 +305,7 @@ app.get("/api/bone-data/", async (req, res) => {
     }
 
     if (!isValidBoneId(boneId)) {
-        return res.status(400).json({ error: "Invalid boneId format. Only alphanumeric characters and underscores are allowed." });
+        return res.status(400).json({ error: "Invalid boneId format. Only letters, numbers, underscores, and hyphens are allowed." });
     }
 
     const descriptionPath = path.join(DESCRIPTIONS_DIR, `${boneId}_description.json`);

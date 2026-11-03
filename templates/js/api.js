@@ -33,24 +33,56 @@ export async function fetchCombinedData() {
 }
 
 /**
- * Fetch full bone data (description + images) for a single bone from the backend API.
- * @param {string} boneId
- * @returns {Object|null} bone data or null on error
+ * Possible outcomes of a bone data request (Issue #469).
+ * - OK: the request worked and `data` holds the bone data.
+ * - MISSING: the server confirmed there is no content for this item (404).
+ * - ERROR: the request failed (network error, 5xx, other bad status, or a
+ *   response that couldn't be read), so we don't know whether content exists.
  */
-export async function fetchBoneData(boneId) {
-    if (!boneId) return null;
+export const BONE_DATA_STATUS = Object.freeze({
+    OK: "ok",
+    MISSING: "missing",
+    ERROR: "error",
+});
+
+/**
+ * Fetch full bone data for a single bone and report what happened, so callers
+ * can tell content that isn't there yet apart from a failed request.
+ * @param {string} boneId
+ * @returns {Promise<{status: string, data?: Object, httpStatus?: number, error?: Error}>}
+ */
+export async function fetchBoneDataResult(boneId) {
+    if (!boneId) return { status: BONE_DATA_STATUS.MISSING };
 
     const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.BONE_DATA}/?boneId=${encodeURIComponent(boneId)}`;
     try {
         const resp = await fetch(url);
-        if (!resp.ok) {
-            throw new Error(`HTTP error! status: ${resp.status}`);
+        if (resp.status === 404) {
+            return { status: BONE_DATA_STATUS.MISSING, httpStatus: 404 };
         }
-        return await resp.json();
-    } catch (err) {
-        console.error(`Error fetching bone data for ${boneId}:`, err);
-        return null;
+        if (!resp.ok) {
+            const error = new Error(`HTTP error! status: ${resp.status}`);
+            console.error(`Error fetching bone data for ${boneId}:`, error);
+            return { status: BONE_DATA_STATUS.ERROR, httpStatus: resp.status, error };
+        }
+        const data = await resp.json();
+        return { status: BONE_DATA_STATUS.OK, httpStatus: resp.status, data };
+    } catch (error) {
+        console.error(`Error fetching bone data for ${boneId}:`, error);
+        return { status: BONE_DATA_STATUS.ERROR, error };
     }
+}
+
+/**
+ * Fetch full bone data (description + images) for a single bone from the backend API.
+ * Kept for callers that only need the data; use `fetchBoneDataResult` when the
+ * reason for a missing result matters.
+ * @param {string} boneId
+ * @returns {Object|null} bone data or null on error
+ */
+export async function fetchBoneData(boneId) {
+    const result = await fetchBoneDataResult(boneId);
+    return result.status === BONE_DATA_STATUS.OK ? result.data : null;
 }
 
 /**
