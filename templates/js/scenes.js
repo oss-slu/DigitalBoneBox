@@ -1,7 +1,4 @@
-<<<<<<< HEAD
-import { renderScene } from "./sceneCanvas.js";
 import { OPEN_SCENE_EVENT, SHOW_IN_VIEWER_EVENT, sceneSources, readableName } from "./sceneLinks.js";
-=======
 import { renderScene, displayedAnnotation, storeAnnotationGeometry, textBox } from "./sceneCanvas.js";
 import {
     DEFAULT_HIGHLIGHT_COLOR,
@@ -20,7 +17,6 @@ import {
     toColorInputValue,
     translateAnnotation,
 } from "./sceneAnnotations.js";
->>>>>>> upstream/main
 
 const SCENES_URL = "/api/scenes";
 
@@ -610,7 +606,7 @@ function showInViewer(boneId) {
  */
 function openSceneFromViewer(sceneId) {
     if (dom.editorView.hidden) enterEditor();
-    openScene(sceneId);
+    void openScene(sceneId);
 }
 
 function clearActiveScene() {
