@@ -42,9 +42,11 @@ describe("editing displayed geometry", () => {
 
         const line = { type: "line", x1: 0, y1: 0, x2: 10, y2: 10 };
         expect(translateAnnotation(line, 1, 2)).toMatchObject({ x1: 1, y1: 2, x2: 11, y2: 12 });
+        expect(line).toMatchObject({ x1: 0, y1: 0, x2: 10, y2: 10 });
 
         const polygon = { type: "polygon", points: [[0, 0], [10, 0], [0, 10]] };
         expect(translateAnnotation(polygon, 3, 4).points).toEqual([[3, 4], [13, 4], [3, 14]]);
+        expect(polygon.points).toEqual([[0, 0], [10, 0], [0, 10]]);
     });
 
     it("moves one line end or polygon corner", () => {
