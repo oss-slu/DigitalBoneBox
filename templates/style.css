@@ -3097,15 +3097,78 @@ button:disabled {
     background-position: 0 0, 0 12px, 12px -12px, -12px 0;
 }
 
+
 .scene-canvas {
     max-height: 70vh;
     overflow: auto;
     /* Issue #446: dragging on the canvas edits the scene; it shouldn't also
-        select text on the page. */
+       select text on the page. */
     -webkit-user-select: none;
     user-select: none;
+    /* Issue #447: no long-press callout menu, and no double-tap zoom, on the
+       canvas. Swiping it still scrolls the page unless an edit starts there.
+       Issue #449: a pinch zooms the scene (handled by scenes.js), not the page. */
+    -webkit-touch-callout: none;
+    touch-action: pan-x pan-y;
 }
 
+/* Issue #447: where a finger drag edits the scene - a handle, the selected
+   image or annotation, or anywhere while a drawing tool is in use - the page
+   must not scroll or zoom instead. */
+.scene-canvas.is-drawing svg,
+.scene-canvas .is-selected,
+.scene-canvas .scene-resize-handle,
+.scene-canvas .scene-point-handle {
+    touch-action: none;
+}
+
+/* Issue #447: handles big enough for a fingertip on touch screens.
+   --touch-target-scale is set by scenes.js from the canvas's drawn size. */
+@media (pointer: coarse) {
+    .scene-canvas .scene-resize-handle,
+    .scene-canvas .scene-point-handle {
+        transform-box: fill-box;
+        transform-origin: center;
+        transform: scale(var(--touch-target-scale, 1));
+        vector-effect: non-scaling-stroke;
+    }
+
+    .scene-canvas .scene-annotation-hit-line {
+        stroke-width: calc(var(--touch-target-scale, 1) * 10px);
+    }
+}
+
+/* Issue #449: zoom controls above the canvas. */
+.scene-view-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2);
+    border-bottom: 1px solid var(--border);
+    background: #ffffff;
+}
+
+.scene-zoom-level {
+    min-width: 4.5ch;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+
+.scene-view-hint {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+/* Issue #449: dragging empty space pans a canvas that is larger than its box. */
+.scene-canvas.can-pan svg {
+    cursor: grab;
+}
+
+.scene-canvas.is-panning,
+.scene-canvas.is-panning * {
+    cursor: grabbing;
+}
 
 .scene-svg {
     display: block;
