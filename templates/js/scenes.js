@@ -212,6 +212,8 @@ const state = {
     saveAlert: null,
     openRequest: 0,
     fitToWidth: true,
+    // Issue #449: how much larger than its default size the canvas is drawn.
+    zoom: 1,
     busy: false,
     // Issue #440: the one selected object, `{ kind: "image" | "annotation",
     // index }` (its index in `active.images` or `active.annotations`), or null.
@@ -296,6 +298,7 @@ function setActiveScene(scene) {
     endLineDraw();
     state.tool = null;
     state.draft = null;
+    state.zoom = 1;
 }
 
 /** The parts of a scene a save stores. */
@@ -750,6 +753,74 @@ function setTouchTargetScale(svg) {
     dom.canvas.style.setProperty("--touch-target-scale", String(round2(scale)));
 }
 
+// Issue #449: zoom and pan. Zooming changes only how large the scene is drawn:
+// images and annotations keep their scene coordinates and are drawn together
+// in one SVG, and every drag converts screen movement through the canvas's
+// drawn size, so editing stays aligned at any zoom. Panning scrolls the
+// canvas. Neither one changes the scene.
+const MIN_ZOOM = 0.25;
+const MAX_ZOOM = 8;
+const ZOOM_STEP = 1.25;
+
+function clampZoom(zoom) {
+    return Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom));
+}
+
+/** Where a scene point is drawn on screen (the inverse of clientToScene). */
+function sceneToClient(svg, [x, y]) {
+    const rect = svg.getBoundingClientRect();
+    const [viewX, viewY] = (svg.getAttribute("viewBox") || "0 0 0 0").split(" ").map(Number);
+    const scale = getSceneScale(svg);
+    return { x: (rect.left || 0) + (x - viewX) / scale.x, y: (rect.top || 0) + (y - viewY) / scale.y };
+}
+
+/**
+ * Zooms to `zoom`, keeping the scene point under `anchor` (a point on screen,
+ * the middle of the canvas by default) in the same place on screen.
+ * @param {number} zoom
+ * @param {{clientX: number, clientY: number}} [anchor]
+ * @param {{announce?: boolean}} [options]
+ */
+function setZoom(zoom, anchor, { announce: speak = true } = {}) {
+    const next = clampZoom(zoom);
+    if (!state.active || Math.abs(next - state.zoom) < 0.001) return;
+    const box = dom.canvas.getBoundingClientRect();
+    const point = anchor || { clientX: (box.left || 0) + box.width / 2, clientY: (box.top || 0) + box.height / 2 };
+    const oldSvg = dom.canvas.querySelector("svg");
+    const scenePoint = oldSvg ? clientToScene(oldSvg, point) : null;
+
+    state.zoom = next;
+    renderCanvas();
+
+    const svg = dom.canvas.querySelector("svg");
+    if (svg && scenePoint) {
+        const drawnAt = sceneToClient(svg, scenePoint);
+        dom.canvas.scrollLeft += drawnAt.x - point.clientX;
+        dom.canvas.scrollTop += drawnAt.y - point.clientY;
+    }
+    if (speak) announce(`Zoom ${Math.round(next * 100)}%.`);
+}
+
+/** Back to the default view: 100% zoom, scrolled to the top left. */
+function resetView() {
+    if (!state.active) return;
+    state.zoom = 1;
+    renderCanvas();
+    dom.canvas.scrollLeft = 0;
+    dom.canvas.scrollTop = 0;
+    announce("View reset to 100%.");
+}
+
+function canPan() {
+    return dom.canvas.scrollWidth > dom.canvas.clientWidth || dom.canvas.scrollHeight > dom.canvas.clientHeight;
+}
+
+function updateViewControls() {
+    dom.zoomLevel.textContent = `${Math.round(state.zoom * 100)}%`;
+    dom.zoomOut.disabled = state.zoom <= MIN_ZOOM;
+    dom.zoomIn.disabled = state.zoom >= MAX_ZOOM;
+    dom.canvas.classList.toggle("can-pan", canPan());
+}
 function renderCanvas() {
     const scene = state.active;
     dom.canvas.replaceChildren();
@@ -760,6 +831,7 @@ function renderCanvas() {
     dom.canvasEmpty.hidden = !isEmpty;
     dom.canvas.hidden = isEmpty;
     dom.fitToggle.hidden = isEmpty;
+    dom.viewControls.hidden = isEmpty;
     dom.canvasNote.hidden = true;
     const showOverlapHint = Boolean(state.selection) && state.overlapCount > 1;
     dom.selectionHint.hidden = !showOverlapHint;
@@ -773,16 +845,17 @@ function renderCanvas() {
         draft: state.draft,
     });
     svg.setAttribute("aria-label", `Scene canvas for ${scene.name}`);
+    // Issue #449: zooming only draws the whole scene larger or smaller.
     if (state.fitToWidth) {
-        svg.style.width = "100%";
+        svg.style.width = `${round2(state.zoom * 100)}%`;
         svg.style.height = "auto";
     } else {
-        svg.style.width = `${width}px`;
-        svg.style.height = `${height}px`;
+        svg.style.width = `${round2(width * state.zoom)}px`;
+        svg.style.height = `${round2(height * state.zoom)}px`;
     }
     dom.canvas.append(svg);
     setTouchTargetScale(svg);
-
+    updateViewControls();
     const notes = [];
     if (unsupported > 0) {
         notes.push(`${plural(unsupported, "object")} can't be displayed yet but are still stored with this scene.`);
@@ -2790,6 +2863,11 @@ export function initializeSceneEditor(root = document) {
         canvasEmpty: $("scene-canvas-empty"),
         canvasNote: $("scene-canvas-note"),
         selectionHint: $("scene-selection-hint"),
+        viewControls: $("scene-view-controls"),
+        zoomOut: $("scene-zoom-out"),
+        zoomIn: $("scene-zoom-in"),
+        zoomLevel: $("scene-zoom-level"),
+        zoomReset: $("scene-zoom-reset"),
         importButton: $("scene-import-image"),
         importButtonEmpty: $("scene-canvas-empty-import"),
         importInput: $("scene-import-input"),
@@ -2878,6 +2956,16 @@ export function initializeSceneEditor(root = document) {
     if (dom.duplicateButton) dom.duplicateButton.addEventListener("click", handleDuplicate);
     if (dom.publishButton) dom.publishButton.addEventListener("click", handlePublishToggle);
     dom.fitToggle.addEventListener("click", () => setFitToWidth(!state.fitToWidth));
+    dom.zoomOut.addEventListener("click", () => setZoom(state.zoom / ZOOM_STEP));
+    dom.zoomIn.addEventListener("click", () => setZoom(state.zoom * ZOOM_STEP));
+    dom.zoomReset.addEventListener("click", resetView);
+    // Ctrl + the scroll wheel (also what a trackpad pinch sends) zooms around
+    // the pointer; the scroll wheel on its own still scrolls, which pans.
+    dom.canvas.addEventListener("wheel", (event) => {
+        if (!event.ctrlKey && !event.metaKey) return;
+        event.preventDefault();
+        setZoom(state.zoom * Math.exp(-event.deltaY * 0.002), event, { announce: false });
+    }, { passive: false });
     if (dom.importToggle) {
         dom.importToggle.addEventListener("click", () => {
             if (dom.importForm.hidden) showImportForm();
@@ -2932,6 +3020,19 @@ export function initializeSceneEditor(root = document) {
         dom.annotationText.select();
     });
     dom.canvas.addEventListener("keydown", (event) => {
+        if (!event.ctrlKey && !event.metaKey && !event.altKey && state.active) {
+            const zoomKey = { "+": ZOOM_STEP, "=": ZOOM_STEP, "-": 1 / ZOOM_STEP }[event.key];
+            if (zoomKey) {
+                event.preventDefault();
+                setZoom(state.zoom * zoomKey);
+                return;
+            }
+            if (event.key === "0") {
+                event.preventDefault();
+                resetView();
+                return;
+            }
+        }
         if (handleAnnotationKey(event) || handleImageKey(event) || handleSelectionTab(event)) {
             event.preventDefault();
             return;
@@ -2954,6 +3055,70 @@ export function initializeSceneEditor(root = document) {
         if (activeDrag && activeDrag.isPointer) return;
         handleCanvasPress(event);
     });
+// Issue #449: a mouse or pen press that didn't start an edit (on empty
+    // space or an unselected object) drags the view instead. These run after
+    // the press handlers above, so an edit always wins and a pan never moves
+    // an object. A finger already pans by scrolling the canvas.
+    dom.canvas.addEventListener("pointerdown", startPanFromPress);
+    dom.canvas.addEventListener("mousedown", startPanFromPress);
+    function startPanFromPress(event) {
+        if (activeDrag || !state.active || state.tool) return;
+        if (event.button !== undefined && event.button !== 0) return;
+        if (event.isPrimary === false || event.pointerType === "touch" || !canPan()) return;
+        startPan(event);
+    }
+    function startPan(event) {
+        const startX = event.clientX;
+        const startY = event.clientY;
+        const startLeft = dom.canvas.scrollLeft;
+        const startTop = dom.canvas.scrollTop;
+        const threshold = dragThreshold(event);
+        let panned = false;
+        dom.canvas.classList.add("is-panning");
+        followDrag(event, (moveEvent) => {
+            const dx = moveEvent.clientX - startX;
+            const dy = moveEvent.clientY - startY;
+            if (Math.abs(dx) > threshold || Math.abs(dy) > threshold) panned = true;
+            if (!panned) return;
+            dom.canvas.scrollLeft = startLeft - dx;
+            dom.canvas.scrollTop = startTop - dy;
+        }, () => {
+            dom.canvas.classList.remove("is-panning");
+            // Letting go after a pan doesn't select what it ends over.
+            suppressNextClick = panned;
+        });
+    }
+
+    // Issue #449: pinching two fingers on the canvas zooms around the point
+    // between them. A finger that is already editing an object keeps editing.
+    const fingers = new Map();
+    let pinch = null;
+    const fingerGap = ([a, b]) => Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+    const fingerMiddle = ([a, b]) => ({ clientX: (a.clientX + b.clientX) / 2, clientY: (a.clientY + b.clientY) / 2 });
+    dom.canvas.addEventListener("pointerdown", (event) => {
+        if (event.pointerType !== "touch") return;
+        fingers.set(event.pointerId, { clientX: event.clientX, clientY: event.clientY });
+        if (fingers.size === 2 && !(activeDrag && activeDrag.isPointer)) {
+            const pair = [...fingers.values()];
+            pinch = { gap: fingerGap(pair), zoom: state.zoom };
+        }
+    });
+    document.addEventListener("pointermove", (event) => {
+        if (!fingers.has(event.pointerId)) return;
+        fingers.set(event.pointerId, { clientX: event.clientX, clientY: event.clientY });
+        if (!pinch || fingers.size !== 2) return;
+        const pair = [...fingers.values()];
+        if (pinch.gap > 0) setZoom(pinch.zoom * (fingerGap(pair) / pinch.gap), fingerMiddle(pair), { announce: false });
+    });
+    const liftFinger = (event) => {
+        if (!fingers.delete(event.pointerId)) return;
+        if (fingers.size < 2 && pinch) {
+            pinch = null;
+            announce(`Zoom ${Math.round(state.zoom * 100)}%.`);
+        }
+    };
+    document.addEventListener("pointerup", liftFinger);
+    document.addEventListener("pointercancel", liftFinger);
     function handleCanvasPress(event) {
         if (event.pointerType) lastPressPointerType = event.pointerType;
         // Only the main button (left mouse button, a finger, or a pen tip)

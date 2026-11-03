@@ -1834,3 +1834,285 @@ describe("Stylus editing (#448)", () => {
         expect(contextMenuIsBlocked(canvasSvg())).toBe(false);
     });
 });
+
+// Issue #449: zoom and pan. jsdom doesn't lay pages out, so the canvas is
+// given a 960x600 box and the SVG is drawn at its zoomed size, scrolled by the
+// canvas's scroll position - the sizes a browser would report.
+describe("Zoom and pan (#449)", () => {
+    const BOX = { width: 960, height: 600 };
+    const zoomLevel = () => $("scene-zoom-level").textContent;
+    const imageNode = () => document.querySelector("#scene-canvas [data-scene-image-index=\"0\"]");
+    const images = () => scenesModule.getActiveScene().images;
+    const ALL_KINDS = {
+        images: [{ id: "img-a", src: "/images/a.png", x: 100, y: 100, width: 200, height: 100 }],
+        annotations: [
+            { id: "p", type: "polygon", points: [[400, 100], [500, 100], [450, 200]] },
+            { id: "l", type: "line", x1: 100, y1: 400, x2: 300, y2: 400 },
+            { id: "t", type: "text", text: "Ilium", x: 600, y: 300 },
+        ],
+    };
+
+    function drawnWidth(svg) {
+        const width = svg.style.width;
+        return width.endsWith("%") ? (BOX.width * parseFloat(width)) / 100 : parseFloat(width);
+    }
+    function mockLayout() {
+        const canvas = $("scene-canvas");
+        const scroll = { left: 0, top: 0 };
+        const drawn = () => {
+            const svg = canvasSvg();
+            if (!svg) return { width: 0, height: 0 };
+            const [, , viewWidth, viewHeight] = svg.getAttribute("viewBox").split(" ").map(Number);
+            const width = drawnWidth(svg);
+            return { width, height: (width * viewHeight) / viewWidth };
+        };
+        const define = (name, get, set) => Object.defineProperty(canvas, name, { configurable: true, get, set });
+        define("scrollLeft", () => scroll.left, (value) => { scroll.left = Math.max(0, value); });
+        define("scrollTop", () => scroll.top, (value) => { scroll.top = Math.max(0, value); });
+        define("clientWidth", () => BOX.width);
+        define("clientHeight", () => BOX.height);
+        define("scrollWidth", () => Math.max(BOX.width, drawn().width));
+        define("scrollHeight", () => Math.max(BOX.height, drawn().height));
+        jest.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(function () {
+            if (this.tagName.toLowerCase() === "svg") {
+                return { left: -scroll.left, top: -scroll.top, ...drawn() };
+            }
+            return { left: 0, top: 0, ...BOX };
+        });
+        return scroll;
+    }
+    async function openZoomableScene(content = ALL_KINDS) {
+        await openBlankScene(content);
+        const scroll = mockLayout();
+        click("scene-zoom-reset"); // draw again with the mocked layout
+        return scroll;
+    }
+    function wheel(options) {
+        const event = new WheelEvent("wheel", { bubbles: true, cancelable: true, clientX: 480, clientY: 300, ...options });
+        canvasSvg().dispatchEvent(event);
+        return event;
+    }
+    function finger(type, target, [x, y], pointerId) {
+        const init = {
+            bubbles: true, clientX: x, clientY: y, button: 0, buttons: type === "pointerup" ? 0 : 1,
+            pointerId, pointerType: "touch", isPrimary: pointerId === 1,
+        };
+        const event = typeof PointerEvent === "function" ? new PointerEvent(type, init) : new MouseEvent(type, init);
+        for (const [name, value] of Object.entries({ pointerId, pointerType: "touch", isPrimary: pointerId === 1 })) {
+            if (event[name] !== value) Object.defineProperty(event, name, { value });
+        }
+        target.dispatchEvent(event);
+    }
+
+    it("zooms in and out with the buttons, within limits, and returns to the default view", async () => {
+        const scroll = await openZoomableScene();
+        expect($("scene-view-controls").hidden).toBe(false);
+        expect(zoomLevel()).toBe("100%");
+
+        click("scene-zoom-in");
+        expect(zoomLevel()).toBe("125%");
+        expect(canvasSvg().style.width).toBe("125%");
+        click("scene-zoom-out");
+        click("scene-zoom-out");
+        expect(zoomLevel()).toBe("80%");
+
+        for (let i = 0; i < 20; i += 1) click("scene-zoom-in");
+        expect(zoomLevel()).toBe("800%");
+        expect($("scene-zoom-in").disabled).toBe(true);
+
+        scroll.left = 500;
+        scroll.top = 300;
+        click("scene-zoom-reset");
+        expect(zoomLevel()).toBe("100%");
+        expect(scroll).toEqual({ left: 0, top: 0 });
+
+        for (let i = 0; i < 20; i += 1) click("scene-zoom-out");
+        expect(zoomLevel()).toBe("25%");
+        expect($("scene-zoom-out").disabled).toBe(true);
+    });
+
+    it("draws images, highlights, lines and labels together, so they stay aligned and the scene is unchanged", async () => {
+        await openZoomableScene();
+        const before = { viewBox: canvasSvg().getAttribute("viewBox"), drawing: canvasSvg().innerHTML };
+
+        click("scene-zoom-in");
+        click("scene-zoom-in");
+        click("scene-zoom-in");
+
+        expect(canvasSvg().style.width).toBe("195.31%");
+        // One drawing, scaled as a whole: every object keeps its place in it.
+        expect(canvasSvg().getAttribute("viewBox")).toBe(before.viewBox);
+        expect(canvasSvg().innerHTML).toBe(before.drawing);
+        expect(scenesModule.getActiveScene()).toMatchObject(ALL_KINDS);
+        expect(scenesModule.hasUnsavedChanges()).toBe(false);
+    });
+
+    it("moves and draws in scene units while zoomed and panned, so edits land under the pointer", async () => {
+        const scroll = await openZoomableScene();
+        click("scene-zoom-in");
+        click("scene-zoom-in");
+        click("scene-zoom-in");
+        const zoom = 1.953125;
+        scroll.left = 0;
+        scroll.top = 0;
+
+        clickAt(imageNode(), [300, 300]);
+        drag(imageNode(), [300, 300], [360, 340]);
+        expect(images()[0].x).toBeCloseTo(100 + 60 / zoom);
+        expect(images()[0].y).toBeCloseTo(100 + 40 / zoom);
+
+        scroll.left = 100;
+        scroll.top = 50;
+        click("scene-tool-line");
+        drag(canvasSvg(), [300, 300], [500, 300]);
+        const line = annotations()[annotations().length - 1];
+        expect(line.type).toBe("line");
+        expect(line.x1).toBeCloseTo(400 / zoom, 1);
+        expect(line.y1).toBeCloseTo(350 / zoom, 1);
+        expect(line.x2).toBeCloseTo(600 / zoom, 1);
+    });
+
+    it("zooms around the pointer with Ctrl + the scroll wheel, while the scroll wheel alone scrolls", async () => {
+        const scroll = await openZoomableScene();
+
+        const plain = wheel({ deltaY: 100 });
+        expect(plain.defaultPrevented).toBe(false);
+        expect(zoomLevel()).toBe("100%");
+
+        const zoomWheel = wheel({ deltaY: -100, ctrlKey: true });
+        expect(zoomWheel.defaultPrevented).toBe(true);
+        expect(zoomLevel()).toBe("122%");
+        // The scene point that was under the pointer (480, 300) is still there.
+        const zoom = Math.exp(0.2);
+        expect(scroll.left).toBeCloseTo(480 * zoom - 480, 0);
+        expect(scroll.top).toBeCloseTo(300 * zoom - 300, 0);
+    });
+
+    it("zooms with the +, - and 0 keys", async () => {
+        await openZoomableScene();
+
+        key("+");
+        expect(zoomLevel()).toBe("125%");
+        key("-");
+        key("-");
+        expect(zoomLevel()).toBe("80%");
+        key("0");
+        expect(zoomLevel()).toBe("100%");
+    });
+
+    it("pans by dragging empty space or an unselected object, without moving or selecting anything", async () => {
+        const scroll = await openZoomableScene();
+        click("scene-zoom-in");
+        click("scene-zoom-in");
+        scroll.left = 200;
+        scroll.top = 100;
+        expect($("scene-canvas").classList.contains("can-pan")).toBe(true);
+
+        drag(canvasSvg(), [800, 500], [700, 450]);
+        expect(scroll).toEqual({ left: 300, top: 150 });
+
+        drag(imageNode(), [300, 300], [250, 300]);
+        mouse("click", imageNode(), [250, 300]);
+        expect(scroll.left).toBe(350);
+        expect(document.querySelectorAll(".scene-selection-outline")).toHaveLength(0);
+        expect(images()[0]).toMatchObject({ x: 100, y: 100 });
+        expect(scenesModule.hasUnsavedChanges()).toBe(false);
+    });
+
+    it("moves a selected object instead of panning", async () => {
+        const scroll = await openZoomableScene();
+        click("scene-zoom-in");
+        click("scene-zoom-in");
+        scroll.left = 0;
+        scroll.top = 0;
+        clickAt(imageNode(), [300, 300]);
+
+        drag(imageNode(), [300, 300], [350, 300]);
+
+        expect(images()[0].x).toBeGreaterThan(100);
+        expect(scroll).toEqual({ left: 0, top: 0 });
+    });
+
+    it("zooms with a two-finger pinch, but not while a finger is moving an object", async () => {
+        await openZoomableScene();
+
+        finger("pointerdown", canvasSvg(), [400, 300], 1);
+        finger("pointerdown", canvasSvg(), [500, 300], 2);
+        finger("pointermove", document, [600, 300], 2);
+        expect(zoomLevel()).toBe("200%");
+        finger("pointerup", document, [600, 300], 2);
+        finger("pointerup", document, [400, 300], 1);
+
+        click("scene-zoom-reset");
+        clickAt(imageNode(), [150, 150]);
+        finger("pointerdown", imageNode(), [150, 150], 1);
+        finger("pointerdown", canvasSvg(), [500, 300], 2);
+        finger("pointermove", document, [800, 300], 2);
+        finger("pointerup", document, [800, 300], 2);
+        finger("pointerup", document, [150, 150], 1);
+        expect(zoomLevel()).toBe("100%");
+    });
+
+    it("keeps the zoom when switching to actual size, and starts another scene at the default view", async () => {
+        backend.seed({ id: "scene-2", name: "Other", ...ALL_KINDS });
+        await openZoomableScene();
+        click("scene-zoom-in");
+
+        click("scene-fit-toggle");
+        expect(canvasSvg().style.width).toBe("1200px");
+        expect(zoomLevel()).toBe("125%");
+
+        [...document.querySelectorAll(".scene-list-item")].find((b) => b.textContent.includes("Other")).click();
+        await waitFor(() => expect($("scene-title").textContent).toBe("Other"));
+        expect(zoomLevel()).toBe("100%");
+    });
+});
+
+// #449 review: after a pointer selection, focus is on the canvas, so its
+// keyboard shortcuts (arrows, Delete, zoom) work without clicking it again.
+describe("Keyboard focus after selecting with a pointer (#449)", () => {
+    function tapWith(target, [x, y], pointerType) {
+        for (const type of ["pointerdown", "pointerup"]) {
+            const init = {
+                bubbles: true, cancelable: true, clientX: x, clientY: y, button: 0,
+                buttons: type === "pointerdown" ? 1 : 0, pointerId: 1, pointerType, isPrimary: true,
+            };
+            const event = typeof PointerEvent === "function" ? new PointerEvent(type, init) : new MouseEvent(type, init);
+            for (const [name, value] of Object.entries({ pointerId: 1, isPrimary: true, pointerType })) {
+                if (event[name] !== value) Object.defineProperty(event, name, { value });
+            }
+            (type === "pointerdown" ? target : document).dispatchEvent(event);
+        }
+        mouse("click", target, [x, y]);
+    }
+    function keyOnFocused(name, options = {}) {
+        document.activeElement.dispatchEvent(new KeyboardEvent("keydown", { key: name, bubbles: true, cancelable: true, ...options }));
+    }
+    const imageNode = () => document.querySelector("#scene-canvas [data-scene-image-index=\"0\"]");
+    const images = () => scenesModule.getActiveScene().images;
+
+    it.each(["mouse", "touch", "pen"])("focuses the canvas when an object is selected or deselected with a %s", async (pointerType) => {
+        await openBlankScene({
+            images: [{ id: "img-a", src: "/images/a.png", x: 100, y: 100, width: 200, height: 100 }],
+            annotations: [{ id: "t", type: "text", text: "Ilium", x: 400, y: 400 }],
+        });
+        $("scene-annotation-text").focus();
+
+        tapWith(imageNode(), [150, 150], pointerType);
+        expect(document.activeElement).toBe($("scene-canvas"));
+        keyOnFocused("ArrowRight");
+        expect(images()[0]).toMatchObject({ x: 101, y: 100 });
+
+        tapWith(annotationNode(0), [410, 410], pointerType);
+        expect(document.activeElement).toBe($("scene-canvas"));
+        keyOnFocused("Delete");
+        expect(annotations()).toEqual([]);
+
+        // Deselecting by tapping empty canvas keeps focus there too, so zoom keys still work.
+        $("scene-annotation-text").focus();
+        tapWith(canvasSvg(), [900, 550], pointerType);
+        expect(document.activeElement).toBe($("scene-canvas"));
+        keyOnFocused("+");
+        expect($("scene-zoom-level").textContent).toBe("125%");
+    });
+});
