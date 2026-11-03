@@ -714,6 +714,9 @@ export function renderScene(scene, { selectedIndex, cropMode = false, selectedAn
         const isEditingCrop = cropMode && index === selectedIndex;
         const result = place(renderImage(image, index, defs, { skipClip: isEditingCrop }), imageLayer);
         if (result && index === selectedIndex) {
+            // Marks what a drag would move, so touch styles can stop the page
+            // from scrolling when a finger starts on it (Issue #447).
+            result.node.classList.add("is-selected");
             // While actively editing the crop, the outline/handles track the
             // *draft* crop rect instead of the image's visible bounds, so
             // they can be dragged inward from the full (now unclipped) image.
@@ -775,7 +778,11 @@ export function renderScene(scene, { selectedIndex, cropMode = false, selectedAn
             hitArea.setAttribute("data-scene-annotation-index", index);
             annotationLayer.appendChild(hitArea);
         }
-        if (index === selectedAnnotationIndex) renderAnnotationSelection(toRender, selectionLayer);
+        if (index === selectedAnnotationIndex) {
+            result.node.classList.add("is-selected");
+            if (hitArea) hitArea.classList.add("is-selected");
+            renderAnnotationSelection(toRender, selectionLayer);
+        }
     });
     if (draft) renderDraft(draft, defs, selectionLayer);
 
