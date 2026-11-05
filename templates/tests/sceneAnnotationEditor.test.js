@@ -91,8 +91,18 @@ function drag(target, from, to) {
 function key(name, options = {}) {
     $("scene-canvas").dispatchEvent(new KeyboardEvent("keydown", { key: name, bubbles: true, ...options }));
 }
+/** A point on a drawn annotation, where a user would click it. */
+function pointOn(node) {
+    if (node.tagName === "text") return [Number(node.getAttribute("x")) + 1, Number(node.getAttribute("y")) + 1];
+    const points = (node.getAttribute("points") || "").trim().split(/\s+/).map((pair) => pair.split(",").map(Number));
+    if (node.tagName === "polygon") {
+        return [0, 1].map((axis) => points.reduce((sum, point) => sum + point[axis], 0) / points.length);
+    }
+    return [(points[0][0] + points[1][0]) / 2, (points[0][1] + points[1][1]) / 2];
+}
 function selectAnnotation(index) {
-    clickAt(annotationNode(index), [0, 0]);
+    const node = annotationNode(index);
+    clickAt(node, pointOn(node));
 }
 function typeText(text) {
     $("scene-annotation-text").focus();
@@ -233,7 +243,10 @@ describe("Text labels (#427-#430)", () => {
 
     it("opens a label's text for editing on double-click", async () => {
         await openBlankScene({ annotations: [{ id: "a", type: "text", text: "Ilium", x: 10, y: 10 }] });
-        mouse("dblclick", annotationNode(0), [0, 0]);
+        // A browser sends both clicks before the dblclick.
+        clickAt(annotationNode(0), [12, 12]);
+        clickAt(annotationNode(0), [12, 12]);
+        mouse("dblclick", annotationNode(0), [12, 12]);
         expect(document.activeElement).toBe($("scene-annotation-text"));
         expect($("scene-annotation-toolbar").hidden).toBe(false);
     });
@@ -724,6 +737,325 @@ describe("Annotation selection", () => {
         expect($("scene-canvas-empty").hidden).toBe(false);
     });
 });
+
+describe("Selecting objects (#440)", () => {
+    // One of each object type. Annotations are drawn over images, and later
+    // ones over earlier ones, so from the top down: highlight, arrow, line,
+    // label, image.
+    const content = {
+        images: [{ id: "img", src: "/images/a.png", x: 300, y: 300, width: 100, height: 100 }],
+        annotations: [
+            { id: "label", type: "text", text: "Ilium", x: 0, y: 0 },
+            { id: "line", type: "line", x1: 10, y1: 400, x2: 200, y2: 400 },
+            { id: "arrow", type: "arrow", x1: 10, y1: 450, x2: 200, y2: 450 },
+            { id: "poly", type: "polygon", points: [[500, 100], [600, 100], [550, 200]] },
+        ],
+    };
+    const imageNode = () => document.querySelector("[data-scene-image-index=\"0\"]");
+    const status = () => $("scene-editor-status").textContent;
+    const outlines = () => document.querySelectorAll(".scene-selection-outline");
+    /** Presses a key on the canvas; returns whether the editor handled it (prevented the default). */
+    function press(name, options = {}) {
+        return !$("scene-canvas").dispatchEvent(new KeyboardEvent("keydown", { key: name, bubbles: true, cancelable: true, ...options }));
+    }
+
+    it("selects each object type with a visible outline, and a second click keeps it selected", async () => {
+        await openBlankScene(content);
+
+        for (const index of [0, 1, 2, 3]) {
+            selectAnnotation(index);
+            expect($("scene-annotation-toolbar").hidden).toBe(false);
+            expect($("scene-image-toolbar").hidden).toBe(true);
+            expect(outlines()).toHaveLength(1);
+            selectAnnotation(index);
+            expect($("scene-annotation-toolbar").hidden).toBe(false);
+        }
+        clickAt(imageNode(), [350, 350]);
+        expect($("scene-image-toolbar").hidden).toBe(false);
+        expect($("scene-annotation-toolbar").hidden).toBe(true);
+        expect(outlines()).toHaveLength(1);
+        clickAt(imageNode(), [350, 350]);
+        expect($("scene-image-toolbar").hidden).toBe(false);
+    });
+
+    it("says which object was selected and where it is in the stack", async () => {
+        await openBlankScene(content);
+
+        selectAnnotation(0);
+        await waitFor(() => expect(status()).toBe("Selected label \"Ilium\", 4 of 5 objects."));
+        selectAnnotation(3);
+        await waitFor(() => expect(status()).toBe("Selected highlight, 1 of 5 objects."));
+        clickAt(imageNode(), [350, 350]);
+        await waitFor(() => expect(status()).toBe("Selected image, 5 of 5 objects."));
+    });
+
+    it("clears the selection with Escape or a click on empty canvas", async () => {
+        await openBlankScene(content);
+
+        clickAt(imageNode(), [350, 350]);
+        expect(press("Escape")).toBe(false);
+        expect($("scene-image-toolbar").hidden).toBe(true);
+        expect(outlines()).toHaveLength(0);
+        await waitFor(() => expect(status()).toBe("Nothing selected."));
+
+        selectAnnotation(1);
+        clickAt(canvasSvg(), [900, 550]);
+        expect($("scene-annotation-toolbar").hidden).toBe(true);
+        expect(outlines()).toHaveLength(0);
+    });
+
+    it("keeps an image selected when one of its corner handles is clicked without dragging", async () => {
+        await openBlankScene(content);
+        clickAt(imageNode(), [350, 350]);
+
+        clickAt(document.querySelector("[data-corner=\"se\"]"), [400, 400]);
+
+        expect($("scene-image-toolbar").hidden).toBe(false);
+        expect(scenesModule.getActiveScene().images[0]).toMatchObject({ x: 300, y: 300, width: 100, height: 100 });
+        expect(scenesModule.hasUnsavedChanges()).toBe(false);
+    });
+
+    it("steps through the objects from the top with Tab and back with Shift+Tab, then lets focus leave", async () => {
+        await openBlankScene(content);
+        const selected = () => {
+            if (!$("scene-image-toolbar").hidden) return "image";
+            if (!$("scene-annotation-toolbar").hidden) return "annotation";
+            return null;
+        };
+        const order = [];
+        for (let step = 0; step < 5; step += 1) {
+            expect(press("Tab")).toBe(true);
+            await waitFor(() => expect(status()).toMatch(new RegExp(`, ${step + 1} of 5 objects\\.$`)));
+            order.push(status());
+        }
+        expect(order.map((message) => message.replace(/, \d of 5 objects\.$/, ""))).toEqual([
+            "Selected highlight",
+            "Selected arrow",
+            "Selected line",
+            "Selected label \"Ilium\"",
+            "Selected image",
+        ]);
+        expect(selected()).toBe("image");
+
+        expect(press("Tab", { shiftKey: true })).toBe(true);
+        await waitFor(() => expect(status()).toBe("Selected label \"Ilium\", 4 of 5 objects."));
+
+        // Past the last object, Tab clears the selection and isn't held by the canvas.
+        press("Tab");
+        expect(press("Tab")).toBe(false);
+        expect(selected()).toBeNull();
+        // With nothing selected, Shift+Tab leaves the canvas too.
+        expect(press("Tab", { shiftKey: true })).toBe(false);
+    });
+
+    it("leaves Tab alone while a drawing tool is in use", async () => {
+        await openBlankScene(content);
+        click("scene-tool-line");
+        expect(press("Tab")).toBe(false);
+        expect(outlines()).toHaveLength(0);
+    });
+});
+
+describe("Selecting overlapping objects (#441)", () => {
+    // A label on a highlight on an image: at (320, 315) all three overlap; at
+    // (390, 390) the highlight and the image; at (285, 285) only the highlight.
+    const content = {
+        images: [{ id: "img", src: "/images/a.png", x: 300, y: 300, width: 100, height: 100 }],
+        annotations: [
+            { id: "poly", type: "polygon", points: [[280, 280], [420, 280], [420, 420], [280, 420]] },
+            { id: "label", type: "text", text: "Ilium", x: 310, y: 310 },
+        ],
+    };
+    const status = () => $("scene-editor-status").textContent;
+    const hint = () => $("scene-selection-hint");
+    const selected = () => {
+        if (!$("scene-image-toolbar").hidden) return "image";
+        if ($("scene-annotation-toolbar").hidden) return null;
+        return $("scene-annotation-label").textContent.includes("label") ? "label" : "highlight";
+    };
+    function altClickAt(target, [x, y]) {
+        target.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, clientX: x, clientY: y, altKey: true }));
+        document.dispatchEvent(new MouseEvent("mouseup", { clientX: x, clientY: y, altKey: true }));
+        target.dispatchEvent(new MouseEvent("click", { bubbles: true, clientX: x, clientY: y, altKey: true }));
+    }
+
+    it("selects the topmost object, then each one below on clicks in the same spot, wrapping to the top", async () => {
+        await openBlankScene(content);
+        const order = [];
+        for (let i = 0; i < 4; i += 1) {
+            // The browser reports the topmost node as clicked every time.
+            clickAt(annotationNode(1), [320, 315]);
+            order.push(selected());
+        }
+        expect(order).toEqual(["label", "highlight", "image", "label"]);
+    });
+
+    it("shows and announces a hint while objects overlap, and hides it for a single object", async () => {
+        await openBlankScene(content);
+
+        clickAt(annotationNode(1), [320, 315]);
+        expect(hint().hidden).toBe(false);
+        expect(hint().textContent).toBe(
+            "3 objects overlap here. Click again in the same spot, or Alt+click, to select the next one down."
+        );
+        await waitFor(() => expect(status()).toBe(
+            "Selected label \"Ilium\", 1 of 3 objects. 3 objects overlap here. Click again in the same spot, or Alt+click, to select the next one down."
+        ));
+
+        clickAt(annotationNode(0), [285, 285]);
+        expect(selected()).toBe("highlight");
+        expect(hint().hidden).toBe(true);
+
+        clickAt(annotationNode(1), [320, 315]);
+        key("Escape");
+        expect(hint().hidden).toBe(true);
+    });
+
+    it("selects the topmost object again when the click is in a different spot", async () => {
+        await openBlankScene(content);
+        clickAt(annotationNode(0), [390, 390]);
+        clickAt(annotationNode(0), [390, 390]);
+        expect(selected()).toBe("image");
+
+        clickAt(annotationNode(0), [395, 380]);
+        expect(selected()).toBe("highlight");
+    });
+
+    it("steps down the stack with Alt+click from anywhere on it", async () => {
+        await openBlankScene(content);
+
+        altClickAt(annotationNode(0), [390, 390]);
+        expect(selected()).toBe("image");
+        // The image is under the label too, so the next Alt+click wraps to the top there.
+        altClickAt(annotationNode(1), [320, 315]);
+        expect(selected()).toBe("label");
+        altClickAt(annotationNode(1), [322, 316]);
+        expect(selected()).toBe("highlight");
+    });
+
+    it("keeps stepping down on quick clicks instead of a double-click jumping back to the label", async () => {
+        await openBlankScene(content);
+        clickAt(annotationNode(1), [320, 315]);
+        clickAt(annotationNode(1), [320, 315]);
+        mouse("dblclick", annotationNode(1), [320, 315]);
+        expect(selected()).toBe("highlight");
+        expect(document.activeElement).not.toBe($("scene-annotation-text"));
+
+        clickAt(annotationNode(1), [320, 315]);
+        expect(selected()).toBe("image");
+    });
+
+    it("clears the hint once the selected object is edited", async () => {
+        await openBlankScene(content);
+        clickAt(annotationNode(1), [320, 315]);
+        expect(hint().hidden).toBe(false);
+
+        key("ArrowRight");
+
+        expect(hint().hidden).toBe(true);
+        expect(selected()).toBe("label");
+    });
+});
+
+describe("Moving and resizing selected objects (#442)", () => {
+    // A crowded scene: image "a" under a highlight and a label, image "b" to
+    // its right, and a line below.
+    const content = () => ({
+        images: [
+            { id: "a", src: "/images/a.png", x: 300, y: 300, width: 100, height: 100 },
+            { id: "b", src: "/images/b.png", x: 600, y: 300, width: 100, height: 100 },
+        ],
+        annotations: [
+            { id: "poly", type: "polygon", points: [[280, 280], [420, 280], [420, 420], [280, 420]] },
+            { id: "label", type: "text", text: "Ilium", x: 310, y: 310 },
+            { id: "line", type: "line", x1: 10, y1: 500, x2: 200, y2: 500 },
+        ],
+    });
+    const images = () => scenesModule.getActiveScene().images;
+    const storedImages = () => backend.scenes.get("scene-1").images;
+    const imageNode = (index) => document.querySelector(`[data-scene-image-index="${index}"]`);
+    const status = () => $("scene-editor-status").textContent;
+    /** Selects image "a" the way a user reaches it under the highlight: clicking twice in one spot. */
+    function selectCoveredImage() {
+        clickAt(annotationNode(0), [390, 390]);
+        clickAt(annotationNode(0), [390, 390]);
+        expect($("scene-image-toolbar").hidden).toBe(false);
+    }
+
+    it("moves, nudges, and resizes an image covered by a highlight, and keeps it after reopening", async () => {
+        await openBlankScene(content());
+        selectCoveredImage();
+
+        // The press lands on the highlight, but the selected image is under it, so the image moves.
+        drag(annotationNode(0), [390, 390], [440, 400]);
+        expect(images()[0]).toMatchObject({ x: 350, y: 310 });
+        expect($("scene-image-toolbar").hidden).toBe(false);
+
+        key("ArrowRight");
+        key("ArrowDown", { shiftKey: true });
+        expect(images()[0]).toMatchObject({ x: 351, y: 320 });
+
+        // The se handle is at (451, 420); dragging it 50 right scales 100 -> 150 about the center.
+        drag(document.querySelector("[data-corner=\"se\"]"), [451, 420], [501, 420]);
+        expect(images()[0]).toMatchObject({ x: 326, y: 295, width: 150, height: 150 });
+
+        await saveAndReopen();
+        expect(storedImages()[0]).toMatchObject({ x: 326, y: 295, width: 150, height: 150 });
+        expect(storedImages()[1]).toEqual(content().images[1]);
+        expect(stored()).toEqual(content().annotations);
+    });
+
+    it("never moves an object that isn't selected", async () => {
+        await openBlankScene(content());
+        selectCoveredImage();
+
+        // Pressing and dragging on the line or on image "b" moves nothing.
+        drag(annotationNode(2), [100, 500], [150, 550]);
+        drag(imageNode(1), [650, 350], [700, 400]);
+
+        expect(images()).toEqual(content().images);
+        expect(annotations()).toEqual(content().annotations);
+        expect(scenesModule.hasUnsavedChanges()).toBe(false);
+    });
+
+    it("moves a selected highlight when the press lands on the label drawn over it", async () => {
+        await openBlankScene(content());
+        clickAt(annotationNode(0), [390, 390]);
+
+        drag(annotationNode(1), [320, 315], [330, 325]);
+
+        expect(annotations()[0].points).toEqual([[290, 290], [430, 290], [430, 430], [290, 430]]);
+        expect(annotations()[1]).toEqual(content().annotations[1]);
+        expect(images()).toEqual(content().images);
+    });
+
+    it("removes the selected image with Delete or Backspace", async () => {
+        await openBlankScene(content());
+        selectCoveredImage();
+
+        key("Delete");
+        expect(images().map((image) => image.id)).toEqual(["b"]);
+        expect($("scene-image-toolbar").hidden).toBe(true);
+        await waitFor(() => expect(status()).toBe("Image removed. Save to keep the change."));
+
+        clickAt(imageNode(0), [650, 350]);
+        key("Backspace");
+        expect(images()).toEqual([]);
+        expect(annotations()).toEqual(content().annotations);
+    });
+
+    it("leaves the arrow keys and Delete alone while an image's crop is being edited", async () => {
+        await openBlankScene(content());
+        clickAt(imageNode(1), [650, 350]);
+        click("scene-image-crop-start");
+
+        key("ArrowLeft");
+        key("Delete");
+
+        expect(images()).toEqual(content().images);
+    });
+});
+
 // Issue #446: the same edits made with pointer events, which is what a mouse
 // sends in browsers that support them (and touch and pen, later). jsdom may
 // not have PointerEvent, so the fields the editor reads are set by hand.
@@ -946,5 +1278,222 @@ describe("Mouse editing with pointer events (#446)", () => {
 
         expect(annotations()).toEqual([]);
         expect(document.querySelector(".scene-draft")).toBeNull();
+    });
+});
+
+describe("Undo and redo (#443)", () => {
+    const content = () => ({
+        images: [{ id: "img", src: "/images/a.png", x: 300, y: 300, width: 100, height: 100 }],
+        annotations: [
+            { id: "label", type: "text", text: "Ilium", x: 20, y: 20 },
+            { id: "poly", type: "polygon", points: [[600, 100], [700, 100], [650, 200]] },
+        ],
+    });
+    const clone = (value) => JSON.parse(JSON.stringify(value));
+    const images = () => scenesModule.getActiveScene().images;
+    const imageNode = () => document.querySelector("[data-scene-image-index=\"0\"]");
+    const saveStatus = () => $("scene-save-status").textContent;
+    const status = () => $("scene-editor-status").textContent;
+    function shortcut(name, options = {}, target = $("scene-canvas")) {
+        const event = new KeyboardEvent("keydown", { key: name, bubbles: true, cancelable: true, ...options });
+        target.dispatchEvent(event);
+        return event.defaultPrevented;
+    }
+
+    it("undoes and redoes a sequence of image and annotation edits, one step at a time", async () => {
+        await openBlankScene(content());
+        expect($("scene-undo").disabled).toBe(true);
+        expect($("scene-redo").disabled).toBe(true);
+
+        clickAt(imageNode(), [350, 350]);
+        drag(imageNode(), [350, 350], [400, 380]);
+        selectAnnotation(1);
+        click("scene-annotation-delete");
+        await addLabel([100, 400], "Pubis");
+        const edited = clone(scenesModule.getActiveScene());
+        expect(edited.annotations.map((a) => a.text || a.id)).toEqual(["Ilium", "Pubis"]);
+
+        // Typing the new label's text, then adding it, are two steps.
+        click("scene-undo");
+        expect(annotations().map((a) => a.text || a.id)).toEqual(["Ilium", "New label"]);
+        click("scene-undo");
+        expect(annotations().map((a) => a.text || a.id)).toEqual(["Ilium"]);
+        click("scene-undo");
+        expect(annotations()).toEqual(content().annotations);
+        expect(images()[0]).toMatchObject({ x: 350, y: 330 });
+        click("scene-undo");
+        expect(images()).toEqual(content().images);
+        expect($("scene-undo").disabled).toBe(true);
+        expect(saveStatus()).toBe("Saved");
+
+        for (let step = 0; step < 4; step += 1) click("scene-redo");
+        expect(clone(scenesModule.getActiveScene()).images).toEqual(edited.images);
+        expect(clone(scenesModule.getActiveScene()).annotations).toEqual(edited.annotations);
+        expect($("scene-redo").disabled).toBe(true);
+        await waitFor(() => expect(status()).toBe("Redone. Nothing more to redo."));
+    });
+
+    it("undoes a run of typing or arrow-key nudges as one step, but not edits of another object", async () => {
+        await openBlankScene(content());
+        selectAnnotation(0);
+        typeText("Il");
+        typeText("Ili");
+        typeText("Ilio");
+        key("ArrowRight");
+        key("ArrowRight");
+        key("ArrowDown");
+        clickAt(imageNode(), [350, 350]);
+        key("ArrowLeft");
+        key("ArrowLeft");
+
+        click("scene-undo");
+        expect(images()[0].x).toBe(300);
+        expect(annotations()[0]).toMatchObject({ text: "Ilio", x: 22, y: 21 });
+        click("scene-undo");
+        expect(annotations()[0]).toMatchObject({ text: "Ilio", x: 20, y: 20 });
+        click("scene-undo");
+        expect(annotations()[0]).toEqual(content().annotations[0]);
+        expect($("scene-undo").disabled).toBe(true);
+    });
+
+    it("shows the scene as saved again when undo or redo returns to the saved version", async () => {
+        await openBlankScene(content());
+        selectAnnotation(0);
+        key("ArrowRight", { shiftKey: true });
+        await saveAndWait();
+
+        click("scene-undo");
+        expect(saveStatus()).toBe("Unsaved changes");
+        expect(scenesModule.hasUnsavedChanges()).toBe(true);
+        click("scene-redo");
+        expect(saveStatus()).toBe("Saved");
+        expect(scenesModule.hasUnsavedChanges()).toBe(false);
+
+        // A new edit after an undo replaces what could be redone, and is never mistaken for the saved version.
+        click("scene-undo");
+        key("ArrowDown");
+        expect($("scene-redo").disabled).toBe(true);
+        expect(scenesModule.hasUnsavedChanges()).toBe(true);
+    });
+
+    it("keeps the selected object selected when it still exists, and saves the undone state", async () => {
+        await openBlankScene(content());
+        selectAnnotation(0);
+        key("ArrowRight");
+        click("scene-annotation-delete");
+        expect($("scene-annotation-toolbar").hidden).toBe(true);
+
+        click("scene-undo");
+        expect(annotations()).toHaveLength(2);
+        expect($("scene-annotation-toolbar").hidden).toBe(true);
+
+        selectAnnotation(0);
+        click("scene-undo");
+        expect(annotations()[0]).toEqual(content().annotations[0]);
+        expect($("scene-annotation-toolbar").hidden).toBe(false);
+        expect($("scene-annotation-text").value).toBe("Ilium");
+
+        click("scene-redo");
+        await saveAndReopen();
+        expect(stored()[0]).toMatchObject({ x: 21, y: 20 });
+        // A reopened scene starts with nothing to undo.
+        expect($("scene-undo").disabled).toBe(true);
+    });
+
+    it("undoes with Ctrl/Cmd+Z and redoes with Ctrl/Cmd+Shift+Z or Ctrl+Y, leaving text fields their own undo", async () => {
+        await openBlankScene(content());
+        clickAt(imageNode(), [350, 350]);
+        key("ArrowRight", { shiftKey: true });
+        key("ArrowDown", { shiftKey: true });
+        clickAt(canvasSvg(), [900, 550]);
+        selectAnnotation(1);
+        click("scene-annotation-delete");
+
+        expect(shortcut("z", { ctrlKey: true })).toBe(true);
+        expect(annotations()).toHaveLength(2);
+        expect(shortcut("z", { metaKey: true })).toBe(true);
+        expect(images()[0]).toMatchObject({ x: 300, y: 300 });
+        expect(shortcut("Z", { metaKey: true, shiftKey: true })).toBe(true);
+        expect(images()[0]).toMatchObject({ x: 310, y: 310 });
+        expect(shortcut("y", { ctrlKey: true }, document.body)).toBe(true);
+        expect(annotations()).toHaveLength(1);
+
+        selectAnnotation(0);
+        typeText("Ischium");
+        expect(shortcut("z", { ctrlKey: true }, $("scene-annotation-text"))).toBe(false);
+        expect(annotations()[0].text).toBe("Ischium");
+    });
+
+    it("never undoes into another scene", async () => {
+        backend.seed({ id: "scene-2", name: "Another", ...content() });
+        await openBlankScene(content());
+        selectAnnotation(0);
+        key("ArrowRight");
+
+        jest.spyOn(window, "confirm").mockReturnValue(true);
+        [...document.querySelectorAll(".scene-list-item")].find((b) => b.textContent.includes("Another")).click();
+        await waitFor(() => expect($("scene-title").textContent).toBe("Another"));
+
+        expect($("scene-undo").disabled).toBe(true);
+        expect(shortcut("z", { ctrlKey: true })).toBe(false);
+        expect(annotations()).toEqual(content().annotations);
+        expect(scenesModule.hasUnsavedChanges()).toBe(false);
+    });
+});
+
+describe("Warning about unsaved changes when leaving the editor (#444)", () => {
+    const content = {
+        images: [{ id: "img", src: "/images/a.png", x: 300, y: 300, width: 100, height: 100, source: { type: "legacy-image", boneId: "ilium" } }],
+        annotations: [{ id: "label", type: "text", text: "Ilium", x: 20, y: 20 }],
+    };
+    const inEditor = () => !$("scene-editor-view").hidden;
+    async function openEditedScene() {
+        await openBlankScene(content);
+        selectAnnotation(0);
+        key("ArrowRight");
+        expect(scenesModule.hasUnsavedChanges()).toBe(true);
+    }
+
+    it("lets the user stay in the editor from the Back button, the Scene Editor button, or a viewer link", async () => {
+        await openEditedScene();
+        const confirm = jest.spyOn(window, "confirm").mockReturnValue(false);
+        const shownInViewer = jest.fn();
+        document.addEventListener("bonebox:show-in-viewer", shownInViewer);
+
+        click("scene-editor-back");
+        click("text-button-SceneEditor");
+        document.querySelector(".scene-source-link").click();
+
+        expect(confirm).toHaveBeenCalledTimes(3);
+        expect(confirm).toHaveBeenLastCalledWith(expect.stringContaining("\"Plate\" has unsaved changes"));
+        expect(inEditor()).toBe(true);
+        expect(shownInViewer).not.toHaveBeenCalled();
+        expect(annotations()[0].x).toBe(21);
+        await waitFor(() => expect($("scene-editor-status").textContent).toBe("Still in the Scene Editor. Your changes aren't saved yet."));
+        document.removeEventListener("bonebox:show-in-viewer", shownInViewer);
+    });
+
+    it("leaves when the user chooses to, keeping the unsaved changes for when they come back", async () => {
+        await openEditedScene();
+        jest.spyOn(window, "confirm").mockReturnValue(true);
+
+        click("scene-editor-back");
+        expect(inEditor()).toBe(false);
+
+        click("text-button-SceneEditor");
+        expect(inEditor()).toBe(true);
+        expect(annotations()[0].x).toBe(21);
+        expect(scenesModule.hasUnsavedChanges()).toBe(true);
+    });
+
+    it("leaves without asking when everything is saved", async () => {
+        await openEditedScene();
+        await saveAndWait();
+        const confirm = jest.spyOn(window, "confirm");
+
+        click("scene-editor-back");
+
+        expect(inEditor()).toBe(false);
+        expect(confirm).not.toHaveBeenCalled();
     });
 });

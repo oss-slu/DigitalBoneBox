@@ -1,4 +1,4 @@
-import { renderScene } from "../js/sceneCanvas.js";
+import { objectsAt, renderScene } from "../js/sceneCanvas.js";
 
 function viewBox(svg) {
     const [x, y, width, height] = svg.getAttribute("viewBox").split(" ").map(Number);
@@ -320,5 +320,92 @@ describe("renderScene linked annotations", () => {
         const before = JSON.parse(JSON.stringify(annotations));
         render([sourceImage({ x: 150, y: 70, rotation: 90, flipY: true })], annotations);
         expect(annotations).toEqual(before);
+    });
+});
+
+describe("objectsAt (#441)", () => {
+    const at = (scene, point) => objectsAt({ images: [], annotations: [], ...scene }, point);
+    const label = (overrides = {}) => ({ type: "text", text: "Ilium", x: 0, y: 0, fontSize: 20, ...overrides });
+
+    it("lists every object under a point, topmost first: later annotations, then later images", () => {
+        const scene = {
+            images: [image(), image({ x: 50 })],
+            annotations: [
+                label({ x: 60, y: 10 }),
+                { type: "polygon", points: [[40, 0], [160, 0], [160, 90], [40, 90]] },
+            ],
+        };
+        expect(at(scene, [70, 20])).toEqual([
+            { kind: "annotation", index: 1 },
+            { kind: "annotation", index: 0 },
+            { kind: "image", index: 1 },
+            { kind: "image", index: 0 },
+        ]);
+        expect(at(scene, [10, 20])).toEqual([{ kind: "image", index: 0 }]);
+        expect(at(scene, [900, 500])).toEqual([]);
+    });
+
+    it("tests a rotated image against its rotated outline", () => {
+        // 200x100 at the origin turned 90° about (100, 50) covers x 50-150, y -50-150.
+        const scene = { images: [image({ rotation: 90 })] };
+        expect(at(scene, [100, 140])).toEqual([{ kind: "image", index: 0 }]);
+        expect(at(scene, [10, 50])).toEqual([]);
+    });
+
+    it("only counts the visible area of a cropped image, as it is flipped", () => {
+        const cropped = image({ cropX: 0, cropY: 0, cropWidth: 50, cropHeight: 100 });
+        expect(at({ images: [cropped] }, [25, 50])).toEqual([{ kind: "image", index: 0 }]);
+        expect(at({ images: [cropped] }, [150, 50])).toEqual([]);
+        // Flipped horizontally, the visible strip is drawn at the right-hand end.
+        const flipped = { ...cropped, flipX: true };
+        expect(at({ images: [flipped] }, [175, 50])).toEqual([{ kind: "image", index: 0 }]);
+        expect(at({ images: [flipped] }, [25, 50])).toEqual([]);
+    });
+
+    it("hits a line within its click tolerance and a highlight on its fill", () => {
+        const scene = {
+            annotations: [
+                { type: "line", x1: 0, y1: 300, x2: 200, y2: 300 },
+                { type: "polygon", points: [[400, 400], [500, 400], [450, 500]] },
+            ],
+        };
+        expect(at(scene, [100, 305])).toEqual([{ kind: "annotation", index: 0 }]);
+        expect(at(scene, [100, 320])).toEqual([]);
+        expect(at(scene, [450, 450])).toEqual([{ kind: "annotation", index: 1 }]);
+        expect(at(scene, [400, 480])).toEqual([]);
+    });
+
+    it("leaves out objects the canvas can't draw", () => {
+        const scene = {
+            images: [image({ src: "javascript:alert(1)" })],
+            annotations: [{ type: "circle", x: 0, y: 0, r: 50 }, { type: "polygon", points: [[0, 0], [100, 100]] }],
+        };
+        expect(at(scene, [10, 10])).toEqual([]);
+    });
+
+    it("finds a linked annotation where it is drawn, following its moved image", () => {
+        const frame = { x: 0, y: 0, width: 200, height: 100 };
+        const scene = {
+            images: [image({ id: "img", x: 300 })],
+            annotations: [label({ sourceImageId: "img", sourceImageFrame: frame })],
+        };
+        expect(at(scene, [305, 5])).toEqual([{ kind: "annotation", index: 0 }, { kind: "image", index: 0 }]);
+        expect(at(scene, [5, 5])).toEqual([]);
+    });
+
+    it("ignores a colored region outside its image's visible crop", () => {
+        const frame = { x: 0, y: 0, width: 200, height: 100 };
+        const scene = {
+            images: [image({ id: "img", cropX: 0, cropY: 0, cropWidth: 100, cropHeight: 100 })],
+            annotations: [{
+                type: "polygon",
+                points: [[0, 0], [200, 0], [200, 100], [0, 100]],
+                source: { type: "legacy-colored-region" },
+                sourceImageId: "img",
+                sourceImageFrame: frame,
+            }],
+        };
+        expect(at(scene, [50, 50])).toEqual([{ kind: "annotation", index: 0 }, { kind: "image", index: 0 }]);
+        expect(at(scene, [150, 50])).toEqual([]);
     });
 });
