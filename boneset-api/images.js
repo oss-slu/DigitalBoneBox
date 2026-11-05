@@ -13,7 +13,7 @@ const path = require("path");
 
 const IMAGE_EXTENSIONS = new Set([".jpg", ".jpeg", ".png"]);
 const DESCRIPTION_SUFFIX = /_description\.json$/i;
-const BONE_ID_PATTERN = /^[a-z0-9_]+$/i;
+const BONE_ID_PATTERN = /^[a-z0-9_-]+$/i; // hyphens allowed for 2nd-5th_metatarsals (Issue #469)
 const HEADER_BYTES = 256 * 1024;
 
 function imageUrl(filename) {

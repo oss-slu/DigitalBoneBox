@@ -1,3 +1,4 @@
+import { OPEN_SCENE_EVENT, SHOW_IN_VIEWER_EVENT, sceneSources, readableName } from "./sceneLinks.js";
 import { renderScene, displayedAnnotation, objectsAt, storeAnnotationGeometry, textBox } from "./sceneCanvas.js";
 import {
     DEFAULT_HIGHLIGHT_COLOR,
@@ -97,6 +98,27 @@ export function saveScene(sceneId, content) {
  */
 export function duplicateScene(sceneId) {
     return request(`${scenePath(sceneId)}/duplicate`, { method: "POST", body: "{}" });
+}
+
+/**
+ * Publishes a scene for the general bone viewer, or makes it a draft again
+ * (Issues #458, #459). Only the status changes, never the scene's content.
+ * @param {string} sceneId
+ * @param {"draft"|"published"} status
+ * @returns {Promise<object>} The scene's updated summary.
+ */
+export function setSceneStatus(sceneId, status) {
+    return request(`${scenePath(sceneId)}/status`, { method: "PATCH", body: JSON.stringify({ status }) });
+}
+
+/**
+ * A scene's publication status. Scenes without one (saved before statuses
+ * existed) are drafts, matching the server.
+ * @param {object} scene
+ * @returns {"draft"|"published"}
+ */
+export function sceneStatusOf(scene) {
+    return scene && scene.status === "published" ? "published" : "draft";
 }
 
 export function deleteScene(sceneId) {
@@ -385,7 +407,9 @@ function updateControls() {
     dom.emptyNewButton.disabled = locked;
     dom.renameButton.disabled = locked || !state.active;
     dom.deleteButton.disabled = locked || !state.active;
+
     dom.duplicateButton.disabled = locked || !state.active;
+    updatePublishControls(locked);
     dom.saveButton.disabled = locked || !hasUnsavedChanges();
     if (dom.importToggle) {
         dom.importToggle.disabled = state.busy || !state.active;
@@ -398,6 +422,34 @@ function updateControls() {
     else delete dom.saveStatus.dataset.state;
     syncUnloadGuard();
 }
+
+/**
+ * Shows the open scene's Draft/Published badge, a note on who can see it, and
+ * the matching Publish/Unpublish button (Issues #458, #459). A scene can only
+ * be published once its changes are saved, so what goes live is exactly what
+ * the editor sees.
+ * @param {boolean} locked - Another action is in progress.
+ */
+function updatePublishControls(locked) {
+    if (!dom.publishButton) return;
+    const scene = state.active;
+    const status = sceneStatusOf(scene);
+    const published = status === "published";
+    const needsSave = !published && hasUnsavedChanges();
+
+    dom.publishButton.textContent = published ? "Unpublish" : "Publish";
+    dom.publishButton.disabled = locked || !scene || needsSave;
+    dom.statusBadge.textContent = published ? "Published" : "Draft";
+    dom.statusBadge.dataset.status = status;
+    if (needsSave) {
+        dom.statusNote.textContent = "Save your changes before publishing.";
+    } else if (published) {
+        dom.statusNote.textContent = "Visible to everyone in the bone viewer.";
+    } else {
+        dom.statusNote.textContent = "Only visible in the Scene Editor until published.";
+    }
+}
+
 
 /** Records a change to the working copy (Issue #451). Callers re-render. */
 function markChanged() {
@@ -504,7 +556,12 @@ function renderLibrary() {
         meta.className = "scene-list-meta";
         meta.textContent = `${plural(scene.imageCount, "image")} · ${plural(scene.annotationCount, "annotation")}`;
 
-        button.append(name, meta);
+        const status = document.createElement("span");
+        status.className = "scene-status-badge";
+        status.dataset.status = sceneStatusOf(scene);
+        status.textContent = sceneStatusOf(scene) === "published" ? "Published" : "Draft";
+
+        button.append(name, meta, status);
         if (isActive) {
             const badge = document.createElement("span");
             badge.className = "scene-list-badge";
@@ -598,7 +655,46 @@ function renderWorkspace() {
 
     dom.sceneTitle.textContent = scene.name;
     dom.sceneMeta.textContent = `${plural(scene.images.length, "image")} · ${plural(scene.annotations.length, "annotation")}`;
+    renderSceneSources(scene);
     renderCanvas();
+}
+
+/**
+ * Lists the bone viewer items this scene's images were imported from, each
+ * with a button that opens it in the bone viewer (Issue #469). The original
+ * viewer content is kept, so the user can always go back and compare.
+ */
+function renderSceneSources(scene) {
+    if (!dom.sceneSources) return;
+    dom.sceneSources.replaceChildren();
+    const sources = sceneSources(scene);
+    dom.sceneSources.hidden = sources.length === 0;
+    if (sources.length === 0) return;
+
+    dom.sceneSources.append("Made from: ");
+    sources.forEach((boneId, index) => {
+        if (index > 0) dom.sceneSources.append(", ");
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "scene-source-link";
+        button.textContent = readableName(boneId);
+        button.setAttribute("aria-label", `View ${readableName(boneId)} in the bone viewer`);
+        button.addEventListener("click", () => showInViewer(boneId));
+        dom.sceneSources.append(button);
+    });
+}
+
+function showInViewer(boneId) {
+    leaveEditor();
+    document.dispatchEvent(new CustomEvent(SHOW_IN_VIEWER_EVENT, { detail: { boneId } }));
+}
+
+/**
+ * Opens a scene from the bone viewer's "Open in the Scene Editor" link (Issue #469).
+ */
+function openSceneFromViewer(sceneId) {
+    if (dom.editorView.hidden) enterEditor();
+    void openScene(sceneId);
 }
 
 function clearActiveScene() {
@@ -707,6 +803,55 @@ async function openScene(sceneId, { force = false } = {}) {
         }
     }
 }
+
+/**
+ * Publishes the open scene, or makes it a draft again (Issues #458, #459).
+ * Publishing doesn't touch the working copy, so any unsaved edits (only
+ * possible when unpublishing) stay unsaved.
+ */
+async function handlePublishToggle() {
+    if (!state.active || state.busy || state.saving) return;
+    const { id, name } = state.active;
+    const publishing = sceneStatusOf(state.active) === "draft";
+    if (publishing && hasUnsavedChanges()) return;
+
+    setBusy(true);
+    hideWorkspaceError();
+    try {
+        const summary = await setSceneStatus(id, publishing ? "published" : "draft");
+        if (state.active && state.active.id === id) {
+            for (const scene of [state.active, state.saved]) {
+                if (!scene) continue;
+                scene.status = summary.status;
+                if (summary.publishedAt) scene.publishedAt = summary.publishedAt;
+                else delete scene.publishedAt;
+            }
+        }
+        const listed = state.scenes.find((s) => s.id === id);
+        if (listed) {
+            listed.status = summary.status;
+            listed.publishedAt = summary.publishedAt;
+        }
+        setBusy(false);
+        renderWorkspace();
+        renderLibrary();
+        announce(publishing
+            ? `Published ${name}. It's now visible in the bone viewer.`
+            : `${name} is a draft again and is hidden from the bone viewer.`);
+        dom.publishButton.focus();
+    } catch (error) {
+        setBusy(false);
+        const message = describeError(error, "publish");
+        if (error.status === 404) {
+            handleActiveSceneMissing(message);
+            await loadLibrary();
+        } else {
+            showWorkspaceError(message, { retry: handlePublishToggle });
+        }
+        announce(message);
+    }
+}
+
 
 async function handleCreate() {
     if (state.busy || state.saving) return;
@@ -954,7 +1099,15 @@ async function saveAsNewScene() {
             await loadLibrary();
             return;
         }
-        Object.assign(scene, { id: created.id, name: created.name, createdAt: created.createdAt, updatedAt: created.updatedAt });
+        Object.assign(scene, {
+            id: created.id,
+            name: created.name,
+            createdAt: created.createdAt,
+            updatedAt: created.updatedAt,
+            status: created.status
+        });
+        if (created.publishedAt) scene.publishedAt = created.publishedAt;
+        else delete scene.publishedAt;
         state.saved = clone(created);
         state.savedRevision = revision;
         state.missing = false;
@@ -1125,6 +1278,65 @@ const CORNER_GROWTH_SIGN = {
     sw: { x: -1, y: 1 },
 };
 
+// Issue #446: every canvas drag goes through followDrag, which tracks the
+// same kind of input the drag started with. A drag started by a pointer event
+// (mouse, and later touch and pen) follows that one pointer; a drag started
+// by a plain mouse event (browsers without Pointer Events, and jsdom tests)
+// follows the mouse. Only one drag runs at a time.
+let activeDrag = null;
+
+/**
+ * Calls `onMove` for each move of the input that started the drag, and
+ * `onEnd` once when it is released or cancelled. Returns a function that
+ * stops the drag early without calling `onEnd`.
+ * @param {PointerEvent|MouseEvent} startEvent
+ * @param {(event: PointerEvent|MouseEvent) => void} onMove
+ * @param {(event: PointerEvent|MouseEvent) => void} onEnd
+ * @returns {() => void}
+ */
+function followDrag(startEvent, onMove, onEnd) {
+    if (activeDrag) activeDrag.stop();
+    const isPointer = startEvent.type === "pointerdown";
+    const moveType = isPointer ? "pointermove" : "mousemove";
+    const endTypes = isPointer ? ["pointerup", "pointercancel"] : ["mouseup"];
+    const pointerId = isPointer ? startEvent.pointerId : null;
+    const isSameInput = (event) => !isPointer || event.pointerId === pointerId;
+
+    function stop() {
+        document.removeEventListener(moveType, handleMove);
+        for (const type of endTypes) document.removeEventListener(type, handleEnd);
+        window.removeEventListener("blur", handleBlur);
+        if (activeDrag === drag) activeDrag = null;
+    }
+    function handleMove(event) {
+        if (!isSameInput(event)) return;
+        // The mouse button was let go outside the window, where the page
+        // never hears the release: end the drag rather than let it stick.
+        if (isPointer && event.pointerType === "mouse" && event.buttons === 0) {
+            handleEnd(event);
+            return;
+        }
+        onMove(event);
+    }
+    function handleEnd(event) {
+        if (!isSameInput(event)) return;
+        stop();
+        onEnd(event);
+    }
+    // Switching to another window mid-drag ends the drag where it is.
+    function handleBlur(event) {
+        stop();
+        onEnd(event);
+    }
+
+    const drag = { stop, isPointer };
+    activeDrag = drag;
+    document.addEventListener(moveType, handleMove);
+    for (const type of endTypes) document.addEventListener(type, handleEnd);
+    window.addEventListener("blur", handleBlur);
+    return stop;
+}
+
 function getSceneScale(svg) {
     const rect = svg.getBoundingClientRect();
     // Parsed from the attribute directly, not `.viewBox.baseVal` - jsdom's
@@ -1177,7 +1389,7 @@ function startImageDrag(event, svg, corner) {
     const rotation = typeof image.rotation === "number" ? image.rotation : 0;
     let didDrag = false;
 
-    function onMouseMove(moveEvent) {
+    function onMove(moveEvent) {
         const dxClient = moveEvent.clientX - startClientX;
         const dyClient = moveEvent.clientY - startClientY;
         if (Math.abs(dxClient) > DRAG_THRESHOLD || Math.abs(dyClient) > DRAG_THRESHOLD) didDrag = true;
@@ -1204,15 +1416,12 @@ function startImageDrag(event, svg, corner) {
         renderWorkspace();
     }
 
-    function onMouseUp() {
-        document.removeEventListener("mousemove", onMouseMove);
-        document.removeEventListener("mouseup", onMouseUp);
+    function onEnd() {
         suppressNextClick = didDrag;
         if (didDrag) markChanged();
     }
 
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
+    followDrag(event, onMove, onEnd);
 }
 
 // Issue #417: non-destructive cropping. The crop rect lives in the image's
@@ -1281,7 +1490,7 @@ function startCropDrag(event, svg, corner) {
     const rotation = typeof image.rotation === "number" ? image.rotation : 0;
     let didDrag = false;
 
-    function onMouseMove(moveEvent) {
+    function onMove(moveEvent) {
         const dxClient = moveEvent.clientX - startClientX;
         const dyClient = moveEvent.clientY - startClientY;
         if (Math.abs(dxClient) > DRAG_THRESHOLD || Math.abs(dyClient) > DRAG_THRESHOLD) didDrag = true;
@@ -1295,15 +1504,12 @@ function startCropDrag(event, svg, corner) {
         renderWorkspace();
     }
 
-    function onMouseUp() {
-        document.removeEventListener("mousemove", onMouseMove);
-        document.removeEventListener("mouseup", onMouseUp);
+    function onEnd() {
         suppressNextClick = didDrag;
         if (didDrag) markChanged();
     }
 
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
+    followDrag(event, onMove, onEnd);
 }
 
 /** Enters crop-editing mode for the selected image (Issue #417). */
@@ -1698,12 +1904,11 @@ function startLineDraw(event, svg) {
     state.draft = { type, points: [start, start] };
 
     function detach() {
-        document.removeEventListener("mousemove", onMouseMove);
-        document.removeEventListener("mouseup", onMouseUp);
+        stopFollowing();
         if (stopLineDraw === detach) stopLineDraw = null;
     }
 
-    function onMouseMove(moveEvent) {
+    function onMove(moveEvent) {
         if (!state.draft) return;
         state.draft.points[1] = [
             round2(start[0] + (moveEvent.clientX - startClientX) * scale.x),
@@ -1712,8 +1917,8 @@ function startLineDraw(event, svg) {
         renderCanvas();
     }
 
-    function onMouseUp() {
-        detach();
+    function onEnd() {
+        if (stopLineDraw === detach) stopLineDraw = null;
         suppressNextClick = true;
         if (!state.draft) return;
         const [[x1, y1], [x2, y2]] = state.draft.points;
@@ -1728,8 +1933,7 @@ function startLineDraw(event, svg) {
         dom.canvas.focus();
     }
 
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
+    const stopFollowing = followDrag(event, onMove, onEnd);
     stopLineDraw = detach;
     renderCanvas();
 }
@@ -1811,7 +2015,7 @@ function startAnnotationDrag(event, svg, mode, pointIndex) {
     const startClientY = event.clientY;
     let didDrag = false;
 
-    function onMouseMove(moveEvent) {
+    function onMove(moveEvent) {
         const dxClient = moveEvent.clientX - startClientX;
         const dyClient = moveEvent.clientY - startClientY;
         if (Math.abs(dxClient) > DRAG_THRESHOLD || Math.abs(dyClient) > DRAG_THRESHOLD) didDrag = true;
@@ -1832,15 +2036,12 @@ function startAnnotationDrag(event, svg, mode, pointIndex) {
         renderWorkspace();
     }
 
-    function onMouseUp() {
-        document.removeEventListener("mousemove", onMouseMove);
-        document.removeEventListener("mouseup", onMouseUp);
+    function onEnd() {
         suppressNextClick = didDrag;
         if (didDrag) markChanged();
     }
 
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
+    followDrag(event, onMove, onEnd);
 }
 
 /** Moves the selected annotation by a few scene pixels with the arrow keys. */
@@ -2370,6 +2571,7 @@ export function initializeSceneEditor(root = document) {
         titleRow: $("scene-title-row"),
         sceneTitle: $("scene-title"),
         sceneMeta: $("scene-meta"),
+        sceneSources: $("scene-sources"),
         saveStatus: $("scene-save-status"),
         saveButton: $("scene-save"),
         duplicateButton: $("scene-duplicate"),
@@ -2381,6 +2583,9 @@ export function initializeSceneEditor(root = document) {
         renameCancel: $("scene-rename-cancel"),
         renameError: $("scene-rename-error"),
         fitToggle: $("scene-fit-toggle"),
+        publishButton: $("scene-publish"),
+        statusBadge: $("scene-status-badge"),
+        statusNote: $("scene-status-note"),
         canvas: $("scene-canvas"),
         canvasEmpty: $("scene-canvas-empty"),
         canvasNote: $("scene-canvas-note"),
@@ -2443,6 +2648,12 @@ export function initializeSceneEditor(root = document) {
         else leaveEditor();
     });
     dom.backButton.addEventListener("click", leaveEditor);
+    const editorView = dom.editorView;
+    document.addEventListener(OPEN_SCENE_EVENT, (event) => {
+        // Skip if this page was re-rendered and this editor is no longer on it.
+        if (!editorView.isConnected || !event.detail || !event.detail.sceneId) return;
+        openSceneFromViewer(event.detail.sceneId);
+    });
     dom.newButton.addEventListener("click", handleCreate);
     dom.emptyNewButton.addEventListener("click", handleCreate);
     dom.libraryRetry.addEventListener("click", loadLibrary);
@@ -2462,6 +2673,7 @@ export function initializeSceneEditor(root = document) {
     dom.deleteButton.addEventListener("click", handleDelete);
     if (dom.saveButton) dom.saveButton.addEventListener("click", () => handleSave());
     if (dom.duplicateButton) dom.duplicateButton.addEventListener("click", handleDuplicate);
+    if (dom.publishButton) dom.publishButton.addEventListener("click", handlePublishToggle);
     dom.fitToggle.addEventListener("click", () => setFitToWidth(!state.fitToWidth));
     if (dom.importToggle) {
         dom.importToggle.addEventListener("click", () => {
@@ -2515,7 +2727,20 @@ export function initializeSceneEditor(root = document) {
         }
         if (event.key === "Escape" && state.selection) clearSelection();
     });
+    // Issue #446: presses come in as pointer events (mouse, touch, pen) where
+    // the browser supports them, with plain mouse events as the fallback. A
+    // pointer drag cancels the browser's follow-up mouse events, and a stray
+    // one is ignored while a pointer drag runs, so each press is handled once.
+    dom.canvas.addEventListener("pointerdown", handleCanvasPress);
     dom.canvas.addEventListener("mousedown", (event) => {
+        if (activeDrag && activeDrag.isPointer) return;
+        handleCanvasPress(event);
+    });
+    function handleCanvasPress(event) {
+        // Only the main button (left mouse button, a finger, or a pen tip)
+        // edits; the other buttons keep their usual browser behavior.
+        if (event.button !== undefined && event.button !== 0) return;
+        if (event.isPrimary === false) return;
         // A drag's own click may never arrive (its node was redrawn away), so
         // a new press always starts with clicks counting again.
         suppressNextClick = false;
@@ -2565,7 +2790,7 @@ export function initializeSceneEditor(root = document) {
 
         event.preventDefault();
         startImageDrag(event, svg, handle ? handle.dataset.corner : null);
-    });
+    }
 
     dom.imageForward.addEventListener("click", () => moveSelectedImage(1));
     dom.imageBackward.addEventListener("click", () => moveSelectedImage(-1));
