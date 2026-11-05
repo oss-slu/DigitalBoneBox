@@ -224,6 +224,12 @@ const state = {
     // "polygon" | "pointer"), and the shape being drawn with it.
     tool: null,
     draft: null,
+    // Issue #443: undo and redo for the open scene. `present` is a copy of
+    // the working copy's content as of the last recorded change; `past` and
+    // `future` hold the copies before and after it. `lastKey` names the kind
+    // of the last change, so a run of small edits of one kind (typing a
+    // label, nudging with the arrow keys) is undone as one step.
+    history: { past: [], present: null, future: [], lastKey: null },
     boneOptions: null,
     importRequest: 0,
 };
@@ -246,7 +252,11 @@ function selectedAnnotationIndex() {
  */
 function select(kind, index) {
     const isSame = state.selection && state.selection.kind === kind && state.selection.index === index;
-    if (!isSame) state.cropMode = false;
+    if (!isSame) {
+        state.cropMode = false;
+        // Edits of another object are never grouped with these.
+        state.history.lastKey = null;
+    }
     state.selection = { kind, index };
     state.overlapCount = 0;
 }
@@ -255,6 +265,7 @@ function deselect() {
     state.selection = null;
     state.cropMode = false;
     state.overlapCount = 0;
+    state.history.lastKey = null;
 }
 
 /** Whether `object` ({ kind, index }) is the selected object. */
@@ -274,6 +285,8 @@ function setActiveScene(scene) {
     state.saved = scene ? clone(scene) : null;
     state.revision = 0;
     state.savedRevision = 0;
+    // Undo never reaches into another scene, or a version that was reloaded.
+    state.history = { past: [], present: scene ? contentSnapshot(scene) : null, future: [], lastKey: null };
     state.activeToken += 1;
     state.saveFailed = false;
     state.conflictUpdatedAt = null;
@@ -411,6 +424,8 @@ function updateControls() {
     dom.duplicateButton.disabled = locked || !state.active;
     updatePublishControls(locked);
     dom.saveButton.disabled = locked || !hasUnsavedChanges();
+    dom.undoButton.disabled = !canUndo();
+    dom.redoButton.disabled = !canRedo();
     if (dom.importToggle) {
         dom.importToggle.disabled = state.busy || !state.active;
         dom.importSubmit.disabled = state.busy || !state.boneOptions;
@@ -451,15 +466,143 @@ function updatePublishControls(locked) {
 }
 
 
-/** Records a change to the working copy (Issue #451). Callers re-render. */
-function markChanged() {
+const MAX_UNDO_STEPS = 100;
+// Revisions only ever count up, even after an undo, so a revision number
+// always names one version of the content: undoing back to the saved version
+// shows it as saved again, and a new edit after an undo never looks saved.
+let lastRevision = 0;
+
+/** A copy of an image for the undo history, sharing its `src` (possibly megabytes of base64, never changed in place). */
+function copyImage(image) {
+    const { src, ...rest } = image;
+    const copy = clone(rest);
+    if (src !== undefined) copy.src = src;
+    return copy;
+}
+
+/** A copy of the content a save stores, with its revision, for the undo history (Issue #443). */
+function contentSnapshot(scene) {
+    const snapshot = {
+        images: (scene.images || []).map(copyImage),
+        annotations: clone(scene.annotations || []),
+        revision: state.revision,
+    };
+    if (Array.isArray(scene.importLog)) snapshot.importLog = clone(scene.importLog);
+    return snapshot;
+}
+
+/**
+ * Records a change to the working copy (Issue #451), as one undo step
+ * (Issue #443). Callers re-render.
+ * @param {{ group?: string }} [options] - group names a kind of small,
+ *   repeated edit; consecutive changes with the same group undo as one step.
+ */
+function markChanged({ group = null } = {}) {
     if (!state.active) return;
     const wasSaved = !hasUnsavedChanges();
-    state.revision += 1;
+    lastRevision += 1;
+    state.revision = lastRevision;
+    const history = state.history;
+    const continuesGroup = group !== null && group === history.lastKey;
+    if (!continuesGroup && history.present) {
+        history.past.push(history.present);
+        if (history.past.length > MAX_UNDO_STEPS) history.past.shift();
+    }
+    history.present = contentSnapshot(state.active);
+    history.future = [];
+    history.lastKey = group;
     // The overlap hint described the click before this edit.
     state.overlapCount = 0;
     if (wasSaved) announce("Unsaved changes.");
     updateControls();
+}
+
+function canUndo() {
+    return Boolean(state.active) && !state.busy && !activeDrag && state.history.past.length > 0;
+}
+
+function canRedo() {
+    return Boolean(state.active) && !state.busy && !activeDrag && state.history.future.length > 0;
+}
+
+/** Issue #443: puts the working copy back the way it was before the last recorded change. */
+function undo() {
+    if (!canUndo()) return;
+    const history = state.history;
+    history.future.push(history.present);
+    history.present = history.past.pop();
+    showHistoryStep("Undone");
+}
+
+/** Issue #443: reapplies the last undone change. */
+function redo() {
+    if (!canRedo()) return;
+    const history = state.history;
+    history.past.push(history.present);
+    history.present = history.future.pop();
+    showHistoryStep("Redone");
+}
+
+/**
+ * Makes the working copy match `history.present`. A drawing tool in use is
+ * put away first. The selected object stays selected if it still exists.
+ * @param {string} verb - "Undone" or "Redone", for the announcement.
+ */
+function showHistoryStep(verb) {
+    const scene = state.active;
+    const snapshot = state.history.present;
+    const selected = state.selection
+        ? (state.selection.kind === "image" ? scene.images : scene.annotations)[state.selection.index]
+        : null;
+    const selectedKind = state.selection && state.selection.kind;
+    endLineDraw();
+    state.tool = null;
+    state.draft = null;
+
+    scene.images = snapshot.images.map(copyImage);
+    scene.annotations = clone(snapshot.annotations);
+    if (snapshot.importLog) scene.importLog = clone(snapshot.importLog);
+    else delete scene.importLog;
+    state.revision = snapshot.revision;
+
+    const objects = selectedKind === "image" ? scene.images : scene.annotations;
+    const index = selected && selected.id !== undefined ? objects.findIndex((object) => object && object.id === selected.id) : -1;
+    if (index === -1) deselect();
+    else {
+        state.selection = { kind: selectedKind, index };
+        state.cropMode = false;
+        state.overlapCount = 0;
+    }
+    state.history.lastKey = null;
+    updateControls();
+    renderWorkspace();
+    const remaining = verb === "Undone" ? state.history.past.length : state.history.future.length;
+    announce(`${verb}. ${remaining === 0
+        ? `Nothing more to ${verb === "Undone" ? "undo" : "redo"}.`
+        : `${plural(remaining, "more change")} can be ${verb === "Undone" ? "undone" : "redone"}.`}`);
+}
+
+/** Whether a key press belongs to a text field, which has its own undo. */
+function isTextEntry(target) {
+    if (!target || typeof target.closest !== "function") return false;
+    if (target.closest("textarea, [contenteditable=\"true\"]")) return true;
+    const input = target.closest("input");
+    return Boolean(input) && ["text", "search", "number", "email", "url", "tel", "password"].includes(input.type);
+}
+
+/** Ctrl/Cmd+Z undoes; Ctrl/Cmd+Shift+Z or Ctrl+Y redoes, while the editor is open. */
+function handleUndoKey(event) {
+    // isConnected: an editor whose page was replaced (as tests do) stays out of the way.
+    if (!dom || !dom.editorView.isConnected || dom.editorView.hidden || !state.active) return;
+    if (!(event.ctrlKey || event.metaKey) || event.altKey) return;
+    const key = event.key.toLowerCase();
+    const isUndo = key === "z" && !event.shiftKey;
+    const isRedo = (key === "z" && event.shiftKey) || (key === "y" && !event.shiftKey);
+    if ((!isUndo && !isRedo) || isTextEntry(event.target)) return;
+    if (isUndo ? !canUndo() : !canRedo()) return;
+    event.preventDefault();
+    if (isUndo) undo();
+    else redo();
 }
 
 /**
@@ -1023,6 +1166,7 @@ async function handleSave({ overwrite = false } = {}) {
         if (token === state.activeToken) {
             state.saved = clone(updated);
             state.savedRevision = sentRevision;
+            state.history.lastKey = null;
             state.conflictUpdatedAt = null;
             scene.name = updated.name;
             scene.updatedAt = updated.updatedAt;
@@ -1110,6 +1254,7 @@ async function saveAsNewScene() {
         else delete scene.publishedAt;
         state.saved = clone(created);
         state.savedRevision = revision;
+        state.history.lastKey = null;
         state.missing = false;
         state.saveFailed = false;
         renderWorkspace();
@@ -1184,12 +1329,12 @@ function handleImageRemove() {
  * toolbar buttons; a drag applies its own changes live frame-by-frame.
  * @param {object} fields - The new values to set, e.g. `{ rotation: 90 }`.
  */
-function applySelectedImageUpdate(fields) {
+function applySelectedImageUpdate(fields, { group = null } = {}) {
     if (!state.active || selectedImageIndex() === null) return;
     const image = state.active.images[selectedImageIndex()];
     if (!image) return;
     Object.assign(image, fields);
-    markChanged();
+    markChanged({ group });
     renderWorkspace();
 }
 
@@ -1238,7 +1383,7 @@ function handleImageKey(event) {
     const deltas = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] };
     if (!deltas[event.key]) return false;
     const [dx, dy] = deltas[event.key];
-    applySelectedImageUpdate({ x: image.x + dx, y: image.y + dy });
+    applySelectedImageUpdate({ x: image.x + dx, y: image.y + dy }, { group: "nudge" });
     return true;
 }
 
@@ -2054,23 +2199,24 @@ function nudgeSelectedAnnotation(dx, dy) {
     const pointers = pointerLinesOf(annotation, scene);
     storeAnnotationGeometry(annotation, translateAnnotation(start, dx, dy), scene);
     movePointerLines(pointers, startBox, dx, dy, scene);
-    markChanged();
+    markChanged({ group: "nudge" });
     renderWorkspace();
 }
 
 /**
  * Applies a toolbar change to the selected annotation.
  * @param {(annotation: object, scene: object) => void} edit
- * @param {{ reanchor?: boolean }} [options] - reanchor puts a label's
- *   pointer lines back on its edge after its size or text changed.
+ * @param {{ reanchor?: boolean, group?: string }} [options] - reanchor puts a
+ *   label's pointer lines back on its edge after its size or text changed;
+ *   group is passed to markChanged, so a run of these edits undoes as one.
  */
-function editSelectedAnnotation(edit, { reanchor = false } = {}) {
+function editSelectedAnnotation(edit, { reanchor = false, group = null } = {}) {
     const annotation = selectedAnnotation();
     if (!annotation) return;
     const scene = state.active;
     edit(annotation, scene);
     if (reanchor) reanchorPointerLines(annotation, scene);
-    markChanged();
+    markChanged({ group });
     renderWorkspace();
 }
 
@@ -2087,7 +2233,7 @@ function handleAnnotationTextInput() {
     dom.annotationText.removeAttribute("aria-invalid");
     editSelectedAnnotation((annotation) => {
         annotation.text = text;
-    }, { reanchor: true });
+    }, { reanchor: true, group: "text" });
 }
 
 /** Leaving the text box empty keeps the label's last text. */
@@ -2131,7 +2277,7 @@ function handleAnnotationColorInput() {
         } else {
             annotation.stroke = color;
         }
-    });
+    }, { group: "color" });
 }
 
 /**
@@ -2144,7 +2290,7 @@ function handleAnnotationOpacityInput() {
     editSelectedAnnotation((annotation) => {
         annotation.fillOpacity = clampHighlightOpacity(opacity);
         delete annotation.opacity;
-    });
+    }, { group: "opacity" });
 }
 
 /**
@@ -2574,6 +2720,8 @@ export function initializeSceneEditor(root = document) {
         sceneSources: $("scene-sources"),
         saveStatus: $("scene-save-status"),
         saveButton: $("scene-save"),
+        undoButton: $("scene-undo"),
+        redoButton: $("scene-redo"),
         duplicateButton: $("scene-duplicate"),
         renameButton: $("scene-rename"),
         deleteButton: $("scene-delete"),
@@ -2672,6 +2820,9 @@ export function initializeSceneEditor(root = document) {
     });
     dom.deleteButton.addEventListener("click", handleDelete);
     if (dom.saveButton) dom.saveButton.addEventListener("click", () => handleSave());
+    dom.undoButton.addEventListener("click", undo);
+    dom.redoButton.addEventListener("click", redo);
+    document.addEventListener("keydown", handleUndoKey);
     if (dom.duplicateButton) dom.duplicateButton.addEventListener("click", handleDuplicate);
     if (dom.publishButton) dom.publishButton.addEventListener("click", handlePublishToggle);
     dom.fitToggle.addEventListener("click", () => setFitToWidth(!state.fitToWidth));

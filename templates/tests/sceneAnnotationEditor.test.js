@@ -1280,3 +1280,163 @@ describe("Mouse editing with pointer events (#446)", () => {
         expect(document.querySelector(".scene-draft")).toBeNull();
     });
 });
+
+describe("Undo and redo (#443)", () => {
+    const content = () => ({
+        images: [{ id: "img", src: "/images/a.png", x: 300, y: 300, width: 100, height: 100 }],
+        annotations: [
+            { id: "label", type: "text", text: "Ilium", x: 20, y: 20 },
+            { id: "poly", type: "polygon", points: [[600, 100], [700, 100], [650, 200]] },
+        ],
+    });
+    const clone = (value) => JSON.parse(JSON.stringify(value));
+    const images = () => scenesModule.getActiveScene().images;
+    const imageNode = () => document.querySelector("[data-scene-image-index=\"0\"]");
+    const saveStatus = () => $("scene-save-status").textContent;
+    const status = () => $("scene-editor-status").textContent;
+    function shortcut(name, options = {}, target = $("scene-canvas")) {
+        const event = new KeyboardEvent("keydown", { key: name, bubbles: true, cancelable: true, ...options });
+        target.dispatchEvent(event);
+        return event.defaultPrevented;
+    }
+
+    it("undoes and redoes a sequence of image and annotation edits, one step at a time", async () => {
+        await openBlankScene(content());
+        expect($("scene-undo").disabled).toBe(true);
+        expect($("scene-redo").disabled).toBe(true);
+
+        clickAt(imageNode(), [350, 350]);
+        drag(imageNode(), [350, 350], [400, 380]);
+        selectAnnotation(1);
+        click("scene-annotation-delete");
+        await addLabel([100, 400], "Pubis");
+        const edited = clone(scenesModule.getActiveScene());
+        expect(edited.annotations.map((a) => a.text || a.id)).toEqual(["Ilium", "Pubis"]);
+
+        // Typing the new label's text, then adding it, are two steps.
+        click("scene-undo");
+        expect(annotations().map((a) => a.text || a.id)).toEqual(["Ilium", "New label"]);
+        click("scene-undo");
+        expect(annotations().map((a) => a.text || a.id)).toEqual(["Ilium"]);
+        click("scene-undo");
+        expect(annotations()).toEqual(content().annotations);
+        expect(images()[0]).toMatchObject({ x: 350, y: 330 });
+        click("scene-undo");
+        expect(images()).toEqual(content().images);
+        expect($("scene-undo").disabled).toBe(true);
+        expect(saveStatus()).toBe("Saved");
+
+        for (let step = 0; step < 4; step += 1) click("scene-redo");
+        expect(clone(scenesModule.getActiveScene()).images).toEqual(edited.images);
+        expect(clone(scenesModule.getActiveScene()).annotations).toEqual(edited.annotations);
+        expect($("scene-redo").disabled).toBe(true);
+        await waitFor(() => expect(status()).toBe("Redone. Nothing more to redo."));
+    });
+
+    it("undoes a run of typing or arrow-key nudges as one step, but not edits of another object", async () => {
+        await openBlankScene(content());
+        selectAnnotation(0);
+        typeText("Il");
+        typeText("Ili");
+        typeText("Ilio");
+        key("ArrowRight");
+        key("ArrowRight");
+        key("ArrowDown");
+        clickAt(imageNode(), [350, 350]);
+        key("ArrowLeft");
+        key("ArrowLeft");
+
+        click("scene-undo");
+        expect(images()[0].x).toBe(300);
+        expect(annotations()[0]).toMatchObject({ text: "Ilio", x: 22, y: 21 });
+        click("scene-undo");
+        expect(annotations()[0]).toMatchObject({ text: "Ilio", x: 20, y: 20 });
+        click("scene-undo");
+        expect(annotations()[0]).toEqual(content().annotations[0]);
+        expect($("scene-undo").disabled).toBe(true);
+    });
+
+    it("shows the scene as saved again when undo or redo returns to the saved version", async () => {
+        await openBlankScene(content());
+        selectAnnotation(0);
+        key("ArrowRight", { shiftKey: true });
+        await saveAndWait();
+
+        click("scene-undo");
+        expect(saveStatus()).toBe("Unsaved changes");
+        expect(scenesModule.hasUnsavedChanges()).toBe(true);
+        click("scene-redo");
+        expect(saveStatus()).toBe("Saved");
+        expect(scenesModule.hasUnsavedChanges()).toBe(false);
+
+        // A new edit after an undo replaces what could be redone, and is never mistaken for the saved version.
+        click("scene-undo");
+        key("ArrowDown");
+        expect($("scene-redo").disabled).toBe(true);
+        expect(scenesModule.hasUnsavedChanges()).toBe(true);
+    });
+
+    it("keeps the selected object selected when it still exists, and saves the undone state", async () => {
+        await openBlankScene(content());
+        selectAnnotation(0);
+        key("ArrowRight");
+        click("scene-annotation-delete");
+        expect($("scene-annotation-toolbar").hidden).toBe(true);
+
+        click("scene-undo");
+        expect(annotations()).toHaveLength(2);
+        expect($("scene-annotation-toolbar").hidden).toBe(true);
+
+        selectAnnotation(0);
+        click("scene-undo");
+        expect(annotations()[0]).toEqual(content().annotations[0]);
+        expect($("scene-annotation-toolbar").hidden).toBe(false);
+        expect($("scene-annotation-text").value).toBe("Ilium");
+
+        click("scene-redo");
+        await saveAndReopen();
+        expect(stored()[0]).toMatchObject({ x: 21, y: 20 });
+        // A reopened scene starts with nothing to undo.
+        expect($("scene-undo").disabled).toBe(true);
+    });
+
+    it("undoes with Ctrl/Cmd+Z and redoes with Ctrl/Cmd+Shift+Z or Ctrl+Y, leaving text fields their own undo", async () => {
+        await openBlankScene(content());
+        clickAt(imageNode(), [350, 350]);
+        key("ArrowRight", { shiftKey: true });
+        key("ArrowDown", { shiftKey: true });
+        clickAt(canvasSvg(), [900, 550]);
+        selectAnnotation(1);
+        click("scene-annotation-delete");
+
+        expect(shortcut("z", { ctrlKey: true })).toBe(true);
+        expect(annotations()).toHaveLength(2);
+        expect(shortcut("z", { metaKey: true })).toBe(true);
+        expect(images()[0]).toMatchObject({ x: 300, y: 300 });
+        expect(shortcut("Z", { metaKey: true, shiftKey: true })).toBe(true);
+        expect(images()[0]).toMatchObject({ x: 310, y: 310 });
+        expect(shortcut("y", { ctrlKey: true }, document.body)).toBe(true);
+        expect(annotations()).toHaveLength(1);
+
+        selectAnnotation(0);
+        typeText("Ischium");
+        expect(shortcut("z", { ctrlKey: true }, $("scene-annotation-text"))).toBe(false);
+        expect(annotations()[0].text).toBe("Ischium");
+    });
+
+    it("never undoes into another scene", async () => {
+        backend.seed({ id: "scene-2", name: "Another", ...content() });
+        await openBlankScene(content());
+        selectAnnotation(0);
+        key("ArrowRight");
+
+        jest.spyOn(window, "confirm").mockReturnValue(true);
+        [...document.querySelectorAll(".scene-list-item")].find((b) => b.textContent.includes("Another")).click();
+        await waitFor(() => expect($("scene-title").textContent).toBe("Another"));
+
+        expect($("scene-undo").disabled).toBe(true);
+        expect(shortcut("z", { ctrlKey: true })).toBe(false);
+        expect(annotations()).toEqual(content().annotations);
+        expect(scenesModule.hasUnsavedChanges()).toBe(false);
+    });
+});
