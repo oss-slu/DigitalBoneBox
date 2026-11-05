@@ -1440,3 +1440,60 @@ describe("Undo and redo (#443)", () => {
         expect(scenesModule.hasUnsavedChanges()).toBe(false);
     });
 });
+
+describe("Warning about unsaved changes when leaving the editor (#444)", () => {
+    const content = {
+        images: [{ id: "img", src: "/images/a.png", x: 300, y: 300, width: 100, height: 100, source: { type: "legacy-image", boneId: "ilium" } }],
+        annotations: [{ id: "label", type: "text", text: "Ilium", x: 20, y: 20 }],
+    };
+    const inEditor = () => !$("scene-editor-view").hidden;
+    async function openEditedScene() {
+        await openBlankScene(content);
+        selectAnnotation(0);
+        key("ArrowRight");
+        expect(scenesModule.hasUnsavedChanges()).toBe(true);
+    }
+
+    it("lets the user stay in the editor from the Back button, the Scene Editor button, or a viewer link", async () => {
+        await openEditedScene();
+        const confirm = jest.spyOn(window, "confirm").mockReturnValue(false);
+        const shownInViewer = jest.fn();
+        document.addEventListener("bonebox:show-in-viewer", shownInViewer);
+
+        click("scene-editor-back");
+        click("text-button-SceneEditor");
+        document.querySelector(".scene-source-link").click();
+
+        expect(confirm).toHaveBeenCalledTimes(3);
+        expect(confirm).toHaveBeenLastCalledWith(expect.stringContaining("\"Plate\" has unsaved changes"));
+        expect(inEditor()).toBe(true);
+        expect(shownInViewer).not.toHaveBeenCalled();
+        expect(annotations()[0].x).toBe(21);
+        await waitFor(() => expect($("scene-editor-status").textContent).toBe("Still in the Scene Editor. Your changes aren't saved yet."));
+        document.removeEventListener("bonebox:show-in-viewer", shownInViewer);
+    });
+
+    it("leaves when the user chooses to, keeping the unsaved changes for when they come back", async () => {
+        await openEditedScene();
+        jest.spyOn(window, "confirm").mockReturnValue(true);
+
+        click("scene-editor-back");
+        expect(inEditor()).toBe(false);
+
+        click("text-button-SceneEditor");
+        expect(inEditor()).toBe(true);
+        expect(annotations()[0].x).toBe(21);
+        expect(scenesModule.hasUnsavedChanges()).toBe(true);
+    });
+
+    it("leaves without asking when everything is saved", async () => {
+        await openEditedScene();
+        await saveAndWait();
+        const confirm = jest.spyOn(window, "confirm");
+
+        click("scene-editor-back");
+
+        expect(inEditor()).toBe(false);
+        expect(confirm).not.toHaveBeenCalled();
+    });
+});

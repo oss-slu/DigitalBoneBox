@@ -828,7 +828,7 @@ function renderSceneSources(scene) {
 }
 
 function showInViewer(boneId) {
-    leaveEditor();
+    if (!requestLeaveEditor()) return;
     document.dispatchEvent(new CustomEvent(SHOW_IN_VIEWER_EVENT, { detail: { boneId } }));
 }
 
@@ -2683,6 +2683,28 @@ function enterEditor() {
     loadLibrary();
 }
 
+/**
+ * Issue #444: leaves the editor, asking first when the open scene has unsaved
+ * changes. Leaving doesn't discard them - the working copy stays open and is
+ * still here on coming back - but nothing outside the editor shows them, and
+ * closing or reloading the page would lose them.
+ * @returns {boolean} Whether the editor was left.
+ */
+function requestLeaveEditor() {
+    if (hasUnsavedChanges()) {
+        const leave = window.confirm(
+            `"${state.active.name}" has unsaved changes. Leave the Scene Editor without saving? ` +
+            "They stay here until you close or reload the page, but the bone viewer only shows saved scenes."
+        );
+        if (!leave) {
+            announce("Still in the Scene Editor. Your changes aren't saved yet.");
+            return false;
+        }
+    }
+    leaveEditor();
+    return true;
+}
+
 function leaveEditor() {
     dom.editorView.hidden = true;
     dom.viewer.hidden = false;
@@ -2793,9 +2815,9 @@ export function initializeSceneEditor(root = document) {
 
     dom.enterButton.addEventListener("click", () => {
         if (dom.editorView.hidden) enterEditor();
-        else leaveEditor();
+        else requestLeaveEditor();
     });
-    dom.backButton.addEventListener("click", leaveEditor);
+    dom.backButton.addEventListener("click", requestLeaveEditor);
     const editorView = dom.editorView;
     document.addEventListener(OPEN_SCENE_EVENT, (event) => {
         // Skip if this page was re-rendered and this editor is no longer on it.
