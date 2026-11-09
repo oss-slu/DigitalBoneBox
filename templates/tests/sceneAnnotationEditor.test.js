@@ -1044,6 +1044,48 @@ describe("Moving and resizing selected objects (#442)", () => {
         expect(annotations()).toEqual(content().annotations);
     });
 
+    // Keys go wherever focus really is, as a browser sends them, instead of
+    // straight to the canvas, so a selection that leaves focus elsewhere fails.
+    function keyOnFocused(name, options = {}) {
+        document.activeElement.dispatchEvent(new KeyboardEvent("keydown", { key: name, bubbles: true, ...options }));
+    }
+
+    it("focuses the canvas when an image is clicked, so the arrow keys and Delete edit it", async () => {
+        await openBlankScene(content());
+        $("scene-annotation-text").focus();
+
+        clickAt(imageNode(1), [650, 350]);
+        expect(document.activeElement).toBe($("scene-canvas"));
+
+        keyOnFocused("ArrowLeft");
+        keyOnFocused("ArrowUp", { shiftKey: true });
+        expect(images()[1]).toMatchObject({ x: 599, y: 290 });
+        keyOnFocused("Backspace");
+        expect(images().map((image) => image.id)).toEqual(["a"]);
+    });
+
+    it("moves focus from a label's text field to the canvas when the label is clicked", async () => {
+        await openBlankScene(content());
+        selectAnnotation(1);
+        typeText("Pubis");
+        expect(document.activeElement).toBe($("scene-annotation-text"));
+
+        // Away from the first click, so it doesn't step down to the highlight below (#441).
+        clickAt(annotationNode(1), [320, 315]);
+        expect(document.activeElement).toBe($("scene-canvas"));
+        keyOnFocused("ArrowRight");
+        expect(annotations()[1]).toMatchObject({ text: "Pubis", x: 311, y: 310 });
+
+        // A double-click still opens the selected label's text for editing.
+        annotationNode(1).dispatchEvent(new MouseEvent("dblclick", { bubbles: true, clientX: 320, clientY: 315 }));
+        expect(document.activeElement).toBe($("scene-annotation-text"));
+
+        clickAt(annotationNode(1), [330, 315]);
+        expect(document.activeElement).toBe($("scene-canvas"));
+        keyOnFocused("Delete");
+        expect(annotations().map((annotation) => annotation.id)).toEqual(["poly", "line"]);
+    });
+
     it("leaves the arrow keys and Delete alone while an image's crop is being edited", async () => {
         await openBlankScene(content());
         clickAt(imageNode(1), [650, 350]);

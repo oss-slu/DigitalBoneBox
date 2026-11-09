@@ -2876,6 +2876,11 @@ export function initializeSceneEditor(root = document) {
             handleToolClick(event);
             return;
         }
+        // A press on an object cancels the browser's own focus change (it may
+        // start a drag), so the canvas takes focus here: the arrow keys and
+        // Delete then edit what was just picked. A double-click on a label
+        // still moves focus on to its text field.
+        dom.canvas.focus({ preventScroll: true });
         // A click on a handle belongs to the selected object, even without a drag.
         if (event.target.closest("[data-annotation-handle], [data-corner]")) return;
         handleSelectClick(event);
