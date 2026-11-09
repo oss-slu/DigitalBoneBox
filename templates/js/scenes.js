@@ -1,5 +1,5 @@
 import { OPEN_SCENE_EVENT, SHOW_IN_VIEWER_EVENT, sceneSources, readableName } from "./sceneLinks.js";
-import { renderScene, displayedAnnotation, storeAnnotationGeometry, textBox } from "./sceneCanvas.js";
+import { renderScene, displayedAnnotation, objectsAt, storeAnnotationGeometry, textBox } from "./sceneCanvas.js";
 import {
     DEFAULT_HIGHLIGHT_COLOR,
     DEFAULT_HIGHLIGHT_OPACITY,
@@ -213,25 +213,64 @@ const state = {
     openRequest: 0,
     fitToWidth: true,
     busy: false,
-    selectedImageIndex: null,
+    // Issue #440: the one selected object, `{ kind: "image" | "annotation",
+    // index }` (its index in `active.images` or `active.annotations`), or null.
+    selection: null,
+    // Issue #441: how many objects were under the click that made the
+    // selection, while that's more than one (for the "click again" hint).
+    overlapCount: 0,
     cropMode: false,
-    // Issue #426: the selected annotation's index in `active.annotations`, the
-    // annotation tool in use ("text" | "line" | "arrow" | "polygon" |
-    // "pointer"), and the shape being drawn with it.
-    selectedAnnotationIndex: null,
+    // Issue #426: the annotation tool in use ("text" | "line" | "arrow" |
+    // "polygon" | "pointer"), and the shape being drawn with it.
     tool: null,
     draft: null,
+    // Issue #443: undo and redo for the open scene. `present` is a copy of
+    // the working copy's content as of the last recorded change; `past` and
+    // `future` hold the copies before and after it. `lastKey` names the kind
+    // of the last change, so a run of small edits of one kind (typing a
+    // label, nudging with the arrow keys) is undone as one step.
+    history: { past: [], present: null, future: [], lastKey: null },
     boneOptions: null,
     importRequest: 0,
 };
 
-function deselectImage() {
-    state.selectedImageIndex = null;
-    state.cropMode = false;
+/** The selected image's index, or null when no image is selected. */
+function selectedImageIndex() {
+    return state.selection && state.selection.kind === "image" ? state.selection.index : null;
 }
 
-function deselectAnnotation() {
-    state.selectedAnnotationIndex = null;
+/** The selected annotation's index, or null when no annotation is selected. */
+function selectedAnnotationIndex() {
+    return state.selection && state.selection.kind === "annotation" ? state.selection.index : null;
+}
+
+/**
+ * Selects one object, replacing any other selection. Crop mode only lasts
+ * while the image it was started on stays selected.
+ * @param {"image"|"annotation"} kind
+ * @param {number} index
+ */
+function select(kind, index) {
+    const isSame = state.selection && state.selection.kind === kind && state.selection.index === index;
+    if (!isSame) {
+        state.cropMode = false;
+        // Edits of another object are never grouped with these.
+        state.history.lastKey = null;
+    }
+    state.selection = { kind, index };
+    state.overlapCount = 0;
+}
+
+function deselect() {
+    state.selection = null;
+    state.cropMode = false;
+    state.overlapCount = 0;
+    state.history.lastKey = null;
+}
+
+/** Whether `object` ({ kind, index }) is the selected object. */
+function isSelected(object) {
+    return Boolean(state.selection) && object.kind === state.selection.kind && object.index === state.selection.index;
 }
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
@@ -246,13 +285,14 @@ function setActiveScene(scene) {
     state.saved = scene ? clone(scene) : null;
     state.revision = 0;
     state.savedRevision = 0;
+    // Undo never reaches into another scene, or a version that was reloaded.
+    state.history = { past: [], present: scene ? contentSnapshot(scene) : null, future: [], lastKey: null };
     state.activeToken += 1;
     state.saveFailed = false;
     state.conflictUpdatedAt = null;
     state.missing = false;
     state.saveAlert = null;
-    deselectImage();
-    deselectAnnotation();
+    deselect();
     endLineDraw();
     state.tool = null;
     state.draft = null;
@@ -384,6 +424,8 @@ function updateControls() {
     dom.duplicateButton.disabled = locked || !state.active;
     updatePublishControls(locked);
     dom.saveButton.disabled = locked || !hasUnsavedChanges();
+    dom.undoButton.disabled = !canUndo();
+    dom.redoButton.disabled = !canRedo();
     if (dom.importToggle) {
         dom.importToggle.disabled = state.busy || !state.active;
         dom.importSubmit.disabled = state.busy || !state.boneOptions;
@@ -424,13 +466,143 @@ function updatePublishControls(locked) {
 }
 
 
-/** Records a change to the working copy (Issue #451). Callers re-render. */
-function markChanged() {
+const MAX_UNDO_STEPS = 100;
+// Revisions only ever count up, even after an undo, so a revision number
+// always names one version of the content: undoing back to the saved version
+// shows it as saved again, and a new edit after an undo never looks saved.
+let lastRevision = 0;
+
+/** A copy of an image for the undo history, sharing its `src` (possibly megabytes of base64, never changed in place). */
+function copyImage(image) {
+    const { src, ...rest } = image;
+    const copy = clone(rest);
+    if (src !== undefined) copy.src = src;
+    return copy;
+}
+
+/** A copy of the content a save stores, with its revision, for the undo history (Issue #443). */
+function contentSnapshot(scene) {
+    const snapshot = {
+        images: (scene.images || []).map(copyImage),
+        annotations: clone(scene.annotations || []),
+        revision: state.revision,
+    };
+    if (Array.isArray(scene.importLog)) snapshot.importLog = clone(scene.importLog);
+    return snapshot;
+}
+
+/**
+ * Records a change to the working copy (Issue #451), as one undo step
+ * (Issue #443). Callers re-render.
+ * @param {{ group?: string }} [options] - group names a kind of small,
+ *   repeated edit; consecutive changes with the same group undo as one step.
+ */
+function markChanged({ group = null } = {}) {
     if (!state.active) return;
     const wasSaved = !hasUnsavedChanges();
-    state.revision += 1;
+    lastRevision += 1;
+    state.revision = lastRevision;
+    const history = state.history;
+    const continuesGroup = group !== null && group === history.lastKey;
+    if (!continuesGroup && history.present) {
+        history.past.push(history.present);
+        if (history.past.length > MAX_UNDO_STEPS) history.past.shift();
+    }
+    history.present = contentSnapshot(state.active);
+    history.future = [];
+    history.lastKey = group;
+    // The overlap hint described the click before this edit.
+    state.overlapCount = 0;
     if (wasSaved) announce("Unsaved changes.");
     updateControls();
+}
+
+function canUndo() {
+    return Boolean(state.active) && !state.busy && !activeDrag && state.history.past.length > 0;
+}
+
+function canRedo() {
+    return Boolean(state.active) && !state.busy && !activeDrag && state.history.future.length > 0;
+}
+
+/** Issue #443: puts the working copy back the way it was before the last recorded change. */
+function undo() {
+    if (!canUndo()) return;
+    const history = state.history;
+    history.future.push(history.present);
+    history.present = history.past.pop();
+    showHistoryStep("Undone");
+}
+
+/** Issue #443: reapplies the last undone change. */
+function redo() {
+    if (!canRedo()) return;
+    const history = state.history;
+    history.past.push(history.present);
+    history.present = history.future.pop();
+    showHistoryStep("Redone");
+}
+
+/**
+ * Makes the working copy match `history.present`. A drawing tool in use is
+ * put away first. The selected object stays selected if it still exists.
+ * @param {string} verb - "Undone" or "Redone", for the announcement.
+ */
+function showHistoryStep(verb) {
+    const scene = state.active;
+    const snapshot = state.history.present;
+    const selected = state.selection
+        ? (state.selection.kind === "image" ? scene.images : scene.annotations)[state.selection.index]
+        : null;
+    const selectedKind = state.selection && state.selection.kind;
+    endLineDraw();
+    state.tool = null;
+    state.draft = null;
+
+    scene.images = snapshot.images.map(copyImage);
+    scene.annotations = clone(snapshot.annotations);
+    if (snapshot.importLog) scene.importLog = clone(snapshot.importLog);
+    else delete scene.importLog;
+    state.revision = snapshot.revision;
+
+    const objects = selectedKind === "image" ? scene.images : scene.annotations;
+    const index = selected && selected.id !== undefined ? objects.findIndex((object) => object && object.id === selected.id) : -1;
+    if (index === -1) deselect();
+    else {
+        state.selection = { kind: selectedKind, index };
+        state.cropMode = false;
+        state.overlapCount = 0;
+    }
+    state.history.lastKey = null;
+    updateControls();
+    renderWorkspace();
+    const remaining = verb === "Undone" ? state.history.past.length : state.history.future.length;
+    announce(`${verb}. ${remaining === 0
+        ? `Nothing more to ${verb === "Undone" ? "undo" : "redo"}.`
+        : `${plural(remaining, "more change")} can be ${verb === "Undone" ? "undone" : "redone"}.`}`);
+}
+
+/** Whether a key press belongs to a text field, which has its own undo. */
+function isTextEntry(target) {
+    if (!target || typeof target.closest !== "function") return false;
+    if (target.closest("textarea, [contenteditable=\"true\"]")) return true;
+    const input = target.closest("input");
+    return Boolean(input) && ["text", "search", "number", "email", "url", "tel", "password"].includes(input.type);
+}
+
+/** Ctrl/Cmd+Z undoes; Ctrl/Cmd+Shift+Z or Ctrl+Y redoes, while the editor is open. */
+function handleUndoKey(event) {
+    // isConnected: an editor whose page was replaced (as tests do) stays out of the way.
+    if (!dom || !dom.editorView.isConnected || dom.editorView.hidden || !state.active) return;
+    if (!(event.ctrlKey || event.metaKey) || event.altKey) return;
+    const key = event.key.toLowerCase();
+    const isUndo = key === "z" && !event.shiftKey;
+    const isRedo = (key === "z" && event.shiftKey) || (key === "y" && !event.shiftKey);
+    if ((!isUndo && !isRedo) || isTextEntry(event.target)) return;
+    if (isUndo ? !canUndo() : !canRedo()) return;
+    event.preventDefault();
+    if (isUndo) undo();
+    else redo();
 }
 
 /**
@@ -554,7 +726,7 @@ function renderLibrary() {
  */
 function updateImageToolbar() {
     const scene = state.active;
-    const index = state.selectedImageIndex;
+    const index = selectedImageIndex();
     const hasSelection = Boolean(scene) && index !== null && index >= 0 && index < scene.images.length;
     dom.imageToolbar.hidden = !hasSelection;
     if (!hasSelection) return;
@@ -576,12 +748,15 @@ function renderCanvas() {
     dom.canvas.hidden = isEmpty;
     dom.fitToggle.hidden = isEmpty;
     dom.canvasNote.hidden = true;
+    const showOverlapHint = Boolean(state.selection) && state.overlapCount > 1;
+    dom.selectionHint.hidden = !showOverlapHint;
+    dom.selectionHint.textContent = showOverlapHint ? overlapHint() : "";
     if (isEmpty) return;
 
     const { svg, unsupported, unlinked, width, height } = renderScene(scene, {
-        selectedIndex: state.selectedImageIndex,
+        selectedIndex: selectedImageIndex(),
         cropMode: state.cropMode,
-        selectedAnnotationIndex: state.selectedAnnotationIndex,
+        selectedAnnotationIndex: selectedAnnotationIndex(),
         draft: state.draft,
     });
     svg.setAttribute("aria-label", `Scene canvas for ${scene.name}`);
@@ -653,7 +828,7 @@ function renderSceneSources(scene) {
 }
 
 function showInViewer(boneId) {
-    leaveEditor();
+    if (!requestLeaveEditor()) return;
     document.dispatchEvent(new CustomEvent(SHOW_IN_VIEWER_EVENT, { detail: { boneId } }));
 }
 
@@ -991,6 +1166,7 @@ async function handleSave({ overwrite = false } = {}) {
         if (token === state.activeToken) {
             state.saved = clone(updated);
             state.savedRevision = sentRevision;
+            state.history.lastKey = null;
             state.conflictUpdatedAt = null;
             scene.name = updated.name;
             scene.updatedAt = updated.updatedAt;
@@ -1078,6 +1254,7 @@ async function saveAsNewScene() {
         else delete scene.publishedAt;
         state.saved = clone(created);
         state.savedRevision = revision;
+        state.history.lastKey = null;
         state.missing = false;
         state.saveFailed = false;
         renderWorkspace();
@@ -1136,13 +1313,14 @@ async function handleDuplicate() {
 
 /** Removes the selected image from the working copy (Issue #418). */
 function handleImageRemove() {
-    if (!state.active || state.selectedImageIndex === null) return;
-    const index = state.selectedImageIndex;
+    if (!state.active || selectedImageIndex() === null) return;
+    const index = selectedImageIndex();
     if (!state.active.images[index]) return;
     state.active.images.splice(index, 1);
-    deselectImage();
+    deselect();
     markChanged();
     renderWorkspace();
+    announce("Image removed. Save to keep the change.");
 }
 
 /**
@@ -1151,12 +1329,12 @@ function handleImageRemove() {
  * toolbar buttons; a drag applies its own changes live frame-by-frame.
  * @param {object} fields - The new values to set, e.g. `{ rotation: 90 }`.
  */
-function applySelectedImageUpdate(fields) {
-    if (!state.active || state.selectedImageIndex === null) return;
-    const image = state.active.images[state.selectedImageIndex];
+function applySelectedImageUpdate(fields, { group = null } = {}) {
+    if (!state.active || selectedImageIndex() === null) return;
+    const image = state.active.images[selectedImageIndex()];
     if (!image) return;
     Object.assign(image, fields);
-    markChanged();
+    markChanged({ group });
     renderWorkspace();
 }
 
@@ -1166,8 +1344,8 @@ function applySelectedImageUpdate(fields) {
  * @param {number} deltaDegrees
  */
 function rotateSelectedImage(deltaDegrees) {
-    if (!state.active || state.selectedImageIndex === null) return;
-    const image = state.active.images[state.selectedImageIndex];
+    if (!state.active || selectedImageIndex() === null) return;
+    const image = state.active.images[selectedImageIndex()];
     if (!image) return;
     const current = typeof image.rotation === "number" ? image.rotation : 0;
     const next = ((current + deltaDegrees) % 360 + 360) % 360;
@@ -1179,11 +1357,34 @@ function rotateSelectedImage(deltaDegrees) {
  * @param {"horizontal" | "vertical"} axis
  */
 function flipSelectedImage(axis) {
-    if (!state.active || state.selectedImageIndex === null) return;
-    const image = state.active.images[state.selectedImageIndex];
+    if (!state.active || selectedImageIndex() === null) return;
+    const image = state.active.images[selectedImageIndex()];
     if (!image) return;
     const field = axis === "horizontal" ? "flipX" : "flipY";
     applySelectedImageUpdate({ [field]: !image[field] });
+}
+
+/**
+ * Issue #442: keyboard use of the selected image on the canvas, matching
+ * annotations - the arrow keys move it (1 scene pixel, or 10 with Shift)
+ * and Delete or Backspace removes it. Not while its crop is being edited.
+ * @returns {boolean} Whether the key was handled.
+ */
+function handleImageKey(event) {
+    if (state.tool || state.cropMode || event.altKey || event.ctrlKey || event.metaKey) return false;
+    const image = state.active && selectedImageIndex() !== null ? state.active.images[selectedImageIndex()] : null;
+    if (!image) return false;
+    if (event.key === "Delete" || event.key === "Backspace") {
+        handleImageRemove();
+        dom.canvas.focus();
+        return true;
+    }
+    const step = event.shiftKey ? NUDGE_STEP_LARGE : NUDGE_STEP;
+    const deltas = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] };
+    if (!deltas[event.key]) return false;
+    const [dx, dy] = deltas[event.key];
+    applySelectedImageUpdate({ x: image.x + dx, y: image.y + dy }, { group: "nudge" });
+    return true;
 }
 
 /**
@@ -1194,13 +1395,13 @@ function flipSelectedImage(axis) {
  * @param {1 | -1} direction
  */
 function moveSelectedImage(direction) {
-    if (!state.active || state.selectedImageIndex === null) return;
+    if (!state.active || selectedImageIndex() === null) return;
     const images = state.active.images;
-    const index = state.selectedImageIndex;
+    const index = selectedImageIndex();
     const targetIndex = index + direction;
     if (targetIndex < 0 || targetIndex >= images.length) return;
     [images[index], images[targetIndex]] = [images[targetIndex], images[index]];
-    state.selectedImageIndex = targetIndex;
+    state.selection.index = targetIndex;
     markChanged();
     renderWorkspace();
 }
@@ -1321,7 +1522,7 @@ function unrotateVector(dx, dy, degrees) {
  */
 function startImageDrag(event, svg, corner) {
     const scene = state.active;
-    const index = state.selectedImageIndex;
+    const index = selectedImageIndex();
     const image = scene.images[index];
     const scale = getSceneScale(svg);
     const startClientX = event.clientX;
@@ -1425,7 +1626,7 @@ function computeCropRect(corner, start, localDelta, imageWidth, imageHeight) {
  */
 function startCropDrag(event, svg, corner) {
     const scene = state.active;
-    const index = state.selectedImageIndex;
+    const index = selectedImageIndex();
     const image = scene.images[index];
     const scale = getSceneScale(svg);
     const startClientX = event.clientX;
@@ -1458,7 +1659,7 @@ function startCropDrag(event, svg, corner) {
 
 /** Enters crop-editing mode for the selected image (Issue #417). */
 function enterCropMode() {
-    if (!state.active || state.selectedImageIndex === null) return;
+    if (!state.active || selectedImageIndex() === null) return;
     state.cropMode = true;
     renderCanvas();
 }
@@ -1472,8 +1673,8 @@ function exitCropMode() {
 
 /** Clears the selected image's crop back to fully visible. */
 function resetSelectedImageCrop() {
-    if (!state.active || state.selectedImageIndex === null) return;
-    const image = state.active.images[state.selectedImageIndex];
+    if (!state.active || selectedImageIndex() === null) return;
+    const image = state.active.images[selectedImageIndex()];
     if (!image) return;
     applySelectedImageUpdate({ cropX: 0, cropY: 0, cropWidth: image.width, cropHeight: image.height });
 }
@@ -1509,14 +1710,159 @@ const round2 = (value) => Math.round(value * 100) / 100;
 
 function selectedAnnotation() {
     const scene = state.active;
-    const index = state.selectedAnnotationIndex;
+    const index = selectedAnnotationIndex();
     if (!scene || index === null || index < 0 || index >= scene.annotations.length) return null;
     return scene.annotations[index];
 }
 
-function selectAnnotation(index) {
-    deselectImage();
-    state.selectedAnnotationIndex = index;
+// Issue #440: selecting objects with the mouse and keyboard. A click selects
+// the object under it; Escape or a click on empty canvas clears the
+// selection; Tab and Shift+Tab step through the drawn objects from the top of
+// the stack down.
+// Issue #441: where objects overlap, clicking again in the same spot (or
+// Alt+clicking anywhere on the stack) selects the next object down, wrapping
+// back to the top, so an image under a highlight can still be reached.
+const MAX_ANNOUNCED_TEXT = 40;
+// How far apart, in screen pixels, two clicks can be and still count as the same spot.
+const SAME_SPOT_DISTANCE = 4;
+// Where the last selecting click was, in client coordinates, or null.
+let lastSelectClick = null;
+
+/**
+ * Every drawn object as { kind, index }, topmost first: annotations are
+ * drawn over images, and each later object over the ones before it.
+ * Objects the canvas can't draw aren't included.
+ */
+function selectableObjects() {
+    const svg = dom.canvas.querySelector("svg");
+    if (!svg) return [];
+    const annotationIndexes = new Set(
+        [...svg.querySelectorAll("[data-scene-annotation-index]")].map((node) => Number(node.dataset.sceneAnnotationIndex))
+    );
+    const imageIndexes = [...svg.querySelectorAll("[data-scene-image-index]")].map((node) => Number(node.dataset.sceneImageIndex));
+    return [
+        ...[...annotationIndexes].reverse().map((index) => ({ kind: "annotation", index })),
+        ...imageIndexes.reverse().map((index) => ({ kind: "image", index })),
+    ];
+}
+
+function announceSelection() {
+    const { kind, index } = state.selection;
+    let name = "image";
+    if (kind === "annotation") {
+        const annotation = selectedAnnotation();
+        name = describeAnnotation(annotation);
+        if (annotation.type === "text") {
+            const text = annotation.text.replace(/\s+/g, " ").trim();
+            name += ` "${text.length > MAX_ANNOUNCED_TEXT ? `${text.slice(0, MAX_ANNOUNCED_TEXT)}…` : text}"`;
+        }
+    }
+    const objects = selectableObjects();
+    const position = objects.findIndex((object) => object.kind === kind && object.index === index);
+    const message = position === -1 ? `Selected ${name}.` : `Selected ${name}, ${position + 1} of ${plural(objects.length, "object")}.`;
+    announce(state.overlapCount > 1 ? `${message} ${overlapHint()}` : message);
+}
+
+function overlapHint() {
+    return `${state.overlapCount} objects overlap here. Click again in the same spot, or Alt+click, to select the next one down.`;
+}
+
+/**
+ * Selects an object the user picked, and says which one it is.
+ * @param {"image"|"annotation"} kind
+ * @param {number} index
+ * @param {{ overlapCount?: number }} [options] - how many objects were under the click.
+ */
+function selectObject(kind, index, { overlapCount = 0 } = {}) {
+    select(kind, index);
+    state.overlapCount = overlapCount;
+    keepCanvasInPlace(renderCanvas);
+    announceSelection();
+}
+
+/**
+ * Redraws while keeping the canvas where it is on screen. Selecting shows the
+ * image or annotation toolbar above the canvas (and clearing hides it), which
+ * would otherwise push the scene out from under the pointer, so the next
+ * click "in the same spot" would land on a different part of it.
+ */
+function keepCanvasInPlace(redraw) {
+    const before = dom.canvas.getBoundingClientRect().top;
+    redraw();
+    const shift = dom.canvas.getBoundingClientRect().top - before;
+    // Instant, not the page's smooth scrolling, so a quick next click finds the canvas already back.
+    if (shift) window.scrollBy({ top: shift, behavior: "instant" });
+}
+
+/** The object a canvas node belongs to, as { kind, index }, or null. */
+function objectOfNode(node) {
+    const annotationNode = node.closest("[data-scene-annotation-index]");
+    if (annotationNode) return { kind: "annotation", index: Number(annotationNode.dataset.sceneAnnotationIndex) };
+    const imageNode = node.closest("[data-scene-image-index]");
+    return imageNode ? { kind: "image", index: Number(imageNode.dataset.sceneImageIndex) } : null;
+}
+
+/**
+ * Every object under a mouse event, topmost first. The one the browser
+ * reports as clicked always comes first, so the result agrees with what the
+ * user sees on top even where hit areas and geometry differ slightly.
+ */
+function objectsUnderEvent(event) {
+    const svg = dom.canvas.querySelector("svg");
+    const clicked = objectOfNode(event.target);
+    const stack = svg && svg.contains(event.target) ? objectsAt(state.active, clientToScene(svg, event)) : [];
+    if (!clicked) return stack;
+    return [clicked, ...stack.filter((object) => object.kind !== clicked.kind || object.index !== clicked.index)];
+}
+
+/** A click on the canvas with no tool in use: selects, steps down a stack of objects, or clears. */
+function handleSelectClick(event) {
+    const sameSpot = Boolean(lastSelectClick) &&
+        Math.hypot(event.clientX - lastSelectClick.x, event.clientY - lastSelectClick.y) <= SAME_SPOT_DISTANCE;
+    lastSelectClick = { x: event.clientX, y: event.clientY };
+    let stack = objectsUnderEvent(event);
+    if (state.cropMode) {
+        // While cropping, annotations can't be selected; a click on one does nothing.
+        if (stack.length > 0 && stack[0].kind === "annotation") return;
+        stack = stack.filter((object) => object.kind === "image");
+    }
+    if (stack.length === 0) {
+        clearSelection();
+        return;
+    }
+    const current = stack.findIndex(isSelected);
+    let target = stack[0];
+    if (current !== -1 && (sameSpot || event.altKey)) target = stack[(current + 1) % stack.length];
+    else if (event.altKey && stack.length > 1) target = stack[1];
+    selectObject(target.kind, target.index, { overlapCount: stack.length });
+}
+
+/** Clears the selection the user dismissed. `quiet` skips the announcement. */
+function clearSelection({ quiet = false } = {}) {
+    if (!state.selection) return;
+    deselect();
+    keepCanvasInPlace(renderCanvas);
+    if (!quiet) announce("Nothing selected.");
+}
+
+/**
+ * Tab and Shift+Tab on the canvas select the next or previous object. Past
+ * either end the selection is cleared and focus leaves the canvas as usual.
+ * @returns {boolean} Whether the key was handled.
+ */
+function handleSelectionTab(event) {
+    if (event.key !== "Tab" || event.altKey || event.ctrlKey || event.metaKey) return false;
+    if (!state.active || state.tool || state.cropMode) return false;
+    const objects = selectableObjects();
+    const current = objects.findIndex(isSelected);
+    if (current === -1 && event.shiftKey) return false;
+    const next = event.shiftKey ? current - 1 : current + 1;
+    if (next < 0 || next >= objects.length) {
+        clearSelection({ quiet: true });
+        return false;
+    }
+    selectObject(objects[next].kind, objects[next].index);
+    return true;
 }
 
 /** Where a mouse event is in scene coordinates. */
@@ -1582,10 +1928,10 @@ function updateAnnotationControls() {
     }
 
     const last = state.active.annotations.length - 1;
-    dom.annotationBack.disabled = state.selectedAnnotationIndex === 0;
-    dom.annotationBackward.disabled = state.selectedAnnotationIndex === 0;
-    dom.annotationForward.disabled = state.selectedAnnotationIndex === last;
-    dom.annotationFront.disabled = state.selectedAnnotationIndex === last;
+    dom.annotationBack.disabled = selectedAnnotationIndex() === 0;
+    dom.annotationBackward.disabled = selectedAnnotationIndex() === 0;
+    dom.annotationForward.disabled = selectedAnnotationIndex() === last;
+    dom.annotationFront.disabled = selectedAnnotationIndex() === last;
 }
 
 /**
@@ -1601,10 +1947,7 @@ function setTool(tool) {
     endLineDraw();
     state.tool = next;
     state.draft = null;
-    if (next && next !== "pointer") {
-        deselectImage();
-        deselectAnnotation();
-    }
+    if (next && next !== "pointer") deselect();
     renderCanvas();
     if (next) {
         announce(TOOL_HINTS[next]);
@@ -1626,7 +1969,7 @@ function addAnnotation(annotation) {
     state.active.annotations.push(annotation);
     state.tool = null;
     state.draft = null;
-    selectAnnotation(state.active.annotations.length - 1);
+    select("annotation", state.active.annotations.length - 1);
     markChanged();
     renderWorkspace();
 }
@@ -1856,23 +2199,24 @@ function nudgeSelectedAnnotation(dx, dy) {
     const pointers = pointerLinesOf(annotation, scene);
     storeAnnotationGeometry(annotation, translateAnnotation(start, dx, dy), scene);
     movePointerLines(pointers, startBox, dx, dy, scene);
-    markChanged();
+    markChanged({ group: "nudge" });
     renderWorkspace();
 }
 
 /**
  * Applies a toolbar change to the selected annotation.
  * @param {(annotation: object, scene: object) => void} edit
- * @param {{ reanchor?: boolean }} [options] - reanchor puts a label's
- *   pointer lines back on its edge after its size or text changed.
+ * @param {{ reanchor?: boolean, group?: string }} [options] - reanchor puts a
+ *   label's pointer lines back on its edge after its size or text changed;
+ *   group is passed to markChanged, so a run of these edits undoes as one.
  */
-function editSelectedAnnotation(edit, { reanchor = false } = {}) {
+function editSelectedAnnotation(edit, { reanchor = false, group = null } = {}) {
     const annotation = selectedAnnotation();
     if (!annotation) return;
     const scene = state.active;
     edit(annotation, scene);
     if (reanchor) reanchorPointerLines(annotation, scene);
-    markChanged();
+    markChanged({ group });
     renderWorkspace();
 }
 
@@ -1889,7 +2233,7 @@ function handleAnnotationTextInput() {
     dom.annotationText.removeAttribute("aria-invalid");
     editSelectedAnnotation((annotation) => {
         annotation.text = text;
-    }, { reanchor: true });
+    }, { reanchor: true, group: "text" });
 }
 
 /** Leaving the text box empty keeps the label's last text. */
@@ -1933,7 +2277,7 @@ function handleAnnotationColorInput() {
         } else {
             annotation.stroke = color;
         }
-    });
+    }, { group: "color" });
 }
 
 /**
@@ -1946,7 +2290,7 @@ function handleAnnotationOpacityInput() {
     editSelectedAnnotation((annotation) => {
         annotation.fillOpacity = clampHighlightOpacity(opacity);
         delete annotation.opacity;
-    });
+    }, { group: "opacity" });
 }
 
 /**
@@ -1956,14 +2300,14 @@ function handleAnnotationOpacityInput() {
  */
 function moveSelectedAnnotation(direction) {
     const annotations = state.active ? state.active.annotations : null;
-    const index = state.selectedAnnotationIndex;
+    const index = selectedAnnotationIndex();
     if (!annotations || !selectedAnnotation()) return;
     const last = annotations.length - 1;
     const target = direction === "front" ? last : direction === "back" ? 0 : index + direction;
     if (target < 0 || target > last || target === index) return;
     const [annotation] = annotations.splice(index, 1);
     annotations.splice(target, 0, annotation);
-    state.selectedAnnotationIndex = target;
+    state.selection.index = target;
     markChanged();
     renderWorkspace();
     const position = target === last ? "in front of all other annotations"
@@ -1979,7 +2323,7 @@ function deleteSelectedAnnotation() {
     const scene = state.active;
     const removed = new Set([annotation, ...pointerLinesOf(annotation, scene).map(({ line }) => line)]);
     scene.annotations = scene.annotations.filter((other) => !removed.has(other));
-    deselectAnnotation();
+    deselect();
     markChanged();
     renderWorkspace();
     const kind = describeAnnotation(annotation);
@@ -2019,8 +2363,7 @@ function handleAnnotationKey(event) {
     }
     if (state.tool || !selectedAnnotation()) return false;
     if (event.key === "Escape") {
-        deselectAnnotation();
-        renderCanvas();
+        clearSelection();
         return true;
     }
     if (event.key === "Delete" || event.key === "Backspace") {
@@ -2340,6 +2683,28 @@ function enterEditor() {
     loadLibrary();
 }
 
+/**
+ * Issue #444: leaves the editor, asking first when the open scene has unsaved
+ * changes. Leaving doesn't discard them - the working copy stays open and is
+ * still here on coming back - but nothing outside the editor shows them, and
+ * closing or reloading the page would lose them.
+ * @returns {boolean} Whether the editor was left.
+ */
+function requestLeaveEditor() {
+    if (hasUnsavedChanges()) {
+        const leave = window.confirm(
+            `"${state.active.name}" has unsaved changes. Leave the Scene Editor without saving? ` +
+            "They stay here until you close or reload the page, but the bone viewer only shows saved scenes."
+        );
+        if (!leave) {
+            announce("Still in the Scene Editor. Your changes aren't saved yet.");
+            return false;
+        }
+    }
+    leaveEditor();
+    return true;
+}
+
 function leaveEditor() {
     dom.editorView.hidden = true;
     dom.viewer.hidden = false;
@@ -2377,6 +2742,8 @@ export function initializeSceneEditor(root = document) {
         sceneSources: $("scene-sources"),
         saveStatus: $("scene-save-status"),
         saveButton: $("scene-save"),
+        undoButton: $("scene-undo"),
+        redoButton: $("scene-redo"),
         duplicateButton: $("scene-duplicate"),
         renameButton: $("scene-rename"),
         deleteButton: $("scene-delete"),
@@ -2392,6 +2759,7 @@ export function initializeSceneEditor(root = document) {
         canvas: $("scene-canvas"),
         canvasEmpty: $("scene-canvas-empty"),
         canvasNote: $("scene-canvas-note"),
+        selectionHint: $("scene-selection-hint"),
         importButton: $("scene-import-image"),
         importButtonEmpty: $("scene-canvas-empty-import"),
         importInput: $("scene-import-input"),
@@ -2447,9 +2815,9 @@ export function initializeSceneEditor(root = document) {
 
     dom.enterButton.addEventListener("click", () => {
         if (dom.editorView.hidden) enterEditor();
-        else leaveEditor();
+        else requestLeaveEditor();
     });
-    dom.backButton.addEventListener("click", leaveEditor);
+    dom.backButton.addEventListener("click", requestLeaveEditor);
     const editorView = dom.editorView;
     document.addEventListener(OPEN_SCENE_EVENT, (event) => {
         // Skip if this page was re-rendered and this editor is no longer on it.
@@ -2474,6 +2842,9 @@ export function initializeSceneEditor(root = document) {
     });
     dom.deleteButton.addEventListener("click", handleDelete);
     if (dom.saveButton) dom.saveButton.addEventListener("click", () => handleSave());
+    dom.undoButton.addEventListener("click", undo);
+    dom.redoButton.addEventListener("click", redo);
+    document.addEventListener("keydown", handleUndoKey);
     if (dom.duplicateButton) dom.duplicateButton.addEventListener("click", handleDuplicate);
     if (dom.publishButton) dom.publishButton.addEventListener("click", handlePublishToggle);
     dom.fitToggle.addEventListener("click", () => setFitToWidth(!state.fitToWidth));
@@ -2505,25 +2876,14 @@ export function initializeSceneEditor(root = document) {
             handleToolClick(event);
             return;
         }
-        if (event.target.closest("[data-annotation-handle]")) return;
-        const annotationTarget = event.target.closest("[data-scene-annotation-index]");
-        if (annotationTarget) {
-            if (state.cropMode) return;
-            const annotationIndex = Number(annotationTarget.dataset.sceneAnnotationIndex);
-            if (state.selectedAnnotationIndex === annotationIndex) deselectAnnotation();
-            else selectAnnotation(annotationIndex);
-            renderCanvas();
-            return;
-        }
-        deselectAnnotation();
-        const target = event.target.closest("[data-scene-image-index]");
-        const index = target ? Number(target.dataset.sceneImageIndex) : null;
-        if (state.selectedImageIndex === index) {
-            deselectImage();
-        } else {
-            state.selectedImageIndex = index;
-        }
-        renderCanvas();
+        // A press on an object cancels the browser's own focus change (it may
+        // start a drag), so the canvas takes focus here: the arrow keys and
+        // Delete then edit what was just picked. A double-click on a label
+        // still moves focus on to its text field.
+        dom.canvas.focus({ preventScroll: true });
+        // A click on a handle belongs to the selected object, even without a drag.
+        if (event.target.closest("[data-annotation-handle], [data-corner]")) return;
+        handleSelectClick(event);
     });
     dom.canvas.addEventListener("dblclick", (event) => {
         if (state.tool === "polygon") {
@@ -2531,25 +2891,19 @@ export function initializeSceneEditor(root = document) {
             return;
         }
         if (state.tool) return;
-        const target = event.target.closest("[data-scene-annotation-index]");
-        if (!target) return;
-        const index = Number(target.dataset.sceneAnnotationIndex);
-        const annotation = state.active && state.active.annotations[index];
+        // The two clicks have already picked the object (stepping down a
+        // stack of overlapping ones, #441), so only a selected label opens.
+        const annotation = selectedAnnotation();
         if (!annotation || annotation.type !== "text") return;
-        selectAnnotation(index);
-        renderCanvas();
         dom.annotationText.focus();
         dom.annotationText.select();
     });
     dom.canvas.addEventListener("keydown", (event) => {
-        if (handleAnnotationKey(event)) {
+        if (handleAnnotationKey(event) || handleImageKey(event) || handleSelectionTab(event)) {
             event.preventDefault();
             return;
         }
-        if (event.key === "Escape" && state.selectedImageIndex !== null) {
-            deselectImage();
-            renderCanvas();
-        }
+        if (event.key === "Escape" && state.selection) clearSelection();
     });
     // Issue #446: presses come in as pointer events (mouse, touch, pen) where
     // the browser supports them, with plain mouse events as the fallback. A
@@ -2577,23 +2931,26 @@ export function initializeSceneEditor(root = document) {
             return;
         }
         if (state.tool) return;
+        // Issue #442: a press anywhere on the selected object drags it, even
+        // where another object is drawn over it (it was reached with #441's
+        // click-again), and a press on anything else never moves anything.
+        const isOnSelected = () => objectsUnderEvent(event).some(isSelected);
         if (selectedAnnotation()) {
             const annotationSvg = dom.canvas.querySelector("svg");
             const annotationHandle = event.target.closest("[data-annotation-handle]");
-            const annotationNode = event.target.closest("[data-scene-annotation-index]");
             if (!annotationSvg) return;
             if (annotationHandle) {
                 event.preventDefault();
                 startAnnotationDrag(event, annotationSvg, annotationHandle.dataset.annotationHandle,
                     Number(annotationHandle.dataset.pointIndex));
-            } else if (annotationNode && Number(annotationNode.dataset.sceneAnnotationIndex) === state.selectedAnnotationIndex) {
+            } else if (isOnSelected()) {
                 event.preventDefault();
                 startAnnotationDrag(event, annotationSvg, "move");
             }
             return;
         }
-        if (state.selectedImageIndex === null) return;
-        const image = state.active.images[state.selectedImageIndex];
+        if (selectedImageIndex() === null) return;
+        const image = state.active.images[selectedImageIndex()];
         if (!image) return;
 
         const handle = event.target.closest("[data-corner]");
@@ -2607,10 +2964,7 @@ export function initializeSceneEditor(root = document) {
             return;
         }
 
-        const imageNode = event.target.closest("[data-scene-image-index]");
-        const isSelectedImageNode =
-            imageNode && Number(imageNode.dataset.sceneImageIndex) === state.selectedImageIndex;
-        if (!handle && !isSelectedImageNode) return;
+        if (!handle && !isOnSelected()) return;
 
         event.preventDefault();
         startImageDrag(event, svg, handle ? handle.dataset.corner : null);

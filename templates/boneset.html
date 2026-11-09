@@ -250,6 +250,8 @@
                             
                             <div class="scene-actions">
                                 <button id="scene-save" type="button" class="scene-btn scene-btn-primary" aria-describedby="scene-save-status" disabled>Save</button>
+                                <button id="scene-undo" type="button" class="scene-btn scene-btn-secondary" aria-keyshortcuts="Control+Z Meta+Z" title="Undo (Ctrl+Z or ⌘Z)" disabled>Undo</button>
+                                <button id="scene-redo" type="button" class="scene-btn scene-btn-secondary" aria-keyshortcuts="Control+Shift+Z Meta+Shift+Z Control+Y" title="Redo (Ctrl+Shift+Z, ⌘⇧Z, or Ctrl+Y)" disabled>Redo</button>
                                 <button id="scene-import-toggle" type="button" class="scene-btn scene-btn-primary" aria-expanded="false" aria-controls="scene-import-form">Import bone images</button>
                                 <button id="scene-import-image" type="button" class="scene-btn scene-btn-secondary">Import image…</button>
                                 <input id="scene-import-input" type="file" accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml" multiple hidden />
@@ -328,6 +330,7 @@
                             </div>
                             <div id="scene-canvas" class="scene-canvas" role="region" aria-label="Scene canvas" tabindex="0" hidden></div>
                         </div>
+                        <p id="scene-selection-hint" class="scene-selection-hint" hidden></p>
                         <p id="scene-canvas-note" class="scene-canvas-note" hidden></p>
                     </div>
                 </section>

@@ -489,7 +489,7 @@ describe("Scene editor: importing images - Issue 411", () => {
         expect($("scene-image-import-error").textContent).toMatch(/notes\.pdf/);
     });
 
-    it("selects an image on click and deselects it on a second click", async () => {
+    it("selects an image on click and keeps it selected on a second click (Issue 440)", async () => {
         await openNewScene();
         setFiles([{ name: "ilium.png", type: "image/png" }]);
         await waitFor(() => expect(document.querySelectorAll(".scene-image-object")).toHaveLength(1));
@@ -498,7 +498,7 @@ describe("Scene editor: importing images - Issue 411", () => {
         await waitFor(() => expect(document.querySelectorAll(".scene-selection-outline")).toHaveLength(1));
 
         document.querySelector(".scene-image-object").dispatchEvent(new MouseEvent("click", { bubbles: true }));
-        expect(document.querySelectorAll(".scene-selection-outline")).toHaveLength(0);
+        expect(document.querySelectorAll(".scene-selection-outline")).toHaveLength(1);
     });
 
     it("clears the selection when clicking empty canvas background", async () => {
@@ -651,7 +651,7 @@ describe("Scene editor: remove and reorder images", () => {
         selectImage(0);
         expect($("scene-image-toolbar").hidden).toBe(false);
 
-        selectImage(0);
+        $("scene-canvas").dispatchEvent(new MouseEvent("click", { bubbles: true }));
         expect($("scene-image-toolbar").hidden).toBe(true);
     });
 
@@ -662,7 +662,6 @@ describe("Scene editor: remove and reorder images", () => {
         expect($("scene-image-backward").disabled).toBe(true);
         expect($("scene-image-forward").disabled).toBe(false);
 
-        selectImage(0); // deselect
         selectImage(1);
         expect($("scene-image-forward").disabled).toBe(true);
         expect($("scene-image-backward").disabled).toBe(false);
