@@ -3101,11 +3101,40 @@ button:disabled {
     max-height: 70vh;
     overflow: auto;
     /* Issue #446: dragging on the canvas edits the scene; it shouldn't also
-        select text on the page. */
+       select text on the page. */
     -webkit-user-select: none;
     user-select: none;
+    /* Issue #447: no long-press callout menu, and no double-tap zoom, on the
+       canvas. Swiping it still scrolls the page unless an edit starts there. */
+    -webkit-touch-callout: none;
+    touch-action: manipulation;
 }
 
+/* Issue #447: where a finger drag edits the scene - a handle, the selected
+   image or annotation, or anywhere while a drawing tool is in use - the page
+   must not scroll or zoom instead. */
+.scene-canvas.is-drawing svg,
+.scene-canvas .is-selected,
+.scene-canvas .scene-resize-handle,
+.scene-canvas .scene-point-handle {
+    touch-action: none;
+}
+
+/* Issue #447: handles big enough for a fingertip on touch screens.
+   --touch-target-scale is set by scenes.js from the canvas's drawn size. */
+@media (pointer: coarse) {
+    .scene-canvas .scene-resize-handle,
+    .scene-canvas .scene-point-handle {
+        transform-box: fill-box;
+        transform-origin: center;
+        transform: scale(var(--touch-target-scale, 1));
+        vector-effect: non-scaling-stroke;
+    }
+
+    .scene-canvas .scene-annotation-hit-line {
+        stroke-width: calc(var(--touch-target-scale, 1) * 10px);
+    }
+}
 
 .scene-svg {
     display: block;
