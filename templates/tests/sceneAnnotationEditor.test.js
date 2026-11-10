@@ -2169,7 +2169,11 @@ describe("Responsive resizing (#450)", () => {
         define("scrollWidth", () => Math.max(box.width, drawn().width));
         define("scrollHeight", () => Math.max(box.height, drawn().height));
         jest.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(function () {
-            if (this.tagName.toLowerCase() === "svg") return { left: -scroll.left, top: -scroll.top, ...drawn() };
+            if (this.tagName.toLowerCase() === "svg") {
+                // A browser reports an SVG that is no longer on the page as 0 x 0.
+                if (!this.isConnected) return { left: 0, top: 0, width: 0, height: 0 };
+                return { left: -scroll.left, top: -scroll.top, ...drawn() };
+            }
             return { left: 0, top: 0, ...box };
         });
     }
@@ -2231,6 +2235,38 @@ describe("Responsive resizing (#450)", () => {
         expect(scroll).toEqual({ left: 150, top: 0 });
         expect(touchScale()).toBe("4.1");
         expect($("scene-zoom-level").textContent).toBe("156%");
+    });
+
+    it("finishes a line drawn across a resize and keeps the same part of the scene in view", async () => {
+        await openScene();
+        click("scene-zoom-in");
+        click("scene-zoom-in"); // 156.25%: the scene is drawn 1500 wide
+        scroll.left = 300;
+        scroll.top = 200;
+        $("scene-canvas").dispatchEvent(new Event("scroll"));
+        // The middle of the view is scene point (499.2, 320).
+
+        click("scene-tool-line");
+        // At this zoom and scroll, client (200, 300) is scene (320, 320), and
+        // each screen pixel is 0.64 scene units.
+        mouse("mousedown", canvasSvg(), [200, 300]);
+        document.dispatchEvent(new MouseEvent("mousemove", { clientX: 400, clientY: 300 }));
+
+        box.width = 480;
+        scroll.left = 0; // the browser fits the old scroll position to the new size
+        $("scene-canvas").dispatchEvent(new Event("scroll"));
+        resizeTo(480);
+        // The button is let go after the resize; the line was already finished.
+        document.dispatchEvent(new MouseEvent("mouseup", { clientX: 400, clientY: 300 }));
+
+        const line = annotations()[annotations().length - 1];
+        expect(line.type).toBe("line");
+        expect(line.x1).toBeCloseTo(320);
+        expect(line.y1).toBeCloseTo(320);
+        expect(line.x2).toBeCloseTo(448);
+        expect(annotations()).toHaveLength(SCENE.annotations.length + 1);
+        // Same view as without a drag: (499.2, 320) is back in the middle.
+        expect(scroll).toEqual({ left: 150, top: 0 });
     });
 
     it("ends a drag when the size changes mid-drag, keeping the move made so far", async () => {

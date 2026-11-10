@@ -851,13 +851,17 @@ function handleCanvasResize() {
     const width = dom.canvas.offsetWidth;
     if (width === lastCanvasWidth) return;
     lastCanvasWidth = width;
-    const svg = dom.canvas.querySelector("svg");
-    if (!state.active || dom.canvas.hidden || !svg) return;
+    if (!state.active || dom.canvas.hidden || !dom.canvas.querySelector("svg")) return;
+    // Taken before a drag is finished: finishing a line or arrow adds it and
+    // redraws the canvas, which replaces the SVG and can update viewCenter.
+    const center = viewCenter;
     if (activeDrag) activeDrag.finish();
+    const svg = dom.canvas.querySelector("svg");
+    if (!svg) return;
     setTouchTargetScale(svg);
-    if (viewCenter) {
+    if (center) {
         const box = dom.canvas.getBoundingClientRect();
-        const drawnAt = sceneToClient(svg, viewCenter);
+        const drawnAt = sceneToClient(svg, center);
         dom.canvas.scrollLeft += drawnAt.x - ((box.left || 0) + box.width / 2);
         dom.canvas.scrollTop += drawnAt.y - ((box.top || 0) + box.height / 2);
     }
