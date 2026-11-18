@@ -1994,6 +1994,8 @@ describe("Stylus editing (#448)", () => {
         press("pointermove", document, [460, 450], finger);
         press("pointermove", document, [180, 170], { pointerId: 1 });
         press("pointerup", document, [180, 170], { pointerId: 1 });
+        // The pen drag's own click comes first and is swallowed, as for any drag.
+        mouse("click", imageNode(), [180, 170]);
         press("pointerup", document, [460, 450], finger);
         click2();
 
