@@ -1,11 +1,11 @@
 # Scene rendering validation (#470)
 
-This is for issue #470, Validate Scene Rendering. The goal is to check that scenes in the Scene Editor are drawn the way they were saved and the way the source content is meant to look. Each small rock gets its own section below. Problems that need their own fix are listed under [Defects found](#defects-found) with an R number.
+This is for issue #470, Validate Scene Rendering. The goal is to check that scenes in the Scene Editor are drawn the way they were saved and the way the source content is meant to look. Each small rock gets its own section below. Small bugs I fixed on this branch have an F number. Problems that need their own fix are listed under [Defects found](#defects-found) with an R number.
 
 How I checked:
 
-1. **Automated checks.** `templates/tests/sceneRendering.test.js` runs the real renderer (`sceneCanvas.js`) and checks what it draws. Some checks were already covered by earlier work, and I point to those tests instead of repeating them.
-2. **Manual review.** I opened representative scenes in the Scene Editor in the browser and compared them with the bone viewer. I used the same 10 items #468 used, which cover all six bonesets and items with 1, 2 and 3 images.
+1. **Automated checks.** `templates/tests/sceneRendering.test.js` runs the real renderer (`sceneCanvas.js`) and checks what it draws. `boneset-api/renderingValidation.test.js` checks the image files and what the import makes. Some checks were already covered by earlier work, and I point to those tests instead of repeating them.
+2. **Manual review.** I used the same 10 items #468 used, which cover all six bonesets and items with 1, 2 and 3 images. I wrote down the intended view of all of their images. I imported 5 of them into scenes (Ilium, Sternum, Atlas, Hand metacarpals and Femur head) and reviewed them in the Scene Editor in the browser.
 
 Zoom, pan and resizing checks wait until zoom/pan (#449, PR #519) and resizing (#450, PR #520) are merged.
 
@@ -77,6 +77,31 @@ The data only records which view an image shows for the 18 Bony Pelvis items, in
 | Incorrect orientations recorded | 1 found (R3) | Defects below |
 
 **The viewer's tilt (D4 from #468).** For two-image items without colored regions (Sternum, Humerus, Femur) the viewer tilts the images −18° and 3.5°. That's a layout style, not the bone's orientation, so I think scenes should keep the images upright. If the team wants the tilt in scenes too, the import can set `rotation` on those images.
+
+## #473 Image rotation, scaling, and cropping
+
+### Results
+
+| Check | Result | Evidence |
+|---|---|---|
+| A rotated image keeps its proportions (0°, 15°, 45°, 90°, 180°, 270°, −30°) | OK | `sceneRendering.test.js` "keeps an image's proportions at every rotation" |
+| Resizing keeps the proportions | OK | `scenes.test.js` "resizes from a corner handle, preserving aspect ratio" (#414) |
+| Imported images keep the file's proportions | OK, all 334 imported images | `boneset-api/migrationValidation.test.js` "keeps every image's proportions" (#468) |
+| A crop is clipped in the image's own pixels and turns with the image | OK | `sceneRendering.test.js` "clips a cropped image to its crop area and rotates the crop with the image" |
+| Resizing a cropped image keeps showing the same part of the bone | **Fixed (F1)** | `scenes.test.js` "scales the crop with the image when a cropped image is resized" |
+| The outline and handles of a flipped, cropped image are on the part that's shown | **Fixed (F2)** | `sceneRendering.test.js` "outlines the part of a flipped, cropped image that is actually shown" and "outlines the draft crop where it is drawn" |
+| Dragging a handle on a flipped image moves that corner | **Fixed (F3)** | `scenes.test.js` "grows a flipped image when its handle is dragged away" and "moves a flipped image's crop edge the way the handle is dragged" |
+| Rotation, flip and crop are kept after saving and reopening | OK | `boneset-api/saveReload.test.js` (#482) |
+| Overlapping transformed images reviewed by hand | OK, apart from R1 | In Hand metacarpals I flipped the first image, cropped it by dragging its handles, shrank it, saved and reloaded. The outline, handles and visible area matched, and the save went through. Femur head was checked with overlapping images under #472. |
+| Zoomed scene sizes | Waiting | Needs zoom (#449, PR #519) |
+
+### Fixed on this branch
+
+**F1. Resizing a cropped image cut off a different part of the bone, and the save could fail.** The crop is stored in the image's own pixels, but resizing only changed the image's size. Shrinking a cropped image left the crop the old size, so a different part of the image showed, and the API rejected the save with "The crop area must fit within the image". Making the image bigger showed more of the bone than the crop meant to. Now the crop scales with the image (`startImageDrag` in `scenes.js`).
+
+**F2. The outline of a flipped, cropped image was on the wrong side.** The image and its crop were drawn flipped, but the selection outline, the handles and the canvas size used the unflipped crop. For example, a crop that kept the left of a horizontally flipped image was drawn on the right, but outlined on the left. Now the outline and handles go through the same flip and rotation as the image (`renderImage` in `sceneCanvas.js`).
+
+**F3. Handles on a flipped image moved the wrong way.** Once the handles were in the right place (F2), dragging them still used unflipped directions, so dragging a crop handle inward on a flipped image did nothing or moved the opposite edge. Drags now turn the mouse movement into the image's own axes, undoing the rotation and then the flip (`toImageAxes` in `scenes.js`).
 
 ## Defects found
 

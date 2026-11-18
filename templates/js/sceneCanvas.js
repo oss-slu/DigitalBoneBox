@@ -184,16 +184,19 @@ function renderImage(image, index, defs, { skipClip = false } = {}) {
         [image.x + crop.x, image.y + crop.y + crop.height],
     ];
     const visibleCorners = isCropped ? cropCorners : fullCorners;
-    const rotation = image.rotation;
+    // Flipped and rotated the same way as the image itself (Issue #473), so
+    // a flipped crop is outlined where it is drawn, and each handle sits on
+    // the drawn position of the corner its data-corner names.
+    const { toScreen } = imageTransform(image, image);
 
     return {
         node,
         // The visible (cropped, if applicable) region - used for the normal
         // selection outline and the canvas's auto-sizing.
-        bounds: isNumber(rotation) ? rotatePoints(visibleCorners, rotation, cx, cy) : visibleCorners,
+        bounds: visibleCorners.map(toScreen),
         // The current crop rect regardless of skipClip - used only while
         // actively editing the crop, to draw its own handles/outline.
-        cropBounds: isNumber(rotation) ? rotatePoints(cropCorners, rotation, cx, cy) : cropCorners,
+        cropBounds: cropCorners.map(toScreen),
     };
 }
 
