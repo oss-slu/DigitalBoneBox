@@ -169,3 +169,129 @@ describe("Issue 473: image rotation, scaling, and cropping", () => {
         expectPoints(outline(svg), [[0, 100], [200, 100], [200, 60], [0, 60]]);
     });
 });
+
+// Issues #474/#475: an annotation imported with an image has to stay on the
+// same spot of the bone however the image is changed. These checks don't
+// re-derive the math: they read the SVG transform the image itself is drawn
+// with and check that each annotation point lands where that transform puts
+// the same spot of the image.
+const FRAME = { x: 100, y: 100, width: 200, height: 100 };
+
+// Every way an image can be changed, alone and combined.
+const TRANSFORMS = [
+    {},
+    { x: 160, y: 40 },
+    { width: 300, height: 150 },
+    { width: 120, height: 60, x: 20, y: 300 },
+    { rotation: 15 },
+    { rotation: 90 },
+    { rotation: 225 },
+    { rotation: -30 },
+    { flipX: true },
+    { flipY: true },
+    { flipX: true, flipY: true },
+    { flipX: true, rotation: 45 },
+    { flipY: true, rotation: 270, width: 400, height: 200, x: -50, y: 10 },
+    { cropX: 20, cropY: 10, cropWidth: 120, cropHeight: 60, rotation: 30, flipX: true },
+];
+const describeTransform = (change) => JSON.stringify(change);
+
+/** A 2D affine matrix [a, b, c, d, e, f] from an SVG transform attribute (rotate/translate/scale). */
+function parseTransform(value) {
+    let matrix = [1, 0, 0, 1, 0, 0];
+    const multiply = ([a1, b1, c1, d1, e1, f1], [a2, b2, c2, d2, e2, f2]) => [
+        a1 * a2 + c1 * b2, b1 * a2 + d1 * b2,
+        a1 * c2 + c1 * d2, b1 * c2 + d1 * d2,
+        a1 * e2 + c1 * f2 + e1, b1 * e2 + d1 * f2 + f1,
+    ];
+    for (const [, name, args] of (value || "").matchAll(/(\w+)\(([^)]*)\)/g)) {
+        const [p, q = 0, r = 0] = args.trim().split(/[\s,]+/).map(Number);
+        if (name === "translate") matrix = multiply(matrix, [1, 0, 0, 1, p, q]);
+        else if (name === "scale") matrix = multiply(matrix, [p, 0, 0, args.includes(" ") ? q : p, 0, 0]);
+        else if (name === "rotate") {
+            const radians = (p * Math.PI) / 180;
+            const [cos, sin] = [Math.cos(radians), Math.sin(radians)];
+            matrix = multiply(matrix, [1, 0, 0, 1, q, r]);
+            matrix = multiply(matrix, [cos, sin, -sin, cos, 0, 0]);
+            matrix = multiply(matrix, [1, 0, 0, 1, -q, -r]);
+        } else throw new Error(`Unexpected transform ${name}`);
+    }
+    return matrix;
+}
+
+/**
+ * Where the image is drawn: maps a point given in the annotation's frame
+ * (the image's box when it was imported) to the screen, using only the
+ * image's own drawn x/y/width/height and SVG transform.
+ */
+function imagePointMapper(svg) {
+    const node = svg.querySelector(".scene-image-object");
+    const transformed = node.getAttribute("transform") ? node : node.parentNode;
+    const [a, b, c, d, e, f] = parseTransform(transformed.getAttribute("transform"));
+    const [x, y, width, height] = ["x", "y", "width", "height"].map((name) => Number(node.getAttribute(name)));
+    return ([px, py]) => {
+        const sx = x + ((px - FRAME.x) / FRAME.width) * width;
+        const sy = y + ((py - FRAME.y) / FRAME.height) * height;
+        return [a * sx + c * sy + e, b * sx + d * sy + f];
+    };
+}
+
+const parsePoints = (node) => node.getAttribute("points").trim().split(/\s+/).map((point) => point.split(",").map(Number));
+const expectNear = (actual, expected, tolerance = 0.01) => {
+    expect(actual).toHaveLength(expected.length);
+    actual.forEach(([x, y], index) => {
+        expect(Math.abs(x - expected[index][0])).toBeLessThan(tolerance);
+        expect(Math.abs(y - expected[index][1])).toBeLessThan(tolerance);
+    });
+};
+const linked = (annotation) => ({ ...annotation, sourceImageId: "bone", sourceImageFrame: FRAME });
+const sourceImage = (change) => ({ id: "bone", src: "/api/images/bone.jpg", ...FRAME, ...change });
+
+describe("Issue 474: highlight alignment", () => {
+    const REGION = [[120, 110], [290, 105], [280, 195], [150, 180], [200, 150]];
+    const region = linked({ type: "polygon", points: REGION, source: { type: "legacy-colored-region" } });
+
+    it.each(TRANSFORMS.map((change) => [describeTransform(change), change]))(
+        "keeps a colored region on the same spot of its image: %s",
+        (_, change) => {
+            const { svg } = renderScene({ images: [sourceImage(change)], annotations: [region] });
+            const drawn = parsePoints(svg.querySelector(".scene-layer-annotations polygon"));
+
+            expectNear(drawn, REGION.map(imagePointMapper(svg)));
+        },
+    );
+
+    it("keeps object-style ({ x, y }) region points on the same spot too", () => {
+        const objectRegion = { ...region, points: REGION.map(([x, y]) => ({ x, y })) };
+        const { svg } = renderScene({ images: [sourceImage({ rotation: 60, flipY: true, width: 260, height: 130 })], annotations: [objectRegion] });
+
+        expectNear(parsePoints(svg.querySelector(".scene-layer-annotations polygon")), REGION.map(imagePointMapper(svg)));
+    });
+
+    it.each(TRANSFORMS.filter((change) => change.cropWidth).map((change) => [describeTransform(change), change]))(
+        "clips a region to exactly the part of its image that is shown: %s",
+        (_, change) => {
+            const { svg } = renderScene({ images: [sourceImage(change)], annotations: [region] });
+            const clipId = svg.querySelector(".scene-layer-annotations polygon").parentNode.getAttribute("clip-path").slice(5, -1);
+            const imageClip = svg.querySelector(`#${svg.querySelector(".scene-image-object").getAttribute("clip-path").slice(5, -1)} rect`);
+            const [x, y, width, height] = ["x", "y", "width", "height"].map((name) => Number(imageClip.getAttribute(name)));
+            // The image's own clip rect, drawn with the image's transform.
+            const [a, b, c, d, e, f] = parseTransform(svg.querySelector(".scene-image-object").parentNode.getAttribute("transform"));
+            const shown = [[x, y], [x + width, y], [x + width, y + height], [x, y + height]]
+                .map(([px, py]) => [a * px + c * py + e, b * px + d * py + f]);
+
+            expectNear(parsePoints(svg.querySelector(`#${clipId} polygon`)), shown);
+        },
+    );
+
+    it("gives a region the same stroke width relative to its image at any size", () => {
+        const strokeWidth = (change) => {
+            const { svg } = renderScene({ images: [sourceImage(change)], annotations: [{ ...region, strokeWidth: 2 }] });
+            return Number(svg.querySelector(".scene-layer-annotations polygon").getAttribute("stroke-width"));
+        };
+
+        expect(strokeWidth({})).toBeCloseTo(2);
+        expect(strokeWidth({ width: 400, height: 200 })).toBeCloseTo(4);
+        expect(strokeWidth({ width: 100, height: 50, rotation: 90 })).toBeCloseTo(1);
+    });
+});

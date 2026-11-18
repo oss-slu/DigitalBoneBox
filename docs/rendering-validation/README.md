@@ -7,7 +7,7 @@ How I checked:
 1. **Automated checks.** `templates/tests/sceneRendering.test.js` runs the real renderer (`sceneCanvas.js`) and checks what it draws. `boneset-api/renderingValidation.test.js` checks the image files and what the import makes. Some checks were already covered by earlier work, and I point to those tests instead of repeating them.
 2. **Manual review.** I used the same 10 items #468 used, which cover all six bonesets and items with 1, 2 and 3 images. I wrote down the intended view of all of their images. I imported 5 of them into scenes (Ilium, Sternum, Atlas, Hand metacarpals and Femur head) and reviewed them in the Scene Editor in the browser.
 
-Zoom, pan and resizing checks wait until zoom/pan (#449, PR #519) and resizing (#450, PR #520) are merged.
+Zoom and pan (#449) and responsive resizing (#450) were merged before #474-#476, so those sections check alignment at different zoom levels, while panned, and at different window sizes.
 
 ## #472 Image ordering
 
@@ -93,7 +93,7 @@ The data only records which view an image shows for the 18 Bony Pelvis items, in
 | Dragging a handle on a flipped image moves that corner | **Fixed (F3)** | `scenes.test.js` "grows a flipped image when its handle is dragged away" and "moves a flipped image's crop edge the way the handle is dragged" |
 | Rotation, flip and crop are kept after saving and reopening | OK | `boneset-api/saveReload.test.js` (#482) |
 | Overlapping transformed images reviewed by hand | OK, apart from R1 | In Hand metacarpals I flipped the first image, cropped it by dragging its handles, shrank it, saved and reloaded. The outline, handles and visible area matched, and the save went through. Femur head was checked with overlapping images under #472. |
-| Zoomed scene sizes | Waiting | Needs zoom (#449, PR #519) |
+| Zoomed scene sizes | OK | A rotated, flipped, resized image and a rotated, flipped, cropped one, measured at 26%, 100% and 800% zoom (see #474) |
 
 ### Fixed on this branch
 
@@ -102,6 +102,38 @@ The data only records which view an image shows for the 18 Bony Pelvis items, in
 **F2. The outline of a flipped, cropped image was on the wrong side.** The image and its crop were drawn flipped, but the selection outline, the handles and the canvas size used the unflipped crop. For example, a crop that kept the left of a horizontally flipped image was drawn on the right, but outlined on the left. Now the outline and handles go through the same flip and rotation as the image (`renderImage` in `sceneCanvas.js`).
 
 **F3. Handles on a flipped image moved the wrong way.** Once the handles were in the right place (F2), dragging them still used unflipped directions, so dragging a crop handle inward on a flipped image did nothing or moved the opposite edge. Drags now turn the mouse movement into the image's own axes, undoing the rotation and then the flip (`toImageAxes` in `scenes.js`).
+
+## #474 Highlight alignment
+
+### How I measured it in the browser
+
+A colored region imported with an image stores its points relative to that image's box when it was imported (`sourceImageFrame`). So for every point we know which spot of the image it should be on. In the browser I ran a script that, for every region point:
+
+1. takes where the browser actually drew the point (`getScreenCTM()` of the region), and
+2. takes where the browser actually drew that spot of the image (`getScreenCTM()` of the image, which includes its rotation and flip),
+
+and reports the largest distance between the two, in screen pixels. It uses the browser's real layout, so it covers zoom, scrolling and the window size too.
+
+I used imported Ilium, Atlas, Hand metacarpals and Femur head scenes, plus "Ilium transformed": the Ilium images with one rotated 30°, flipped horizontally and made 1.3× bigger, and the other rotated 270°, flipped vertically, cropped and moved.
+
+### Results
+
+| Check | Result | Evidence |
+|---|---|---|
+| Regions sit on the right spot of their image, for 14 kinds of change (moved, resized, rotated 15°/90°/225°/−30°, flipped each way and both, combinations, cropped) | OK | `sceneRendering.test.js` "keeps a colored region on the same spot of its image". This reads the transform the image is drawn with and checks each region point against it, so it doesn't repeat the renderer's own math. I checked that it catches a real mistake: when I swapped the order of flipping and rotating in the region mapping, 5 of these tests failed. |
+| Regions are clipped to exactly the part of a cropped image that is shown | OK | `sceneRendering.test.js` "clips a region to exactly the part of its image that is shown" |
+| A region's outline gets thicker and thinner with its image | OK | `sceneRendering.test.js` "gives a region the same stroke width relative to its image at any size" |
+| Zooming never changes where anything is stored or drawn in the scene | OK | `sceneAnnotationEditor.test.js` "draws images, highlights, lines and labels together, so they stay aligned and the scene is unchanged" (#449) |
+| Default size in the browser (1024×768) | OK, 0 px off | 5,080 region points in the 5 scenes |
+| After zooming out (26%) and in (800%) | OK, 0 px off | Ilium transformed and Atlas |
+| After panning while zoomed in | OK, 0 px off | Scrolled about a third of the way across and down at 800% |
+| Actual size instead of fit to width | OK, 0 px off | Ilium transformed and Atlas |
+| After resizing the window with a scene open | OK, 0 px off | Hand metacarpals, resized from 768 px wide to 375 px wide without reopening it |
+| After rotation | OK | Covered by the 14 kinds of change above and by Ilium transformed in the browser |
+
+The highlights stay aligned because every image and annotation is drawn in one SVG, in scene coordinates. Zooming and resizing only change how big that SVG is drawn, and a linked region is mapped through the same move, resize, flip and rotation as its image (`imageTransform` in `sceneCanvas.js`).
+
+This only checks that a region stays where it was imported. Whether it was imported onto the right part of the bone is a separate question: #468 found that older-format (pelvis) regions are a little off (D3), and that items with 3 or more images draw newer-format regions on every image (D5).
 
 ## Defects found
 
