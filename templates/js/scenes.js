@@ -840,6 +840,54 @@ function updateViewControls() {
     dom.canvas.classList.toggle("can-pan", canPan());
 }
 
+// Issue #450: when the editor changes size (a resized window, a rotated phone),
+// the scene is drawn again at the new size. Objects keep their scene positions
+// and are drawn in one SVG, so they stay aligned; the view keeps the same part
+// of the scene in the middle; and a drag in progress ends where it is, since
+// its screen-to-scene scale belongs to the old size.
+let viewCenter = null;
+
+/** Notes which scene point is in the middle of the visible canvas. */
+function rememberViewCenter() {
+    const svg = dom.canvas.querySelector("svg");
+    if (!svg || dom.canvas.hidden) {
+        viewCenter = null;
+        return;
+    }
+    const box = dom.canvas.getBoundingClientRect();
+    viewCenter = clientToScene(svg, {
+        clientX: (box.left || 0) + box.width / 2,
+        clientY: (box.top || 0) + box.height / 2,
+    });
+}
+
+let lastCanvasWidth = null;
+
+function handleCanvasResize() {
+    // Only a change of width is a new layout; the canvas also grows taller and
+    // shorter with the scene as it is edited and zoomed. offsetWidth includes
+    // the scrollbar, so one appearing mid-drag isn't mistaken for a resize.
+    const width = dom.canvas.offsetWidth;
+    if (width === lastCanvasWidth) return;
+    lastCanvasWidth = width;
+    if (!state.active || dom.canvas.hidden || !dom.canvas.querySelector("svg")) return;
+    // Taken before a drag is finished: finishing a line or arrow adds it and
+    // redraws the canvas, which replaces the SVG and can update viewCenter.
+    const center = viewCenter;
+    if (activeDrag) activeDrag.finish();
+    const svg = dom.canvas.querySelector("svg");
+    if (!svg) return;
+    setTouchTargetScale(svg);
+    if (center) {
+        const box = dom.canvas.getBoundingClientRect();
+        const drawnAt = sceneToClient(svg, center);
+        dom.canvas.scrollLeft += drawnAt.x - ((box.left || 0) + box.width / 2);
+        dom.canvas.scrollTop += drawnAt.y - ((box.top || 0) + box.height / 2);
+    }
+    updateViewControls();
+    rememberViewCenter();
+}
+
 function renderCanvas() {
     const scene = state.active;
     dom.canvas.replaceChildren();
@@ -876,6 +924,7 @@ function renderCanvas() {
     setTouchTargetScale(svg);
     watchTouchTargetScale(svg);
     updateViewControls();
+    rememberViewCenter();
 
     const notes = [];
     if (unsupported > 0) {
@@ -1631,7 +1680,8 @@ function followDrag(startEvent, onMove, onEnd) {
         onEnd(event);
     }
 
-    const drag = { stop, isPointer };
+   // finish() ends the drag as if it were let go now (Issue #450).
+    const drag = { stop, isPointer, finish: handleBlur };
     activeDrag = drag;
     document.addEventListener(moveType, handleMove);
     for (const type of endTypes) document.addEventListener(type, handleEnd);
@@ -3025,6 +3075,16 @@ export function initializeSceneEditor(root = document) {
         event.preventDefault();
         setZoom(state.zoom * Math.exp(-event.deltaY * 0.002), event, { announce: false });
     }, { passive: false });
+    // While a new width hasn't been handled yet, a scroll is the browser
+    // fitting the old scroll position to the new size, not the user moving.
+    dom.canvas.addEventListener("scroll", () => {
+        if (dom.canvas.offsetWidth === lastCanvasWidth) rememberViewCenter();
+    });
+    if (typeof ResizeObserver === "function") {
+        new ResizeObserver(handleCanvasResize).observe(dom.canvas);
+    } else {
+        window.addEventListener("resize", handleCanvasResize);
+    }
     if (dom.importToggle) {
         dom.importToggle.addEventListener("click", () => {
             if (dom.importForm.hidden) showImportForm();

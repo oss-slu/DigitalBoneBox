@@ -1726,29 +1726,61 @@ describe("Touch editing (#447)", () => {
             global.ResizeObserver = class {
                 constructor(callback) {
                     this.callback = callback;
-                    this.observed = [];
+                    this.observed = []; // what it watches now
+                    this.targets = []; // everything it has ever been pointed at
                     this.disconnect = jest.fn(() => { this.observed = []; });
                     observers.push(this);
                 }
-                observe(node) { this.observed.push(node); }
+                observe(node) {
+                    this.observed.push(node);
+                    this.targets.push(node);
+                }
             };
             await openSceneWithImage();
             tap(imageNode(), [150, 150]);
             expect(scale()).toBe("3.2");
             const before = JSON.stringify(scenesModule.getActiveScene());
 
+            // Two observers with separate jobs: one on #scene-canvas (the layout
+            // changed) and one reusable observer on the current SVG (touch-target scale).
+            const canvas = $("scene-canvas");
+            const isSvg = (node) => node instanceof SVGElement;
+            const canvasObservers = observers.filter((o) => o.targets.length > 0 && o.targets.every((n) => n === canvas));
+            const svgObservers = observers.filter((o) => o.targets.length > 0 && o.targets.every(isSvg));
+            expect(observers).toHaveLength(2);
+            expect(canvasObservers).toHaveLength(1);
+            expect(svgObservers).toHaveLength(1);
+            const [canvasObserver] = canvasObservers;
+            const [svgObserver] = svgObservers;
+            const firstSvg = canvasSvg();
+            expect(svgObserver.observed).toEqual([firstSvg]);
+
             jest.spyOn(Element.prototype, "getBoundingClientRect").mockReturnValue({ left: 0, top: 0, width: 480, height: 300 });
-            observers[0].callback([]);
+            svgObserver.callback([]);
 
             expect(scale()).toBe("6.4");
             expect(isSelected()).toBe(true);
             expect(JSON.stringify(scenesModule.getActiveScene())).toBe(before);
             expect(scenesModule.hasUnsavedChanges()).toBe(false);
 
-            // Re-rendering reuses the one observer and points it at the new SVG only.
+            // Re-rendering reuses the SVG observer and retargets it to the new SVG only.
+            const disconnects = svgObserver.disconnect.mock.calls.length;
             tap(imageNode(), [150, 150]);
-            expect(observers).toHaveLength(1);
-            expect(observers[0].observed).toEqual([canvasSvg()]);
+            const nextSvg = canvasSvg();
+            expect(nextSvg).not.toBe(firstSvg);
+            expect(observers).toHaveLength(2);
+            expect(observers.filter(isSvgObserver)).toEqual([svgObserver]);
+            expect(svgObserver.disconnect.mock.calls.length).toBeGreaterThan(disconnects);
+            expect(svgObserver.observed).toEqual([nextSvg]);
+
+            // The canvas observer is never reset: it stays on #scene-canvas.
+            expect(canvasObserver.disconnect).not.toHaveBeenCalled();
+            expect(canvasObserver.observed).toEqual([canvas]);
+            expect(canvasObserver.targets).toEqual([canvas]);
+
+            function isSvgObserver(observer) {
+                return observer.targets.length > 0 && observer.targets.every(isSvg);
+            }
         });
 
         it("also follows window resizes where ResizeObserver is missing", async () => {
@@ -2411,5 +2443,193 @@ describe("Keyboard focus after selecting with a pointer (#449)", () => {
         expect(document.activeElement).toBe($("scene-canvas"));
         keyOnFocused("+");
         expect($("scene-zoom-level").textContent).toBe("125%");
+    });
+});
+// Issue #450: the editor changing size. jsdom has no ResizeObserver or layout,
+// so the test supplies both: a canvas box whose width the test changes, an SVG
+// drawn at the canvas width times the zoom, and an observer it triggers.
+describe("Responsive resizing (#450)", () => {
+    let box;
+    let scroll;
+    let observers;
+    const imageNode = () => document.querySelector("#scene-canvas [data-scene-image-index=\"0\"]");
+    const images = () => scenesModule.getActiveScene().images;
+    const touchScale = () => $("scene-canvas").style.getPropertyValue("--touch-target-scale");
+    const SCENE = {
+        images: [{ id: "img-a", src: "/images/a.png", x: 100, y: 100, width: 200, height: 100 }],
+        annotations: [
+            { id: "p", type: "polygon", points: [[400, 100], [500, 100], [450, 200]] },
+            { id: "l", type: "line", x1: 100, y1: 400, x2: 300, y2: 400 },
+            { id: "t", type: "text", text: "Ilium", x: 600, y: 300 },
+        ],
+    };
+
+    beforeEach(() => {
+        observers = [];
+        global.ResizeObserver = class {
+            constructor(callback) {
+                observers.push(callback);
+            }
+            observe() {}
+            disconnect() {}
+        };
+    });
+    afterEach(() => {
+        delete global.ResizeObserver;
+    });
+
+    function mockLayout() {
+        box = { width: 960, height: 600 };
+        scroll = { left: 0, top: 0 };
+        const canvas = $("scene-canvas");
+        const drawn = () => {
+            const svg = canvasSvg();
+            if (!svg) return { width: 0, height: 0 };
+            const [, , viewWidth, viewHeight] = svg.getAttribute("viewBox").split(" ").map(Number);
+            const width = (box.width * parseFloat(svg.style.width)) / 100;
+            return { width, height: (width * viewHeight) / viewWidth };
+        };
+        const define = (name, get, set) => Object.defineProperty(canvas, name, { configurable: true, get, set });
+        define("scrollLeft", () => scroll.left, (value) => { scroll.left = Math.max(0, value); });
+        define("scrollTop", () => scroll.top, (value) => { scroll.top = Math.max(0, value); });
+        define("offsetWidth", () => box.width);
+        define("clientWidth", () => box.width);
+        define("clientHeight", () => box.height);
+        define("scrollWidth", () => Math.max(box.width, drawn().width));
+        define("scrollHeight", () => Math.max(box.height, drawn().height));
+        jest.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(function () {
+            if (this.tagName.toLowerCase() === "svg") {
+                // A browser reports an SVG that is no longer on the page as 0 x 0.
+                if (!this.isConnected) return { left: 0, top: 0, width: 0, height: 0 };
+                return { left: -scroll.left, top: -scroll.top, ...drawn() };
+            }
+            return { left: 0, top: 0, ...box };
+        });
+    }
+    /** Changes the canvas size and tells the editor, as the browser would. */
+    function resizeTo(width, height = box.height) {
+        box.width = width;
+        box.height = height;
+        observers.forEach((callback) => callback([]));
+    }
+    async function openScene() {
+        await openBlankScene(SCENE);
+        mockLayout();
+        click("scene-zoom-reset"); // draw again with the mocked layout
+        resizeTo(960); // a ResizeObserver reports the first size when it starts
+    }
+
+    it("keeps the scene drawn once, aligned and unchanged at narrow and wide sizes", async () => {
+        await openScene();
+        const drawing = canvasSvg().innerHTML;
+
+        for (const width of [375, 667, 768, 1024, 1440, 960]) {
+            resizeTo(width);
+            expect($("scene-canvas").querySelectorAll("svg")).toHaveLength(1);
+            expect(canvasSvg().innerHTML).toBe(drawing);
+            expect(canvasSvg().style.width).toBe("100%");
+        }
+        expect($("scene-canvas").hidden).toBe(false);
+        expect(scenesModule.getActiveScene()).toMatchObject(SCENE);
+        expect(scenesModule.hasUnsavedChanges()).toBe(false);
+    });
+
+    it("sizes handles for the new size, so they stay big enough to touch", async () => {
+        await openScene();
+        clickAt(imageNode(), [150, 150]);
+        expect(touchScale()).toBe("3.2");
+
+        resizeTo(480);
+        expect(touchScale()).toBe("6.4");
+        resizeTo(1920);
+        expect(touchScale()).toBe("1.6");
+    });
+
+    it("keeps the same part of a zoomed scene in view, ignoring the browser's scroll fitting", async () => {
+        await openScene();
+        click("scene-zoom-in");
+        click("scene-zoom-in"); // 156.25%: the scene is drawn 1500 wide
+        scroll.left = 300;
+        scroll.top = 200;
+        $("scene-canvas").dispatchEvent(new Event("scroll"));
+        // The middle of the view is scene point (499.2, 320).
+
+        box.width = 480;
+        scroll.left = 0; // the browser fits the old scroll position to the new size
+        $("scene-canvas").dispatchEvent(new Event("scroll"));
+        resizeTo(480);
+
+        // Drawn 750 wide now: (499.2, 320) is back in the middle across, and the
+        // whole height fits, so there is nothing to scroll down.
+        expect(scroll).toEqual({ left: 150, top: 0 });
+        expect(touchScale()).toBe("4.1");
+        expect($("scene-zoom-level").textContent).toBe("156%");
+    });
+
+    it("finishes a line drawn across a resize and keeps the same part of the scene in view", async () => {
+        await openScene();
+        click("scene-zoom-in");
+        click("scene-zoom-in"); // 156.25%: the scene is drawn 1500 wide
+        scroll.left = 300;
+        scroll.top = 200;
+        $("scene-canvas").dispatchEvent(new Event("scroll"));
+        // The middle of the view is scene point (499.2, 320).
+
+        click("scene-tool-line");
+        // At this zoom and scroll, client (200, 300) is scene (320, 320), and
+        // each screen pixel is 0.64 scene units.
+        mouse("mousedown", canvasSvg(), [200, 300]);
+        document.dispatchEvent(new MouseEvent("mousemove", { clientX: 400, clientY: 300 }));
+
+        box.width = 480;
+        scroll.left = 0; // the browser fits the old scroll position to the new size
+        $("scene-canvas").dispatchEvent(new Event("scroll"));
+        resizeTo(480);
+        // The button is let go after the resize; the line was already finished.
+        document.dispatchEvent(new MouseEvent("mouseup", { clientX: 400, clientY: 300 }));
+
+        const line = annotations()[annotations().length - 1];
+        expect(line.type).toBe("line");
+        expect(line.x1).toBeCloseTo(320);
+        expect(line.y1).toBeCloseTo(320);
+        expect(line.x2).toBeCloseTo(448);
+        expect(annotations()).toHaveLength(SCENE.annotations.length + 1);
+        // Same view as without a drag: (499.2, 320) is back in the middle.
+        expect(scroll).toEqual({ left: 150, top: 0 });
+    });
+
+    it("ends a drag when the size changes mid-drag, keeping the move made so far", async () => {
+        await openScene();
+        clickAt(imageNode(), [150, 150]);
+
+        mouse("mousedown", imageNode(), [150, 150]);
+        document.dispatchEvent(new MouseEvent("mousemove", { clientX: 180, clientY: 170 }));
+        resizeTo(480);
+        document.dispatchEvent(new MouseEvent("mousemove", { clientX: 400, clientY: 400 }));
+        document.dispatchEvent(new MouseEvent("mouseup", { clientX: 400, clientY: 400 }));
+
+        expect(images()[0]).toMatchObject({ x: 130, y: 120 });
+        expect(scenesModule.hasUnsavedChanges()).toBe(true);
+        expect(document.querySelectorAll(".scene-selection-outline")).toHaveLength(1);
+    });
+
+    it("keeps a drag going when only the height changes, as the canvas grows with the scene", async () => {
+        await openScene();
+        clickAt(imageNode(), [150, 150]);
+
+        mouse("mousedown", imageNode(), [150, 150]);
+        document.dispatchEvent(new MouseEvent("mousemove", { clientX: 180, clientY: 170 }));
+        resizeTo(960, 700);
+        document.dispatchEvent(new MouseEvent("mousemove", { clientX: 200, clientY: 190 }));
+        document.dispatchEvent(new MouseEvent("mouseup", { clientX: 200, clientY: 190 }));
+
+        expect(images()[0]).toMatchObject({ x: 150, y: 140 });
+    });
+
+    it("gives the canvas more of a narrow screen and hides the mouse hint on touch screens", () => {
+        const css = require("fs").readFileSync(require("path").join(__dirname, "..", "style.css"), "utf8");
+        const narrow = css.match(/@media \(max-width: 768px\) \{[\s\S]*?\.scene-workspace \{\s*padding: var\(--space-3\);/);
+        expect(narrow).not.toBeNull();
+        expect(css).toMatch(/@media \(pointer: coarse\) \{\s*\.scene-view-hint \{\s*display: none;/);
     });
 });
