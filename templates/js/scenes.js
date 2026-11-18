@@ -1480,10 +1480,37 @@ const heldPointers = new Map();
 // editing (a palm during a pen stroke), by pointerId. The click such a pointer
 // still generates must not change the selection, even after the drag has
 // ended. An entry is for that one pointer's click only: it is dropped by that
-// click, by the pointer's cancel, by the next accepted press, or after
-// IGNORED_CLICK_WINDOW_MS, so a stale one can't swallow a real click.
+// click, by the pointer's cancel, by the next accepted press, or by its own
+// timer IGNORED_CLICK_WINDOW_MS after the pointer is released, so a stale one
+// can't swallow a real click and the map can't grow without bound.
 const ignoredPointers = new Map();
 const IGNORED_CLICK_WINDOW_MS = 1000;
+// A compatibility click that doesn't name its pointer is matched to the
+// rejected press by where it lands (the objects under it may have been
+// redrawn meanwhile), and is used up by one click.
+const IGNORED_CLICK_DISTANCE = 12;
+
+function dropIgnoredPointer(pointerId) {
+    const entry = ignoredPointers.get(pointerId);
+    if (!entry) return;
+    clearTimeout(entry.timer);
+    ignoredPointers.delete(pointerId);
+}
+
+function clearIgnoredPointers() {
+    for (const pointerId of [...ignoredPointers.keys()]) dropIgnoredPointer(pointerId);
+}
+
+/** The released rejected pointer a click with no pointerId most likely came from, if any. */
+function findIgnoredPointerForClick(event) {
+    const now = Date.now();
+    for (const [pointerId, entry] of ignoredPointers) {
+        if (!entry.released || now - entry.releasedAt > IGNORED_CLICK_WINDOW_MS) continue;
+        if (Math.hypot(event.clientX - entry.x, event.clientY - entry.y) > IGNORED_CLICK_DISTANCE) continue;
+        return pointerId;
+    }
+    return undefined;
+}
 
 /**
  * Calls `onMove` for each move of the input that started the drag, and
@@ -2931,10 +2958,14 @@ export function initializeSceneEditor(root = document) {
         // Issue #448: a tap that lands mid-drag (a palm during a pen stroke)
         // doesn't select or deselect anything.
         if (activeDrag && activeDrag.isPointer) return;
-        const ignored = event.pointerId === undefined ? null : ignoredPointers.get(event.pointerId);
+        // A click from a rejected pointer is ignored once, by id where the
+        // browser says which pointer it came from, otherwise by position.
+        const ignoredId = event.pointerId === undefined ? findIgnoredPointerForClick(event) : event.pointerId;
+        const ignored = ignoredId === undefined ? null : ignoredPointers.get(ignoredId);
         if (ignored) {
-            ignoredPointers.delete(event.pointerId);
-            if (ignored.released && Date.now() - ignored.releasedAt <= IGNORED_CLICK_WINDOW_MS) return;
+            const fresh = ignored.released && Date.now() - ignored.releasedAt <= IGNORED_CLICK_WINDOW_MS;
+            dropIgnoredPointer(ignoredId);
+            if (fresh) return;
         }
         if (suppressNextClick) {
             suppressNextClick = false;
@@ -2993,11 +3024,16 @@ export function initializeSceneEditor(root = document) {
     document.addEventListener("pointerup", (event) => {
         heldPointers.delete(event.pointerId);
         const ignored = ignoredPointers.get(event.pointerId);
-        if (ignored) Object.assign(ignored, { released: true, releasedAt: Date.now() });
+        if (ignored) {
+            // Its click, if there is one, follows now; if none does, the entry goes by itself.
+            Object.assign(ignored, { released: true, releasedAt: Date.now(), x: event.clientX, y: event.clientY });
+            clearTimeout(ignored.timer);
+            ignored.timer = setTimeout(() => dropIgnoredPointer(event.pointerId), IGNORED_CLICK_WINDOW_MS);
+        }
     }, true);
     document.addEventListener("pointercancel", (event) => {
         heldPointers.delete(event.pointerId);
-        ignoredPointers.delete(event.pointerId);
+        dropIgnoredPointer(event.pointerId);
     }, true);
     window.addEventListener("blur", () => heldPointers.clear());
     dom.canvas.addEventListener("mousedown", (event) => {
@@ -3014,10 +3050,15 @@ export function initializeSceneEditor(root = document) {
             // Issue #448: while one pointer is dragging, another press (a
             // palm resting on the screen during a pen stroke) doesn't take
             // over, and neither does the click it generates afterwards.
-            if (event.pointerId !== undefined) ignoredPointers.set(event.pointerId, { released: false, releasedAt: 0 });
+            // Cancelling the press also stops the browser's compatibility mouse events for it.
+            if (event.type === "pointerdown" && event.cancelable) event.preventDefault();
+            if (event.pointerId !== undefined) {
+                dropIgnoredPointer(event.pointerId);
+                ignoredPointers.set(event.pointerId, { released: false, releasedAt: 0, x: 0, y: 0, timer: null });
+            }
             return;
         }
-        ignoredPointers.clear();
+        clearIgnoredPointers();
         // A drag's own click may never arrive (its node was redrawn away), so
         // a new press always starts with clicks counting again.
         suppressNextClick = false;

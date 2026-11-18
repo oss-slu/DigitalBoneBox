@@ -2066,16 +2066,51 @@ describe("Stylus editing (#448)", () => {
             expect($("scene-annotation-toolbar").hidden).toBe(false);
         });
 
-        it("doesn't swallow the next real click when a released palm made no click", async () => {
+        it("ignores a pointerless compatibility click from a rejected palm, once", async () => {
             await open();
             penDragWithPalm("pointerup");
 
-            // A click with no pointer id, and one from a different pointer.
+            // The browser sends this click without saying which pointer it came from.
             mouse("click", annotationNode(0), [410, 410]);
-            expect($("scene-annotation-toolbar").hidden).toBe(false);
-            tapWith(imageNode(), [150, 150], { pointerId: 5 });
             expect(isImageSelected()).toBe(true);
             expect($("scene-annotation-toolbar").hidden).toBe(true);
+
+            // The next ordinary click is not swallowed.
+            mouse("click", annotationNode(0), [410, 410]);
+            expect($("scene-annotation-toolbar").hidden).toBe(false);
+        });
+
+        it("doesn't swallow an unrelated click, or one that comes after the window", async () => {
+            await open();
+            penDragWithPalm("pointerup");
+            // Somewhere else on the canvas: not the palm's click.
+            mouse("click", imageNode(), [150, 150]);
+            expect(isImageSelected()).toBe(true);
+
+            const now = Date.now();
+            jest.spyOn(Date, "now").mockReturnValue(now + 5000);
+            mouse("click", annotationNode(0), [410, 410]);
+            expect($("scene-annotation-toolbar").hidden).toBe(false);
+            Date.now.mockRestore();
+        });
+
+        it("removes a rejected pointer's entry by itself when no click comes", async () => {
+            await open();
+            jest.useFakeTimers();
+            try {
+                const baseline = jest.getTimerCount();
+                penDragWithPalm("pointerup");
+                // A different pointer's id-bearing click leaves the palm's entry alone.
+                clickAs(annotationNode(0), [410, 410], 9);
+                expect(jest.getTimerCount()).toBeGreaterThan(baseline);
+                jest.advanceTimersByTime(1500);
+                expect(jest.getTimerCount()).toBe(baseline);
+                // Entry expired: the late click selects.
+                mouse("click", annotationNode(0), [410, 410]);
+                expect($("scene-annotation-toolbar").hidden).toBe(false);
+            } finally {
+                jest.useRealTimers();
+            }
         });
 
         it("keeps several rejected pointers apart", async () => {
