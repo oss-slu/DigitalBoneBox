@@ -750,6 +750,24 @@ function setTouchTargetScale(svg) {
     dom.canvas.style.setProperty("--touch-target-scale", String(round2(scale)));
 }
 
+// The scale also has to follow the SVG's drawn size when it changes without a
+// re-render (rotating a tablet, resizing the window). One observer is reused
+// and re-pointed at each new SVG; a window listener, added once, covers
+// browsers without ResizeObserver. Neither touches scene data or selection.
+let touchScaleObserver = null;
+
+function refreshTouchTargetScale() {
+    const svg = dom.canvas && dom.canvas.querySelector("svg");
+    if (svg) setTouchTargetScale(svg);
+}
+
+function watchTouchTargetScale(svg) {
+    if (typeof ResizeObserver === "undefined") return;
+    if (!touchScaleObserver) touchScaleObserver = new ResizeObserver(refreshTouchTargetScale);
+    touchScaleObserver.disconnect();
+    touchScaleObserver.observe(svg);
+}
+
 function renderCanvas() {
     const scene = state.active;
     dom.canvas.replaceChildren();
@@ -782,6 +800,7 @@ function renderCanvas() {
     }
     dom.canvas.append(svg);
     setTouchTargetScale(svg);
+    watchTouchTargetScale(svg);
 
     const notes = [];
     if (unsupported > 0) {
@@ -1451,9 +1470,16 @@ const CORNER_GROWTH_SIGN = {
 // by a plain mouse event (browsers without Pointer Events, and jsdom tests)
 // follows the mouse. Only one drag runs at a time.
 let activeDrag = null;
-// Issue #448: the kind of pointer ("mouse", "touch" or "pen") of the latest
-// press on the canvas, for events that don't say themselves.
-let lastPressPointerType = "mouse";
+// Issue #448: the kind of pointer ("mouse", "touch" or "pen") of the press on
+// the canvas that is still held down, for contextmenu events that don't say
+// themselves. It is null once the press ends, so a keyboard-opened context
+// menu (which reports no pointer type) is never mistaken for a touch or pen one.
+let heldPointerType = null;
+// Pointers whose press was ignored because another pointer was already
+// editing (a palm during a pen stroke). The click such a pointer still
+// generates must not change the selection, even after the drag has ended.
+const ignoredPointerIds = new Set();
+let ignoredClickPending = 0;
 
 /**
  * Calls `onMove` for each move of the input that started the drag, and
@@ -2901,6 +2927,14 @@ export function initializeSceneEditor(root = document) {
         // Issue #448: a tap that lands mid-drag (a palm during a pen stroke)
         // doesn't select or deselect anything.
         if (activeDrag && activeDrag.isPointer) return;
+        if (event.pointerId !== undefined && ignoredPointerIds.has(event.pointerId)) {
+            ignoredPointerIds.delete(event.pointerId);
+            return;
+        }
+        if (event.pointerId === undefined && ignoredClickPending > 0) {
+            ignoredClickPending -= 1;
+            return;
+        }
         if (suppressNextClick) {
             suppressNextClick = false;
             return;
@@ -2942,28 +2976,43 @@ export function initializeSceneEditor(root = document) {
     // the browser supports them, with plain mouse events as the fallback. A
     // pointer drag cancels the browser's follow-up mouse events, and a stray
     // one is ignored while a pointer drag runs, so each press is handled once.
+    window.addEventListener("resize", refreshTouchTargetScale);
+    window.addEventListener("orientationchange", refreshTouchTargetScale);
     dom.canvas.addEventListener("pointerdown", handleCanvasPress);
     // Issue #448: a long press with a pen or finger opens the browser's
     // right-click menu on some systems; on the canvas it is an edit instead.
     // A mouse's right click keeps its menu.
     dom.canvas.addEventListener("contextmenu", (event) => {
-        const type = event.pointerType || lastPressPointerType;
+        const type = event.pointerType || heldPointerType;
         if (type === "pen" || type === "touch") event.preventDefault();
     });
+    // The pointer type is only remembered while the press is held, which is
+    // when a long press raises its context menu.
+    const releaseHeldPointer = (event) => {
+        if (!event.pointerType || event.pointerType === heldPointerType) heldPointerType = null;
+        if (event.pointerId !== undefined && ignoredPointerIds.has(event.pointerId)) ignoredClickPending += 1;
+    };
+    document.addEventListener("pointerup", releaseHeldPointer, true);
+    document.addEventListener("pointercancel", releaseHeldPointer, true);
     dom.canvas.addEventListener("mousedown", (event) => {
         if (activeDrag && activeDrag.isPointer) return;
         handleCanvasPress(event);
     });
     function handleCanvasPress(event) {
-        if (event.pointerType) lastPressPointerType = event.pointerType;
+        if (event.pointerType && event.type === "pointerdown") heldPointerType = event.pointerType;
         // Only the main button (left mouse button, a finger, or a pen tip)
         // edits; the other buttons, including a pen's barrel button and
         // eraser, keep their usual browser behavior.
         if (event.button !== undefined && event.button !== 0) return;
-        if (event.isPrimary === false) return;
-        // Issue #448: while one pointer is dragging, another press (a palm
-        // resting on the screen during a pen stroke) doesn't take over.
-        if (event.type === "pointerdown" && activeDrag && activeDrag.isPointer) return;
+        if (event.isPrimary === false || (event.type === "pointerdown" && activeDrag && activeDrag.isPointer)) {
+            // Issue #448: while one pointer is dragging, another press (a
+            // palm resting on the screen during a pen stroke) doesn't take
+            // over, and neither does the click it generates afterwards.
+            if (event.pointerId !== undefined) ignoredPointerIds.add(event.pointerId);
+            return;
+        }
+        ignoredPointerIds.clear();
+        ignoredClickPending = 0;
         // A drag's own click may never arrive (its node was redrawn away), so
         // a new press always starts with clicks counting again.
         suppressNextClick = false;
