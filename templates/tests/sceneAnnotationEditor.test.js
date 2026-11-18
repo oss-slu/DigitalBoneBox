@@ -1323,6 +1323,7 @@ describe("Mouse editing with pointer events (#446)", () => {
     });
 });
 
+
 describe("Undo and redo (#443)", () => {
     const content = () => ({
         images: [{ id: "img", src: "/images/a.png", x: 300, y: 300, width: 100, height: 100 }],
@@ -1537,5 +1538,1098 @@ describe("Warning about unsaved changes when leaving the editor (#444)", () => {
 
         expect(inEditor()).toBe(false);
         expect(confirm).not.toHaveBeenCalled();
+    });
+});
+
+// Issue #447: the same editor used with a finger. A tap is a pointerdown and
+// pointerup that the browser follows with a click.
+describe("Touch editing (#447)", () => {
+    function touch(type, target, [x, y], { pointerId = 1, isPrimary = true } = {}) {
+        const released = type === "pointerup" || type === "pointercancel";
+        const init = {
+            bubbles: true, clientX: x, clientY: y, button: 0, buttons: released ? 0 : 1,
+            pointerId, pointerType: "touch", isPrimary,
+        };
+        const event = typeof PointerEvent === "function" ? new PointerEvent(type, init) : new MouseEvent(type, init);
+        for (const [name, value] of Object.entries({ pointerId, isPrimary, pointerType: "touch" })) {
+            if (event[name] !== value) Object.defineProperty(event, name, { value });
+        }
+        target.dispatchEvent(event);
+    }
+    function fingerDrag(target, from, to) {
+        touch("pointerdown", target, from);
+        touch("pointermove", document, to);
+        touch("pointerup", document, to);
+    }
+    // A tap whose finger wobbles a little before lifting, as real taps do.
+    function tap(target, point, wobble = [0, 0]) {
+        const lifted = [point[0] + wobble[0], point[1] + wobble[1]];
+        touch("pointerdown", target, point);
+        touch("pointermove", document, lifted);
+        touch("pointerup", document, lifted);
+        mouse("click", target, lifted);
+    }
+    const imageNode = () => document.querySelector("#scene-canvas [data-scene-image-index=\"0\"]");
+    const images = () => scenesModule.getActiveScene().images;
+    const isSelected = () => document.querySelectorAll(".scene-selection-outline").length === 1;
+    async function openSceneWithImage(extra = {}) {
+        await openBlankScene({
+            images: [{ id: "img-a", src: "/images/a.png", x: 100, y: 100, width: 200, height: 100 }],
+            ...extra,
+        });
+    }
+
+    it("selects an image and an annotation with a tap", async () => {
+        await openSceneWithImage({ annotations: [{ id: "t", type: "text", text: "Ilium", x: 400, y: 400 }] });
+
+        tap(imageNode(), [150, 150], [3, 2]);
+        expect(isSelected()).toBe(true);
+        expect($("scene-image-toolbar").hidden).toBe(false);
+
+        tap(annotationNode(0), [410, 410], [-2, 3]);
+        expect($("scene-annotation-toolbar").hidden).toBe(false);
+        expect($("scene-annotation-label").textContent).toBe("Selected label:");
+    });
+
+    it("doesn't nudge a selected image when a tap wobbles a few pixels", async () => {
+        await openSceneWithImage();
+        tap(imageNode(), [150, 150]);
+
+        touch("pointerdown", imageNode(), [150, 150]);
+        touch("pointermove", document, [155, 154]);
+        touch("pointerup", document, [155, 154]);
+
+        expect(images()[0]).toMatchObject({ x: 100, y: 100 });
+        expect(scenesModule.hasUnsavedChanges()).toBe(false);
+    });
+
+    it("moves and resizes an image with a finger and keeps the change", async () => {
+        await openSceneWithImage();
+        tap(imageNode(), [150, 150]);
+
+        fingerDrag(imageNode(), [150, 150], [180, 170]);
+        expect(images()[0]).toMatchObject({ x: 130, y: 120 });
+        fingerDrag(document.querySelector("[data-corner=\"se\"]"), [330, 220], [370, 220]);
+        expect(images()[0].width).toBeCloseTo(240);
+        expect(images()[0].height).toBeCloseTo(120);
+
+        await saveAndReopen();
+        expect(backend.scenes.get("scene-1").images[0].width).toBeCloseTo(240);
+    });
+
+    it("creates a label with a tap and a line with a finger drag", async () => {
+        await openBlankScene();
+
+        click("scene-tool-text");
+        tap(canvasSvg(), [100, 100]);
+        typeText("Ilium");
+        click("scene-tool-line");
+        fingerDrag(canvasSvg(), [100, 300], [300, 300]);
+
+        expect(annotations()).toEqual([
+            expect.objectContaining({ type: "text", text: "Ilium", x: 100, y: 100 }),
+            expect.objectContaining({ type: "line", x1: 100, y1: 300, x2: 300, y2: 300 }),
+        ]);
+    });
+
+    it("creates a highlight corner by corner with taps", async () => {
+        await openBlankScene();
+
+        click("scene-tool-polygon");
+        tap(canvasSvg(), [100, 100]);
+        tap(canvasSvg(), [200, 100]);
+        tap(canvasSvg(), [150, 200]);
+        click("scene-polygon-finish");
+
+        expect(annotations()).toEqual([expect.objectContaining({ type: "polygon" })]);
+        expect(annotations()[0].points).toHaveLength(3);
+    });
+
+    it("moves a label, resizes it, and moves a line's end with a finger", async () => {
+        await openBlankScene({
+            annotations: [
+                { id: "t", type: "text", text: "Ilium", x: 10, y: 10, fontSize: 20 },
+                { id: "l", type: "line", x1: 100, y1: 300, x2: 300, y2: 300 },
+            ],
+        });
+
+        tap(annotationNode(0), [15, 15]);
+        fingerDrag(annotationNode(0), [15, 15], [65, 55]);
+        expect(annotations()[0]).toMatchObject({ x: 60, y: 50 });
+        // The label is 60 wide at 20px; dragging its corner 60 to the right doubles it.
+        fingerDrag(document.querySelector("[data-annotation-handle=\"resize\"]"), [113, 103], [173, 103]);
+        expect(annotations()[0].fontSize).toBe(40);
+
+        tap(annotationNode(1), [200, 300]);
+        fingerDrag(document.querySelector("[data-point-index=\"1\"]"), [300, 300], [300, 400]);
+        expect(annotations()[1]).toMatchObject({ x1: 100, y1: 300, x2: 300, y2: 400 });
+    });
+
+    it("ignores a second finger during a drag", async () => {
+        await openSceneWithImage();
+        tap(imageNode(), [150, 150]);
+
+        touch("pointerdown", imageNode(), [150, 150], { pointerId: 1 });
+        touch("pointerdown", imageNode(), [300, 300], { pointerId: 2, isPrimary: false });
+        touch("pointermove", document, [500, 500], { pointerId: 2, isPrimary: false });
+        touch("pointermove", document, [180, 170], { pointerId: 1 });
+        touch("pointerup", document, [500, 500], { pointerId: 2, isPrimary: false });
+        touch("pointerup", document, [180, 170], { pointerId: 1 });
+
+        expect(images()[0]).toMatchObject({ x: 130, y: 120 });
+    });
+
+    it("marks what a finger drag would edit, so the page doesn't scroll there", async () => {
+        const css = require("fs").readFileSync(require("path").join(__dirname, "..", "style.css"), "utf8");
+        const noScroll = css.match(/([^{}]+)\{\s*touch-action:\s*none;\s*\}/);
+        expect(noScroll).not.toBeNull();
+        for (const selector of [".is-drawing svg", ".is-selected", ".scene-resize-handle", ".scene-point-handle"]) {
+            expect(noScroll[1]).toContain(selector);
+        }
+
+        await openSceneWithImage({ annotations: [{ id: "t", type: "text", text: "Ilium", x: 400, y: 400 }] });
+        expect(document.querySelectorAll("#scene-canvas .is-selected")).toHaveLength(0);
+
+        tap(imageNode(), [150, 150]);
+        expect(imageNode().closest(".is-selected")).not.toBeNull();
+
+        tap(annotationNode(0), [410, 410]);
+        expect(imageNode().closest(".is-selected")).toBeNull();
+        expect(document.querySelectorAll("#scene-canvas [data-scene-annotation-index=\"0\"].is-selected").length)
+            .toBeGreaterThan(0);
+
+        click("scene-tool-line");
+        expect($("scene-canvas").classList.contains("is-drawing")).toBe(true);
+    });
+
+    it("sizes handles for a fingertip from how large the canvas is drawn", async () => {
+        await openSceneWithImage();
+        // jsdom draws the 960-wide scene 1:1: a 10-unit handle is 10px, so it needs 3.2x.
+        tap(imageNode(), [150, 150]);
+        expect($("scene-canvas").style.getPropertyValue("--touch-target-scale")).toBe("3.2");
+
+        // Drawn at half size (a phone), the handle is 5px and needs 6.4x.
+        jest.spyOn(Element.prototype, "getBoundingClientRect").mockReturnValue({ left: 0, top: 0, width: 480, height: 300 });
+        tap(imageNode(), [150, 150]);
+        expect($("scene-canvas").style.getPropertyValue("--touch-target-scale")).toBe("6.4");
+    });
+
+    describe("responsive resizing", () => {
+        const scale = () => $("scene-canvas").style.getPropertyValue("--touch-target-scale");
+        afterEach(() => {
+            delete global.ResizeObserver;
+            jest.restoreAllMocks();
+        });
+
+        it("recalculates the handle scale when the SVG is resized, without touching the scene or selection", async () => {
+            const observers = [];
+            global.ResizeObserver = class {
+                constructor(callback) {
+                    this.callback = callback;
+                    this.observed = []; // what it watches now
+                    this.targets = []; // everything it has ever been pointed at
+                    this.disconnect = jest.fn(() => { this.observed = []; });
+                    observers.push(this);
+                }
+                observe(node) {
+                    this.observed.push(node);
+                    this.targets.push(node);
+                }
+            };
+            await openSceneWithImage();
+            tap(imageNode(), [150, 150]);
+            expect(scale()).toBe("3.2");
+            const before = JSON.stringify(scenesModule.getActiveScene());
+
+            // Two observers with separate jobs: one on #scene-canvas (the layout
+            // changed) and one reusable observer on the current SVG (touch-target scale).
+            const canvas = $("scene-canvas");
+            const isSvg = (node) => node instanceof SVGElement;
+            const canvasObservers = observers.filter((o) => o.targets.length > 0 && o.targets.every((n) => n === canvas));
+            const svgObservers = observers.filter((o) => o.targets.length > 0 && o.targets.every(isSvg));
+            expect(observers).toHaveLength(2);
+            expect(canvasObservers).toHaveLength(1);
+            expect(svgObservers).toHaveLength(1);
+            const [canvasObserver] = canvasObservers;
+            const [svgObserver] = svgObservers;
+            const firstSvg = canvasSvg();
+            expect(svgObserver.observed).toEqual([firstSvg]);
+
+            jest.spyOn(Element.prototype, "getBoundingClientRect").mockReturnValue({ left: 0, top: 0, width: 480, height: 300 });
+            svgObserver.callback([]);
+
+            expect(scale()).toBe("6.4");
+            expect(isSelected()).toBe(true);
+            expect(JSON.stringify(scenesModule.getActiveScene())).toBe(before);
+            expect(scenesModule.hasUnsavedChanges()).toBe(false);
+
+            // Re-rendering reuses the SVG observer and retargets it to the new SVG only.
+            const disconnects = svgObserver.disconnect.mock.calls.length;
+            tap(imageNode(), [150, 150]);
+            const nextSvg = canvasSvg();
+            expect(nextSvg).not.toBe(firstSvg);
+            expect(observers).toHaveLength(2);
+            expect(observers.filter(isSvgObserver)).toEqual([svgObserver]);
+            expect(svgObserver.disconnect.mock.calls.length).toBeGreaterThan(disconnects);
+            expect(svgObserver.observed).toEqual([nextSvg]);
+
+            // The canvas observer is never reset: it stays on #scene-canvas.
+            expect(canvasObserver.disconnect).not.toHaveBeenCalled();
+            expect(canvasObserver.observed).toEqual([canvas]);
+            expect(canvasObserver.targets).toEqual([canvas]);
+
+            function isSvgObserver(observer) {
+                return observer.targets.length > 0 && observer.targets.every(isSvg);
+            }
+        });
+
+        it("also follows window resizes where ResizeObserver is missing", async () => {
+            await openSceneWithImage();
+            tap(imageNode(), [150, 150]);
+            expect(scale()).toBe("3.2");
+
+            jest.spyOn(Element.prototype, "getBoundingClientRect").mockReturnValue({ left: 0, top: 0, width: 480, height: 300 });
+            window.dispatchEvent(new Event("resize"));
+
+            expect(scale()).toBe("6.4");
+            expect(isSelected()).toBe(true);
+        });
+    });
+
+    describe("hybrid devices", () => {
+        it("sizes touch handles for any coarse pointer, not just the primary one", () => {
+            const css = require("fs").readFileSync(require("path").join(__dirname, "..", "style.css"), "utf8");
+            expect(css).toMatch(/@media\s*\(pointer:\s*coarse\),\s*\(any-pointer:\s*coarse\)\s*\{/);
+        });
+    });
+
+    describe("dragging through overlapping objects", () => {
+        const dragThrough = (node) => node.classList.contains("scene-drag-through");
+
+        it("lets a selected image be dragged through an annotation over it", async () => {
+            await openSceneWithImage({
+                annotations: [
+                    { id: "t", type: "text", text: "Ilium", x: 150, y: 140, fontSize: 20 },
+                    { id: "far", type: "text", text: "Far", x: 700, y: 500, fontSize: 20 },
+                ],
+            });
+            tap(imageNode(), [110, 110]);
+            expect(isSelected()).toBe(true);
+
+            // The overlay and its hit area can start the drag; the far-away label can't.
+            expect(document.querySelectorAll("#scene-canvas [data-scene-annotation-index=\"0\"].scene-drag-through").length)
+                .toBeGreaterThan(0);
+            expect(dragThrough(annotationNode(1))).toBe(false);
+
+            fingerDrag(annotationNode(0), [160, 150], [190, 180]);
+
+            expect(images()[0]).toMatchObject({ x: 130, y: 130 });
+            expect(isSelected()).toBe(true);
+            expect(document.querySelectorAll("#scene-canvas [data-scene-annotation-index=\"0\"].is-selected")).toHaveLength(0);
+            expect(annotations()[0]).toMatchObject({ x: 150, y: 140 });
+        });
+
+        it("lets a selected annotation be dragged through another object over it", async () => {
+            await openBlankScene({
+                annotations: [
+                    { id: "under", type: "text", text: "Under", x: 100, y: 100, fontSize: 20 },
+                    { id: "over", type: "text", text: "Over", x: 100, y: 100, fontSize: 20 },
+                ],
+            });
+            // The top label is hit first; tapping the same spot again steps down to the one beneath.
+            tap(annotationNode(1), [105, 105]);
+            tap(annotationNode(1), [105, 105]);
+            expect(document.querySelectorAll("#scene-canvas [data-scene-annotation-index=\"0\"].is-selected").length)
+                .toBeGreaterThan(0);
+            expect(dragThrough(annotationNode(1))).toBe(true);
+
+            fingerDrag(annotationNode(1), [105, 105], [145, 135]);
+
+            expect(annotations()[0]).toMatchObject({ x: 140, y: 130 });
+            expect(annotations()[1]).toMatchObject({ x: 100, y: 100 });
+            expect(document.querySelectorAll("#scene-canvas [data-scene-annotation-index=\"0\"].is-selected").length)
+                .toBeGreaterThan(0);
+            expect(document.querySelectorAll("#scene-canvas [data-scene-annotation-index=\"1\"].is-selected")).toHaveLength(0);
+        });
+
+        it("keeps objects away from the selection scrollable, and the css covers the marked ones", async () => {
+            const css = require("fs").readFileSync(require("path").join(__dirname, "..", "style.css"), "utf8");
+            const noScroll = css.match(/([^{}]+)\{\s*touch-action:\s*none;\s*\}/);
+            expect(noScroll[1]).toContain(".scene-drag-through");
+
+            await openSceneWithImage({ annotations: [{ id: "far", type: "text", text: "Far", x: 700, y: 500, fontSize: 20 }] });
+            expect(document.querySelectorAll("#scene-canvas .scene-drag-through")).toHaveLength(0);
+            tap(imageNode(), [150, 150]);
+            expect(dragThrough(annotationNode(0))).toBe(false);
+            expect(dragThrough(canvasSvg())).toBe(false);
+        });
+    });
+});
+
+// Issue #448: a pen or stylus. Browsers send it as pointer events with
+// pointerType "pen": the tip is the main button, the eraser end is button 5
+// and the barrel button is button 2.
+describe("Stylus editing (#448)", () => {
+    const BUTTONS_HELD = { 0: 1, 2: 2, 5: 32 };
+    function press(type, target, [x, y], { pointerType = "pen", pointerId = 1, button = 0, isPrimary = true } = {}) {
+        const released = type === "pointerup" || type === "pointercancel";
+        const init = {
+            bubbles: true, clientX: x, clientY: y, button, buttons: released ? 0 : BUTTONS_HELD[button],
+            pointerId, pointerType, isPrimary,
+        };
+        const event = typeof PointerEvent === "function" ? new PointerEvent(type, init) : new MouseEvent(type, init);
+        for (const [name, value] of Object.entries({ pointerId, isPrimary, pointerType })) {
+            if (event[name] !== value) Object.defineProperty(event, name, { value });
+        }
+        target.dispatchEvent(event);
+    }
+    function dragWith(target, from, to, options) {
+        press("pointerdown", target, from, options);
+        press("pointermove", document, to, options);
+        press("pointerup", document, to, options);
+    }
+    function tapWith(target, point, options) {
+        press("pointerdown", target, point, options);
+        press("pointerup", document, point, options);
+        mouse("click", target, point);
+    }
+    function contextMenuIsBlocked(target) {
+        const event = new MouseEvent("contextmenu", { bubbles: true, cancelable: true });
+        target.dispatchEvent(event);
+        return event.defaultPrevented;
+    }
+    const imageNode = () => document.querySelector("#scene-canvas [data-scene-image-index=\"0\"]");
+    const images = () => scenesModule.getActiveScene().images;
+    async function openSceneWithImage(extra = {}) {
+        await openBlankScene({
+            images: [{ id: "img-a", src: "/images/a.png", x: 100, y: 100, width: 200, height: 100 }],
+            ...extra,
+        });
+    }
+
+    it.each(["mouse", "touch", "pen"])("edits the same way with a %s: select, move, resize, draw", async (pointerType) => {
+        await openSceneWithImage();
+        const input = { pointerType };
+
+        tapWith(imageNode(), [150, 150], input);
+        dragWith(imageNode(), [150, 150], [180, 170], input);
+        dragWith(document.querySelector("[data-corner=\"se\"]"), [330, 220], [370, 220], input);
+        click("scene-tool-line");
+        dragWith(canvasSvg(), [100, 300], [300, 300], input);
+
+        expect(images()[0].x).toBeCloseTo(110);
+        expect(images()[0].y).toBeCloseTo(110);
+        expect(images()[0].width).toBeCloseTo(240);
+        expect(images()[0].height).toBeCloseTo(120);
+        expect(annotations()).toEqual([expect.objectContaining({ type: "line", x1: 100, y1: 300, x2: 300, y2: 300 })]);
+    });
+
+    it("selects and moves a label, and crops an image, with a pen", async () => {
+        await openSceneWithImage({ annotations: [{ id: "t", type: "text", text: "Ilium", x: 400, y: 400 }] });
+
+        tapWith(annotationNode(0), [410, 410]);
+        dragWith(annotationNode(0), [410, 410], [460, 450]);
+        expect(annotations()[0]).toMatchObject({ x: 450, y: 440 });
+
+        tapWith(imageNode(), [150, 150]);
+        click("scene-image-crop-start");
+        dragWith(document.querySelector("[data-corner=\"se\"]"), [300, 200], [250, 180]);
+        expect(images()[0]).toMatchObject({ cropWidth: 150, cropHeight: 80 });
+    });
+
+    it("doesn't edit with the pen's eraser or barrel button", async () => {
+        await openSceneWithImage();
+        tapWith(imageNode(), [150, 150]);
+
+        dragWith(imageNode(), [150, 150], [180, 170], { button: 5 });
+        dragWith(imageNode(), [150, 150], [180, 170], { button: 2 });
+        click("scene-tool-line");
+        dragWith(canvasSvg(), [100, 300], [300, 300], { button: 5 });
+
+        expect(images()[0]).toMatchObject({ x: 100, y: 100 });
+        expect(annotations()).toEqual([]);
+        expect(scenesModule.hasUnsavedChanges()).toBe(false);
+    });
+
+    it("doesn't let a palm resting on the screen take over a pen drag or change the selection", async () => {
+        await openSceneWithImage({ annotations: [{ id: "t", type: "text", text: "Ilium", x: 400, y: 400 }] });
+        tapWith(imageNode(), [150, 150]);
+        const palm = { pointerType: "touch", pointerId: 2 };
+
+        press("pointerdown", imageNode(), [150, 150], { pointerId: 1 });
+        press("pointerdown", annotationNode(0), [410, 410], palm);
+        press("pointermove", document, [460, 450], palm);
+        press("pointerup", document, [460, 450], palm);
+        mouse("click", annotationNode(0), [460, 450]);
+        press("pointermove", document, [180, 170], { pointerId: 1 });
+        press("pointerup", document, [180, 170], { pointerId: 1 });
+
+        expect(images()[0]).toMatchObject({ x: 130, y: 120 });
+        expect(annotations()[0]).toMatchObject({ x: 400, y: 400 });
+        expect(document.querySelectorAll(".scene-selection-outline")).toHaveLength(1);
+        expect($("scene-annotation-toolbar").hidden).toBe(true);
+    });
+
+    it("keeps a pen or finger long press from opening the right-click menu, but not a mouse right click", async () => {
+        await openSceneWithImage();
+
+        press("pointerdown", canvasSvg(), [500, 500], { pointerType: "pen" });
+        expect(contextMenuIsBlocked(canvasSvg())).toBe(true);
+        press("pointerup", document, [500, 500], { pointerType: "pen" });
+
+        press("pointerdown", canvasSvg(), [500, 500], { pointerType: "touch" });
+        expect(contextMenuIsBlocked(canvasSvg())).toBe(true);
+        press("pointerup", document, [500, 500], { pointerType: "touch" });
+
+        press("pointerdown", canvasSvg(), [500, 500], { pointerType: "mouse", button: 2 });
+        expect(contextMenuIsBlocked(canvasSvg())).toBe(false);
+    });
+
+    it("keeps a keyboard-opened context menu after touch or pen input, while physical ones stay blocked", async () => {
+        await openSceneWithImage();
+
+        for (const pointerType of ["pen", "touch"]) {
+            // Held: a long press raises a menu that may not say what raised it.
+            press("pointerdown", canvasSvg(), [500, 500], { pointerType });
+            expect(contextMenuIsBlocked(canvasSvg())).toBe(true);
+            // Released: a menu with no pointer type is the keyboard's (Menu key, Shift+F10).
+            press("pointerup", document, [500, 500], { pointerType });
+            expect(contextMenuIsBlocked(canvasSvg())).toBe(false);
+            // A menu that does name a touch or pen pointer is still physical.
+            const physical = new MouseEvent("contextmenu", { bubbles: true, cancelable: true });
+            Object.defineProperty(physical, "pointerType", { value: pointerType });
+            canvasSvg().dispatchEvent(physical);
+            expect(physical.defaultPrevented).toBe(true);
+        }
+
+        // A cancelled press (the browser took the gesture) is released too.
+        press("pointerdown", canvasSvg(), [500, 500], { pointerType: "touch" });
+        press("pointercancel", document, [500, 500], { pointerType: "touch" });
+        expect(contextMenuIsBlocked(canvasSvg())).toBe(false);
+
+        press("pointerdown", canvasSvg(), [500, 500], { pointerType: "mouse", button: 2 });
+        expect(contextMenuIsBlocked(canvasSvg())).toBe(false);
+    });
+
+    it("ignores a second pointer released after the pen drag, including its click", async () => {
+        await openSceneWithImage({ annotations: [{ id: "t", type: "text", text: "Ilium", x: 400, y: 400 }] });
+        tapWith(imageNode(), [150, 150]);
+        const finger = { pointerType: "touch", pointerId: 2 };
+        const click2 = () => {
+            const event = new MouseEvent("click", { bubbles: true, clientX: 460, clientY: 450 });
+            Object.defineProperty(event, "pointerId", { value: 2 });
+            annotationNode(0).dispatchEvent(event);
+        };
+
+        press("pointerdown", imageNode(), [150, 150], { pointerId: 1 });
+        press("pointerdown", annotationNode(0), [410, 410], finger);
+        press("pointermove", document, [460, 450], finger);
+        press("pointermove", document, [180, 170], { pointerId: 1 });
+        press("pointerup", document, [180, 170], { pointerId: 1 });
+        // The pen drag's own click comes first and is swallowed, as for any drag.
+        mouse("click", imageNode(), [180, 170]);
+        press("pointerup", document, [460, 450], finger);
+        click2();
+
+        expect(images()[0]).toMatchObject({ x: 130, y: 120 });
+        expect(annotations()).toEqual([expect.objectContaining({ id: "t", x: 400, y: 400 })]);
+        expect(document.querySelectorAll(".scene-selection-outline")).toHaveLength(1);
+        expect($("scene-annotation-toolbar").hidden).toBe(true);
+
+        // A real tap afterwards still selects normally.
+        tapWith(annotationNode(0), [410, 410]);
+        expect($("scene-annotation-toolbar").hidden).toBe(false);
+    });
+
+    it("keeps a held pen's context menu blocked when a rejected palm is released", async () => {
+        await openSceneWithImage();
+        const palm = { pointerType: "touch", pointerId: 2 };
+
+        press("pointerdown", imageNode(), [150, 150], { pointerId: 1 });
+        press("pointerdown", canvasSvg(), [500, 500], palm);
+        press("pointerup", document, [500, 500], palm);
+        // The pen is still down: a menu that names no pointer is its long press.
+        expect(contextMenuIsBlocked(canvasSvg())).toBe(true);
+
+        press("pointerup", document, [150, 150], { pointerId: 1 });
+        expect(contextMenuIsBlocked(canvasSvg())).toBe(false);
+    });
+
+    describe("clicks from rejected pointers", () => {
+        const palm = { pointerType: "touch", pointerId: 2 };
+        const clickAs = (target, point, pointerId) => {
+            const event = new MouseEvent("click", { bubbles: true, clientX: point[0], clientY: point[1] });
+            if (pointerId !== undefined) Object.defineProperty(event, "pointerId", { value: pointerId });
+            target.dispatchEvent(event);
+        };
+        const isImageSelected = () => document.querySelectorAll(".scene-selection-outline").length === 1;
+        // A pen drag of the selected image with a palm pressed on the label meanwhile.
+        const penDragWithPalm = (palmEnd) => {
+            press("pointerdown", imageNode(), [150, 150], { pointerId: 1 });
+            press("pointerdown", annotationNode(0), [410, 410], palm);
+            press("pointermove", document, [180, 170], { pointerId: 1 });
+            press("pointerup", document, [180, 170], { pointerId: 1 });
+            mouse("click", imageNode(), [180, 170]);
+            press(palmEnd, document, [410, 410], palm);
+        };
+        async function open() {
+            await openSceneWithImage({ annotations: [{ id: "t", type: "text", text: "Ilium", x: 400, y: 400 }] });
+            tapWith(imageNode(), [150, 150]);
+        }
+
+        it("ignores the click of a palm released after the pen, and leaves nothing behind", async () => {
+            await open();
+            penDragWithPalm("pointerup");
+            clickAs(annotationNode(0), [410, 410], 2);
+            expect(isImageSelected()).toBe(true);
+            expect($("scene-annotation-toolbar").hidden).toBe(true);
+
+            // The ignored click was used up: the same pointer's next click counts.
+            clickAs(annotationNode(0), [410, 410], 2);
+            expect($("scene-annotation-toolbar").hidden).toBe(false);
+        });
+
+        it("doesn't swallow the next real click when a palm is cancelled", async () => {
+            await open();
+            penDragWithPalm("pointercancel");
+
+            tapWith(annotationNode(0), [410, 410]);
+            expect(images()[0]).toMatchObject({ x: 130, y: 120 });
+            expect($("scene-annotation-toolbar").hidden).toBe(false);
+        });
+
+        it("ignores a pointerless compatibility click from a rejected palm, once", async () => {
+            await open();
+            penDragWithPalm("pointerup");
+
+            // The browser sends this click without saying which pointer it came from.
+            mouse("click", annotationNode(0), [410, 410]);
+            expect(isImageSelected()).toBe(true);
+            expect($("scene-annotation-toolbar").hidden).toBe(true);
+
+            // The next ordinary click is not swallowed.
+            mouse("click", annotationNode(0), [410, 410]);
+            expect($("scene-annotation-toolbar").hidden).toBe(false);
+        });
+
+        it("doesn't swallow an unrelated click, or one that comes after the window", async () => {
+            await open();
+            penDragWithPalm("pointerup");
+            // Somewhere else on the canvas: not the palm's click.
+            mouse("click", imageNode(), [150, 150]);
+            expect(isImageSelected()).toBe(true);
+
+            const now = Date.now();
+            jest.spyOn(Date, "now").mockReturnValue(now + 5000);
+            mouse("click", annotationNode(0), [410, 410]);
+            expect($("scene-annotation-toolbar").hidden).toBe(false);
+            Date.now.mockRestore();
+        });
+
+        it("removes a rejected pointer's entry by itself when no click comes", async () => {
+            await open();
+            jest.useFakeTimers();
+            try {
+                const baseline = jest.getTimerCount();
+                penDragWithPalm("pointerup");
+                // A different pointer's id-bearing click leaves the palm's entry alone.
+                clickAs(annotationNode(0), [410, 410], 9);
+                expect(jest.getTimerCount()).toBeGreaterThan(baseline);
+                jest.advanceTimersByTime(1500);
+                expect(jest.getTimerCount()).toBe(baseline);
+                // Entry expired: the late click selects.
+                mouse("click", annotationNode(0), [410, 410]);
+                expect($("scene-annotation-toolbar").hidden).toBe(false);
+            } finally {
+                jest.useRealTimers();
+            }
+        });
+
+        it("keeps several rejected pointers apart", async () => {
+            await open();
+            const second = { pointerType: "touch", pointerId: 3 };
+            press("pointerdown", imageNode(), [150, 150], { pointerId: 1 });
+            press("pointerdown", annotationNode(0), [410, 410], palm);
+            press("pointerdown", annotationNode(0), [410, 410], { ...second, isPrimary: false });
+            press("pointerup", document, [410, 410], palm);
+            press("pointercancel", document, [410, 410], second);
+            press("pointerup", document, [150, 150], { pointerId: 1 });
+            mouse("click", imageNode(), [150, 150]);
+
+            clickAs(annotationNode(0), [410, 410], 2);
+            expect($("scene-annotation-toolbar").hidden).toBe(true);
+            clickAs(annotationNode(0), [410, 410], 3);
+            expect($("scene-annotation-toolbar").hidden).toBe(false);
+        });
+    });
+});
+
+// Issue #449: zoom and pan. jsdom doesn't lay pages out, so the canvas is
+// given a 960x600 box and the SVG is drawn at its zoomed size, scrolled by the
+// canvas's scroll position - the sizes a browser would report.
+describe("Zoom and pan (#449)", () => {
+    const BOX = { width: 960, height: 600 };
+    const zoomLevel = () => $("scene-zoom-level").textContent;
+    const imageNode = () => document.querySelector("#scene-canvas [data-scene-image-index=\"0\"]");
+    const images = () => scenesModule.getActiveScene().images;
+    const ALL_KINDS = {
+        images: [{ id: "img-a", src: "/images/a.png", x: 100, y: 100, width: 200, height: 100 }],
+        annotations: [
+            { id: "p", type: "polygon", points: [[400, 100], [500, 100], [450, 200]] },
+            { id: "l", type: "line", x1: 100, y1: 400, x2: 300, y2: 400 },
+            { id: "t", type: "text", text: "Ilium", x: 600, y: 300 },
+        ],
+    };
+
+    function drawnWidth(svg) {
+        const width = svg.style.width;
+        return width.endsWith("%") ? (BOX.width * parseFloat(width)) / 100 : parseFloat(width);
+    }
+    function mockLayout() {
+        const canvas = $("scene-canvas");
+        const scroll = { left: 0, top: 0 };
+        const drawn = () => {
+            const svg = canvasSvg();
+            if (!svg) return { width: 0, height: 0 };
+            const [, , viewWidth, viewHeight] = svg.getAttribute("viewBox").split(" ").map(Number);
+            const width = drawnWidth(svg);
+            return { width, height: (width * viewHeight) / viewWidth };
+        };
+        const define = (name, get, set) => Object.defineProperty(canvas, name, { configurable: true, get, set });
+        define("scrollLeft", () => scroll.left, (value) => { scroll.left = Math.max(0, value); });
+        define("scrollTop", () => scroll.top, (value) => { scroll.top = Math.max(0, value); });
+        define("clientWidth", () => BOX.width);
+        define("clientHeight", () => BOX.height);
+        define("scrollWidth", () => Math.max(BOX.width, drawn().width));
+        define("scrollHeight", () => Math.max(BOX.height, drawn().height));
+        jest.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(function () {
+            if (this.tagName.toLowerCase() === "svg") {
+                return { left: -scroll.left, top: -scroll.top, ...drawn() };
+            }
+            return { left: 0, top: 0, ...BOX };
+        });
+        return scroll;
+    }
+    async function openZoomableScene(content = ALL_KINDS) {
+        await openBlankScene(content);
+        const scroll = mockLayout();
+        click("scene-zoom-reset"); // draw again with the mocked layout
+        return scroll;
+    }
+    function wheel(options) {
+        const event = new WheelEvent("wheel", { bubbles: true, cancelable: true, clientX: 480, clientY: 300, ...options });
+        canvasSvg().dispatchEvent(event);
+        return event;
+    }
+    function finger(type, target, [x, y], pointerId) {
+        const init = {
+            bubbles: true, clientX: x, clientY: y, button: 0, buttons: type === "pointerup" ? 0 : 1,
+            pointerId, pointerType: "touch", isPrimary: pointerId === 1,
+        };
+        const event = typeof PointerEvent === "function" ? new PointerEvent(type, init) : new MouseEvent(type, init);
+        for (const [name, value] of Object.entries({ pointerId, pointerType: "touch", isPrimary: pointerId === 1 })) {
+            if (event[name] !== value) Object.defineProperty(event, name, { value });
+        }
+        target.dispatchEvent(event);
+    }
+
+    it("zooms in and out with the buttons, within limits, and returns to the default view", async () => {
+        const scroll = await openZoomableScene();
+        expect($("scene-view-controls").hidden).toBe(false);
+        expect(zoomLevel()).toBe("100%");
+
+        click("scene-zoom-in");
+        expect(zoomLevel()).toBe("125%");
+        expect(canvasSvg().style.width).toBe("125%");
+        click("scene-zoom-out");
+        click("scene-zoom-out");
+        expect(zoomLevel()).toBe("80%");
+
+        for (let i = 0; i < 20; i += 1) click("scene-zoom-in");
+        expect(zoomLevel()).toBe("800%");
+        expect($("scene-zoom-in").disabled).toBe(true);
+
+        scroll.left = 500;
+        scroll.top = 300;
+        click("scene-zoom-reset");
+        expect(zoomLevel()).toBe("100%");
+        expect(scroll).toEqual({ left: 0, top: 0 });
+
+        for (let i = 0; i < 20; i += 1) click("scene-zoom-out");
+        expect(zoomLevel()).toBe("25%");
+        expect($("scene-zoom-out").disabled).toBe(true);
+    });
+
+    it("draws images, highlights, lines and labels together, so they stay aligned and the scene is unchanged", async () => {
+        await openZoomableScene();
+        const before = { viewBox: canvasSvg().getAttribute("viewBox"), drawing: canvasSvg().innerHTML };
+
+        click("scene-zoom-in");
+        click("scene-zoom-in");
+        click("scene-zoom-in");
+
+        expect(canvasSvg().style.width).toBe("195.31%");
+        // One drawing, scaled as a whole: every object keeps its place in it.
+        expect(canvasSvg().getAttribute("viewBox")).toBe(before.viewBox);
+        expect(canvasSvg().innerHTML).toBe(before.drawing);
+        expect(scenesModule.getActiveScene()).toMatchObject(ALL_KINDS);
+        expect(scenesModule.hasUnsavedChanges()).toBe(false);
+    });
+
+    it("moves and draws in scene units while zoomed and panned, so edits land under the pointer", async () => {
+        const scroll = await openZoomableScene();
+        click("scene-zoom-in");
+        click("scene-zoom-in");
+        click("scene-zoom-in");
+        const zoom = 1.953125;
+        scroll.left = 0;
+        scroll.top = 0;
+
+        clickAt(imageNode(), [300, 300]);
+        drag(imageNode(), [300, 300], [360, 340]);
+        expect(images()[0].x).toBeCloseTo(100 + 60 / zoom);
+        expect(images()[0].y).toBeCloseTo(100 + 40 / zoom);
+
+        scroll.left = 100;
+        scroll.top = 50;
+        click("scene-tool-line");
+        drag(canvasSvg(), [300, 300], [500, 300]);
+        const line = annotations()[annotations().length - 1];
+        expect(line.type).toBe("line");
+        expect(line.x1).toBeCloseTo(400 / zoom, 1);
+        expect(line.y1).toBeCloseTo(350 / zoom, 1);
+        expect(line.x2).toBeCloseTo(600 / zoom, 1);
+    });
+
+    it("zooms around the pointer with Ctrl + the scroll wheel, while the scroll wheel alone scrolls", async () => {
+        const scroll = await openZoomableScene();
+
+        const plain = wheel({ deltaY: 100 });
+        expect(plain.defaultPrevented).toBe(false);
+        expect(zoomLevel()).toBe("100%");
+
+        const zoomWheel = wheel({ deltaY: -100, ctrlKey: true });
+        expect(zoomWheel.defaultPrevented).toBe(true);
+        expect(zoomLevel()).toBe("122%");
+        // The scene point that was under the pointer (480, 300) is still there.
+        const zoom = Math.exp(0.2);
+        expect(scroll.left).toBeCloseTo(480 * zoom - 480, 0);
+        expect(scroll.top).toBeCloseTo(300 * zoom - 300, 0);
+    });
+
+    it("zooms with the +, - and 0 keys", async () => {
+        await openZoomableScene();
+
+        key("+");
+        expect(zoomLevel()).toBe("125%");
+        key("-");
+        key("-");
+        expect(zoomLevel()).toBe("80%");
+        key("0");
+        expect(zoomLevel()).toBe("100%");
+    });
+
+    it("pans by dragging empty space or an unselected object, without moving or selecting anything", async () => {
+        const scroll = await openZoomableScene();
+        click("scene-zoom-in");
+        click("scene-zoom-in");
+        scroll.left = 200;
+        scroll.top = 100;
+        expect($("scene-canvas").classList.contains("can-pan")).toBe(true);
+
+        drag(canvasSvg(), [800, 500], [700, 450]);
+        expect(scroll).toEqual({ left: 300, top: 150 });
+
+        drag(imageNode(), [300, 300], [250, 300]);
+        mouse("click", imageNode(), [250, 300]);
+        expect(scroll.left).toBe(350);
+        expect(document.querySelectorAll(".scene-selection-outline")).toHaveLength(0);
+        expect(images()[0]).toMatchObject({ x: 100, y: 100 });
+        expect(scenesModule.hasUnsavedChanges()).toBe(false);
+    });
+
+    it("moves a selected object instead of panning", async () => {
+        const scroll = await openZoomableScene();
+        click("scene-zoom-in");
+        click("scene-zoom-in");
+        scroll.left = 0;
+        scroll.top = 0;
+        clickAt(imageNode(), [300, 300]);
+
+        drag(imageNode(), [300, 300], [350, 300]);
+
+        expect(images()[0].x).toBeGreaterThan(100);
+        expect(scroll).toEqual({ left: 0, top: 0 });
+    });
+
+    it("zooms with a two-finger pinch, but not while a finger is moving an object", async () => {
+        await openZoomableScene();
+
+        finger("pointerdown", canvasSvg(), [400, 300], 1);
+        finger("pointerdown", canvasSvg(), [500, 300], 2);
+        finger("pointermove", document, [600, 300], 2);
+        expect(zoomLevel()).toBe("200%");
+        finger("pointerup", document, [600, 300], 2);
+        finger("pointerup", document, [400, 300], 1);
+
+        click("scene-zoom-reset");
+        clickAt(imageNode(), [150, 150]);
+        finger("pointerdown", imageNode(), [150, 150], 1);
+        finger("pointerdown", canvasSvg(), [500, 300], 2);
+        finger("pointermove", document, [800, 300], 2);
+        finger("pointerup", document, [800, 300], 2);
+        finger("pointerup", document, [150, 150], 1);
+        expect(zoomLevel()).toBe("100%");
+    });
+
+    it("keeps the zoom when switching to actual size, and starts another scene at the default view", async () => {
+        backend.seed({ id: "scene-2", name: "Other", ...ALL_KINDS });
+        await openZoomableScene();
+        click("scene-zoom-in");
+
+        click("scene-fit-toggle");
+        expect(canvasSvg().style.width).toBe("1200px");
+        expect(zoomLevel()).toBe("125%");
+
+        [...document.querySelectorAll(".scene-list-item")].find((b) => b.textContent.includes("Other")).click();
+        await waitFor(() => expect($("scene-title").textContent).toBe("Other"));
+        expect(zoomLevel()).toBe("100%");
+    });
+});
+
+// #449 review: after a pointer selection, focus is on the canvas, so its
+// keyboard shortcuts (arrows, Delete, zoom) work without clicking it again.
+describe("Keyboard focus after selecting with a pointer (#449)", () => {
+    function tapWith(target, [x, y], pointerType) {
+        for (const type of ["pointerdown", "pointerup"]) {
+            const init = {
+                bubbles: true, cancelable: true, clientX: x, clientY: y, button: 0,
+                buttons: type === "pointerdown" ? 1 : 0, pointerId: 1, pointerType, isPrimary: true,
+            };
+            const event = typeof PointerEvent === "function" ? new PointerEvent(type, init) : new MouseEvent(type, init);
+            for (const [name, value] of Object.entries({ pointerId: 1, isPrimary: true, pointerType })) {
+                if (event[name] !== value) Object.defineProperty(event, name, { value });
+            }
+            (type === "pointerdown" ? target : document).dispatchEvent(event);
+        }
+        mouse("click", target, [x, y]);
+    }
+    function keyOnFocused(name, options = {}) {
+        document.activeElement.dispatchEvent(new KeyboardEvent("keydown", { key: name, bubbles: true, cancelable: true, ...options }));
+    }
+    const imageNode = () => document.querySelector("#scene-canvas [data-scene-image-index=\"0\"]");
+    const images = () => scenesModule.getActiveScene().images;
+
+    it.each(["mouse", "touch", "pen"])("focuses the canvas when an object is selected or deselected with a %s", async (pointerType) => {
+        await openBlankScene({
+            images: [{ id: "img-a", src: "/images/a.png", x: 100, y: 100, width: 200, height: 100 }],
+            annotations: [{ id: "t", type: "text", text: "Ilium", x: 400, y: 400 }],
+        });
+        $("scene-annotation-text").focus();
+
+        tapWith(imageNode(), [150, 150], pointerType);
+        expect(document.activeElement).toBe($("scene-canvas"));
+        keyOnFocused("ArrowRight");
+        expect(images()[0]).toMatchObject({ x: 101, y: 100 });
+
+        tapWith(annotationNode(0), [410, 410], pointerType);
+        expect(document.activeElement).toBe($("scene-canvas"));
+        keyOnFocused("Delete");
+        expect(annotations()).toEqual([]);
+
+        // Deselecting by tapping empty canvas keeps focus there too, so zoom keys still work.
+        $("scene-annotation-text").focus();
+        tapWith(canvasSvg(), [900, 550], pointerType);
+        expect(document.activeElement).toBe($("scene-canvas"));
+        keyOnFocused("+");
+        expect($("scene-zoom-level").textContent).toBe("125%");
+    });
+});
+// Issue #450: the editor changing size. jsdom has no ResizeObserver or layout,
+// so the test supplies both: a canvas box whose width the test changes, an SVG
+// drawn at the canvas width times the zoom, and an observer it triggers.
+describe("Responsive resizing (#450)", () => {
+    let box;
+    let scroll;
+    let observers;
+    const imageNode = () => document.querySelector("#scene-canvas [data-scene-image-index=\"0\"]");
+    const images = () => scenesModule.getActiveScene().images;
+    const touchScale = () => $("scene-canvas").style.getPropertyValue("--touch-target-scale");
+    const SCENE = {
+        images: [{ id: "img-a", src: "/images/a.png", x: 100, y: 100, width: 200, height: 100 }],
+        annotations: [
+            { id: "p", type: "polygon", points: [[400, 100], [500, 100], [450, 200]] },
+            { id: "l", type: "line", x1: 100, y1: 400, x2: 300, y2: 400 },
+            { id: "t", type: "text", text: "Ilium", x: 600, y: 300 },
+        ],
+    };
+
+    beforeEach(() => {
+        observers = [];
+        global.ResizeObserver = class {
+            constructor(callback) {
+                observers.push(callback);
+            }
+            observe() {}
+            disconnect() {}
+        };
+    });
+    afterEach(() => {
+        delete global.ResizeObserver;
+    });
+
+    function mockLayout() {
+        box = { width: 960, height: 600 };
+        scroll = { left: 0, top: 0 };
+        const canvas = $("scene-canvas");
+        const drawn = () => {
+            const svg = canvasSvg();
+            if (!svg) return { width: 0, height: 0 };
+            const [, , viewWidth, viewHeight] = svg.getAttribute("viewBox").split(" ").map(Number);
+            const width = (box.width * parseFloat(svg.style.width)) / 100;
+            return { width, height: (width * viewHeight) / viewWidth };
+        };
+        const define = (name, get, set) => Object.defineProperty(canvas, name, { configurable: true, get, set });
+        define("scrollLeft", () => scroll.left, (value) => { scroll.left = Math.max(0, value); });
+        define("scrollTop", () => scroll.top, (value) => { scroll.top = Math.max(0, value); });
+        define("offsetWidth", () => box.width);
+        define("clientWidth", () => box.width);
+        define("clientHeight", () => box.height);
+        define("scrollWidth", () => Math.max(box.width, drawn().width));
+        define("scrollHeight", () => Math.max(box.height, drawn().height));
+        jest.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(function () {
+            if (this.tagName.toLowerCase() === "svg") {
+                // A browser reports an SVG that is no longer on the page as 0 x 0.
+                if (!this.isConnected) return { left: 0, top: 0, width: 0, height: 0 };
+                return { left: -scroll.left, top: -scroll.top, ...drawn() };
+            }
+            return { left: 0, top: 0, ...box };
+        });
+    }
+    /** Changes the canvas size and tells the editor, as the browser would. */
+    function resizeTo(width, height = box.height) {
+        box.width = width;
+        box.height = height;
+        observers.forEach((callback) => callback([]));
+    }
+    async function openScene() {
+        await openBlankScene(SCENE);
+        mockLayout();
+        click("scene-zoom-reset"); // draw again with the mocked layout
+        resizeTo(960); // a ResizeObserver reports the first size when it starts
+    }
+
+    it("keeps the scene drawn once, aligned and unchanged at narrow and wide sizes", async () => {
+        await openScene();
+        const drawing = canvasSvg().innerHTML;
+
+        for (const width of [375, 667, 768, 1024, 1440, 960]) {
+            resizeTo(width);
+            expect($("scene-canvas").querySelectorAll("svg")).toHaveLength(1);
+            expect(canvasSvg().innerHTML).toBe(drawing);
+            expect(canvasSvg().style.width).toBe("100%");
+        }
+        expect($("scene-canvas").hidden).toBe(false);
+        expect(scenesModule.getActiveScene()).toMatchObject(SCENE);
+        expect(scenesModule.hasUnsavedChanges()).toBe(false);
+    });
+
+    it("sizes handles for the new size, so they stay big enough to touch", async () => {
+        await openScene();
+        clickAt(imageNode(), [150, 150]);
+        expect(touchScale()).toBe("3.2");
+
+        resizeTo(480);
+        expect(touchScale()).toBe("6.4");
+        resizeTo(1920);
+        expect(touchScale()).toBe("1.6");
+    });
+
+    it("keeps the same part of a zoomed scene in view, ignoring the browser's scroll fitting", async () => {
+        await openScene();
+        click("scene-zoom-in");
+        click("scene-zoom-in"); // 156.25%: the scene is drawn 1500 wide
+        scroll.left = 300;
+        scroll.top = 200;
+        $("scene-canvas").dispatchEvent(new Event("scroll"));
+        // The middle of the view is scene point (499.2, 320).
+
+        box.width = 480;
+        scroll.left = 0; // the browser fits the old scroll position to the new size
+        $("scene-canvas").dispatchEvent(new Event("scroll"));
+        resizeTo(480);
+
+        // Drawn 750 wide now: (499.2, 320) is back in the middle across, and the
+        // whole height fits, so there is nothing to scroll down.
+        expect(scroll).toEqual({ left: 150, top: 0 });
+        expect(touchScale()).toBe("4.1");
+        expect($("scene-zoom-level").textContent).toBe("156%");
+    });
+
+    it("finishes a line drawn across a resize and keeps the same part of the scene in view", async () => {
+        await openScene();
+        click("scene-zoom-in");
+        click("scene-zoom-in"); // 156.25%: the scene is drawn 1500 wide
+        scroll.left = 300;
+        scroll.top = 200;
+        $("scene-canvas").dispatchEvent(new Event("scroll"));
+        // The middle of the view is scene point (499.2, 320).
+
+        click("scene-tool-line");
+        // At this zoom and scroll, client (200, 300) is scene (320, 320), and
+        // each screen pixel is 0.64 scene units.
+        mouse("mousedown", canvasSvg(), [200, 300]);
+        document.dispatchEvent(new MouseEvent("mousemove", { clientX: 400, clientY: 300 }));
+
+        box.width = 480;
+        scroll.left = 0; // the browser fits the old scroll position to the new size
+        $("scene-canvas").dispatchEvent(new Event("scroll"));
+        resizeTo(480);
+        // The button is let go after the resize; the line was already finished.
+        document.dispatchEvent(new MouseEvent("mouseup", { clientX: 400, clientY: 300 }));
+
+        const line = annotations()[annotations().length - 1];
+        expect(line.type).toBe("line");
+        expect(line.x1).toBeCloseTo(320);
+        expect(line.y1).toBeCloseTo(320);
+        expect(line.x2).toBeCloseTo(448);
+        expect(annotations()).toHaveLength(SCENE.annotations.length + 1);
+        // Same view as without a drag: (499.2, 320) is back in the middle.
+        expect(scroll).toEqual({ left: 150, top: 0 });
+    });
+
+    it("ends a drag when the size changes mid-drag, keeping the move made so far", async () => {
+        await openScene();
+        clickAt(imageNode(), [150, 150]);
+
+        mouse("mousedown", imageNode(), [150, 150]);
+        document.dispatchEvent(new MouseEvent("mousemove", { clientX: 180, clientY: 170 }));
+        resizeTo(480);
+        document.dispatchEvent(new MouseEvent("mousemove", { clientX: 400, clientY: 400 }));
+        document.dispatchEvent(new MouseEvent("mouseup", { clientX: 400, clientY: 400 }));
+
+        expect(images()[0]).toMatchObject({ x: 130, y: 120 });
+        expect(scenesModule.hasUnsavedChanges()).toBe(true);
+        expect(document.querySelectorAll(".scene-selection-outline")).toHaveLength(1);
+    });
+
+    it("keeps a drag going when only the height changes, as the canvas grows with the scene", async () => {
+        await openScene();
+        clickAt(imageNode(), [150, 150]);
+
+        mouse("mousedown", imageNode(), [150, 150]);
+        document.dispatchEvent(new MouseEvent("mousemove", { clientX: 180, clientY: 170 }));
+        resizeTo(960, 700);
+        document.dispatchEvent(new MouseEvent("mousemove", { clientX: 200, clientY: 190 }));
+        document.dispatchEvent(new MouseEvent("mouseup", { clientX: 200, clientY: 190 }));
+
+        expect(images()[0]).toMatchObject({ x: 150, y: 140 });
+    });
+
+    it("gives the canvas more of a narrow screen and hides the mouse hint on touch screens", () => {
+        const css = require("fs").readFileSync(require("path").join(__dirname, "..", "style.css"), "utf8");
+        const narrow = css.match(/@media \(max-width: 768px\) \{[\s\S]*?\.scene-workspace \{\s*padding: var\(--space-3\);/);
+        expect(narrow).not.toBeNull();
+        expect(css).toMatch(/@media \(pointer: coarse\) \{\s*\.scene-view-hint \{\s*display: none;/);
     });
 });
