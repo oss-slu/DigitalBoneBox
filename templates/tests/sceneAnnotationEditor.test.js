@@ -2008,4 +2008,91 @@ describe("Stylus editing (#448)", () => {
         tapWith(annotationNode(0), [410, 410]);
         expect($("scene-annotation-toolbar").hidden).toBe(false);
     });
+
+    it("keeps a held pen's context menu blocked when a rejected palm is released", async () => {
+        await openSceneWithImage();
+        const palm = { pointerType: "touch", pointerId: 2 };
+
+        press("pointerdown", imageNode(), [150, 150], { pointerId: 1 });
+        press("pointerdown", canvasSvg(), [500, 500], palm);
+        press("pointerup", document, [500, 500], palm);
+        // The pen is still down: a menu that names no pointer is its long press.
+        expect(contextMenuIsBlocked(canvasSvg())).toBe(true);
+
+        press("pointerup", document, [150, 150], { pointerId: 1 });
+        expect(contextMenuIsBlocked(canvasSvg())).toBe(false);
+    });
+
+    describe("clicks from rejected pointers", () => {
+        const palm = { pointerType: "touch", pointerId: 2 };
+        const clickAs = (target, point, pointerId) => {
+            const event = new MouseEvent("click", { bubbles: true, clientX: point[0], clientY: point[1] });
+            if (pointerId !== undefined) Object.defineProperty(event, "pointerId", { value: pointerId });
+            target.dispatchEvent(event);
+        };
+        const isImageSelected = () => document.querySelectorAll(".scene-selection-outline").length === 1;
+        // A pen drag of the selected image with a palm pressed on the label meanwhile.
+        const penDragWithPalm = (palmEnd) => {
+            press("pointerdown", imageNode(), [150, 150], { pointerId: 1 });
+            press("pointerdown", annotationNode(0), [410, 410], palm);
+            press("pointermove", document, [180, 170], { pointerId: 1 });
+            press("pointerup", document, [180, 170], { pointerId: 1 });
+            mouse("click", imageNode(), [180, 170]);
+            press(palmEnd, document, [410, 410], palm);
+        };
+        async function open() {
+            await openSceneWithImage({ annotations: [{ id: "t", type: "text", text: "Ilium", x: 400, y: 400 }] });
+            tapWith(imageNode(), [150, 150]);
+        }
+
+        it("ignores the click of a palm released after the pen, and leaves nothing behind", async () => {
+            await open();
+            penDragWithPalm("pointerup");
+            clickAs(annotationNode(0), [410, 410], 2);
+            expect(isImageSelected()).toBe(true);
+            expect($("scene-annotation-toolbar").hidden).toBe(true);
+
+            // The ignored click was used up: the same pointer's next click counts.
+            clickAs(annotationNode(0), [410, 410], 2);
+            expect($("scene-annotation-toolbar").hidden).toBe(false);
+        });
+
+        it("doesn't swallow the next real click when a palm is cancelled", async () => {
+            await open();
+            penDragWithPalm("pointercancel");
+
+            tapWith(annotationNode(0), [410, 410]);
+            expect(images()[0]).toMatchObject({ x: 130, y: 120 });
+            expect($("scene-annotation-toolbar").hidden).toBe(false);
+        });
+
+        it("doesn't swallow the next real click when a released palm made no click", async () => {
+            await open();
+            penDragWithPalm("pointerup");
+
+            // A click with no pointer id, and one from a different pointer.
+            mouse("click", annotationNode(0), [410, 410]);
+            expect($("scene-annotation-toolbar").hidden).toBe(false);
+            tapWith(imageNode(), [150, 150], { pointerId: 5 });
+            expect(isImageSelected()).toBe(true);
+            expect($("scene-annotation-toolbar").hidden).toBe(true);
+        });
+
+        it("keeps several rejected pointers apart", async () => {
+            await open();
+            const second = { pointerType: "touch", pointerId: 3 };
+            press("pointerdown", imageNode(), [150, 150], { pointerId: 1 });
+            press("pointerdown", annotationNode(0), [410, 410], palm);
+            press("pointerdown", annotationNode(0), [410, 410], { ...second, isPrimary: false });
+            press("pointerup", document, [410, 410], palm);
+            press("pointercancel", document, [410, 410], second);
+            press("pointerup", document, [150, 150], { pointerId: 1 });
+            mouse("click", imageNode(), [150, 150]);
+
+            clickAs(annotationNode(0), [410, 410], 2);
+            expect($("scene-annotation-toolbar").hidden).toBe(true);
+            clickAs(annotationNode(0), [410, 410], 3);
+            expect($("scene-annotation-toolbar").hidden).toBe(false);
+        });
+    });
 });
