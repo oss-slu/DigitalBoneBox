@@ -1470,6 +1470,47 @@ const CORNER_GROWTH_SIGN = {
 // by a plain mouse event (browsers without Pointer Events, and jsdom tests)
 // follows the mouse. Only one drag runs at a time.
 let activeDrag = null;
+// Issue #448: every pointer currently pressed on the canvas, by pointerId,
+// with its kind ("mouse", "touch" or "pen"). A contextmenu event that doesn't
+// name its pointer is a long press if a touch or pen is still down, and the
+// keyboard's otherwise. Each pointer is removed only by its own release, so a
+// rejected palm can neither replace nor clear a pen that is still held.
+const heldPointers = new Map();
+// Pointers whose press was rejected because another pointer was already
+// editing (a palm during a pen stroke), by pointerId. The click such a pointer
+// still generates must not change the selection, even after the drag has
+// ended. An entry is for that one pointer's click only: it is dropped by that
+// click, by the pointer's cancel, by the next accepted press, or by its own
+// timer IGNORED_CLICK_WINDOW_MS after the pointer is released, so a stale one
+// can't swallow a real click and the map can't grow without bound.
+const ignoredPointers = new Map();
+const IGNORED_CLICK_WINDOW_MS = 1000;
+// A compatibility click that doesn't name its pointer is matched to the
+// rejected press by where it lands (the objects under it may have been
+// redrawn meanwhile), and is used up by one click.
+const IGNORED_CLICK_DISTANCE = 12;
+
+function dropIgnoredPointer(pointerId) {
+    const entry = ignoredPointers.get(pointerId);
+    if (!entry) return;
+    clearTimeout(entry.timer);
+    ignoredPointers.delete(pointerId);
+}
+
+function clearIgnoredPointers() {
+    for (const pointerId of [...ignoredPointers.keys()]) dropIgnoredPointer(pointerId);
+}
+
+/** The released rejected pointer a click with no pointerId most likely came from, if any. */
+function findIgnoredPointerForClick(event) {
+    const now = Date.now();
+    for (const [pointerId, entry] of ignoredPointers) {
+        if (!entry.released || now - entry.releasedAt > IGNORED_CLICK_WINDOW_MS) continue;
+        if (Math.hypot(event.clientX - entry.x, event.clientY - entry.y) > IGNORED_CLICK_DISTANCE) continue;
+        return pointerId;
+    }
+    return undefined;
+}
 
 /**
  * Calls `onMove` for each move of the input that started the drag, and
@@ -2914,6 +2955,18 @@ export function initializeSceneEditor(root = document) {
         event.target.value = "";
     });
     dom.canvas.addEventListener("click", (event) => {
+        // Issue #448: a tap that lands mid-drag (a palm during a pen stroke)
+        // doesn't select or deselect anything.
+        if (activeDrag && activeDrag.isPointer) return;
+        // A click from a rejected pointer is ignored once, by id where the
+        // browser says which pointer it came from, otherwise by position.
+        const ignoredId = event.pointerId === undefined ? findIgnoredPointerForClick(event) : event.pointerId;
+        const ignored = ignoredId === undefined ? null : ignoredPointers.get(ignoredId);
+        if (ignored) {
+            const fresh = ignored.released && Date.now() - ignored.releasedAt <= IGNORED_CLICK_WINDOW_MS;
+            dropIgnoredPointer(ignoredId);
+            if (fresh) return;
+        }
         if (suppressNextClick) {
             suppressNextClick = false;
             return;
@@ -2958,15 +3011,54 @@ export function initializeSceneEditor(root = document) {
     window.addEventListener("resize", refreshTouchTargetScale);
     window.addEventListener("orientationchange", refreshTouchTargetScale);
     dom.canvas.addEventListener("pointerdown", handleCanvasPress);
+    // Issue #448: a long press with a pen or finger opens the browser's
+    // right-click menu on some systems; on the canvas it is an edit instead.
+    // A mouse's right click keeps its menu.
+    dom.canvas.addEventListener("contextmenu", (event) => {
+        const type = event.pointerType ||
+            ([...heldPointers.values()].find((held) => held === "pen" || held === "touch") || "");
+        if (type === "pen" || type === "touch") event.preventDefault();
+    });
+    // A pointer is remembered only while it is held, which is when a long
+    // press raises its context menu. A cancel also means no click follows.
+    document.addEventListener("pointerup", (event) => {
+        heldPointers.delete(event.pointerId);
+        const ignored = ignoredPointers.get(event.pointerId);
+        if (ignored) {
+            // Its click, if there is one, follows now; if none does, the entry goes by itself.
+            Object.assign(ignored, { released: true, releasedAt: Date.now(), x: event.clientX, y: event.clientY });
+            clearTimeout(ignored.timer);
+            ignored.timer = setTimeout(() => dropIgnoredPointer(event.pointerId), IGNORED_CLICK_WINDOW_MS);
+        }
+    }, true);
+    document.addEventListener("pointercancel", (event) => {
+        heldPointers.delete(event.pointerId);
+        dropIgnoredPointer(event.pointerId);
+    }, true);
+    window.addEventListener("blur", () => heldPointers.clear());
     dom.canvas.addEventListener("mousedown", (event) => {
         if (activeDrag && activeDrag.isPointer) return;
         handleCanvasPress(event);
     });
     function handleCanvasPress(event) {
+        if (event.pointerType && event.type === "pointerdown") heldPointers.set(event.pointerId, event.pointerType);
         // Only the main button (left mouse button, a finger, or a pen tip)
-        // edits; the other buttons keep their usual browser behavior.
+        // edits; the other buttons, including a pen's barrel button and
+        // eraser, keep their usual browser behavior.
         if (event.button !== undefined && event.button !== 0) return;
-        if (event.isPrimary === false) return;
+        if (event.isPrimary === false || (event.type === "pointerdown" && activeDrag && activeDrag.isPointer)) {
+            // Issue #448: while one pointer is dragging, another press (a
+            // palm resting on the screen during a pen stroke) doesn't take
+            // over, and neither does the click it generates afterwards.
+            // Cancelling the press also stops the browser's compatibility mouse events for it.
+            if (event.type === "pointerdown" && event.cancelable) event.preventDefault();
+            if (event.pointerId !== undefined) {
+                dropIgnoredPointer(event.pointerId);
+                ignoredPointers.set(event.pointerId, { released: false, releasedAt: 0, x: 0, y: 0, timer: null });
+            }
+            return;
+        }
+        clearIgnoredPointers();
         // A drag's own click may never arrive (its node was redrawn away), so
         // a new press always starts with clicks counting again.
         suppressNextClick = false;
