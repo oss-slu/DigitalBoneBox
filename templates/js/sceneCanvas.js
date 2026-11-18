@@ -694,6 +694,17 @@ export function renderScene(scene, { selectedIndex, cropMode = false, selectedAn
     let unsupported = 0;
     let unlinked = 0;
 
+    // Every drawn object's node(s) and bounds, so that once the selection is
+    // known, whatever overlaps it can be marked for touch-action: none (a drag
+    // of the selected object can start on any object drawn over it).
+    const touchTargets = [];
+    let selectedBounds = null;
+    const boundsBox = (points) => {
+        const xs = points.map((p) => p[0]);
+        const ys = points.map((p) => p[1]);
+        return { x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys) };
+    };
+
     const place = (result, layer) => {
         if (!result) {
             unsupported += 1;
@@ -713,7 +724,14 @@ export function renderScene(scene, { selectedIndex, cropMode = false, selectedAn
     (scene.images || []).forEach((image, index) => {
         const isEditingCrop = cropMode && index === selectedIndex;
         const result = place(renderImage(image, index, defs, { skipClip: isEditingCrop }), imageLayer);
+        if (result && result.bounds.length > 0) {
+            touchTargets.push({ nodes: [result.node], box: boundsBox(result.bounds) });
+        }
         if (result && index === selectedIndex) {
+            // Marks what a drag would move, so touch styles can stop the page
+            // from scrolling when a finger starts on it (Issue #447).
+            result.node.classList.add("is-selected");
+            if (!isEditingCrop && result.bounds.length > 0) selectedBounds = boundsBox(result.bounds);
             // While actively editing the crop, the outline/handles track the
             // *draft* crop rect instead of the image's visible bounds, so
             // they can be dragged inward from the full (now unclipped) image.
@@ -775,8 +793,27 @@ export function renderScene(scene, { selectedIndex, cropMode = false, selectedAn
             hitArea.setAttribute("data-scene-annotation-index", index);
             annotationLayer.appendChild(hitArea);
         }
-        if (index === selectedAnnotationIndex) renderAnnotationSelection(toRender, selectionLayer);
+        if (result.bounds.length > 0) {
+            touchTargets.push({ nodes: hitArea ? [result.node, hitArea] : [result.node], box: boundsBox(result.bounds) });
+        }
+        if (index === selectedAnnotationIndex) {
+            result.node.classList.add("is-selected");
+            if (hitArea) hitArea.classList.add("is-selected");
+            if (result.bounds.length > 0) selectedBounds = boundsBox(result.bounds);
+            renderAnnotationSelection(toRender, selectionLayer);
+        }
     });
+    // Issue #447: a press on the selected object drags it even through another
+    // object drawn over it, so those objects need touch-action: none too, or
+    // the browser may take the gesture for a scroll. Only objects whose bounds
+    // overlap the selection are marked; the rest of the canvas still scrolls.
+    if (selectedBounds && !cropMode) {
+        const s = selectedBounds;
+        for (const { nodes, box } of touchTargets) {
+            if (box.x0 > s.x1 || box.x1 < s.x0 || box.y0 > s.y1 || box.y1 < s.y0) continue;
+            for (const node of nodes) node.classList.add("scene-drag-through");
+        }
+    }
     if (draft) renderDraft(draft, defs, selectionLayer);
 
     const x = minX < 0 ? minX - PADDING : 0;
