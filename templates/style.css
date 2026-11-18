@@ -3115,6 +3115,7 @@ button:disabled {
    must not scroll or zoom instead. */
 .scene-canvas.is-drawing svg,
 .scene-canvas .is-selected,
+.scene-canvas .scene-drag-through,
 .scene-canvas .scene-resize-handle,
 .scene-canvas .scene-point-handle {
     touch-action: none;
@@ -3122,7 +3123,9 @@ button:disabled {
 
 /* Issue #447: handles big enough for a fingertip on touch screens.
    --touch-target-scale is set by scenes.js from the canvas's drawn size. */
-@media (pointer: coarse) {
+/* any-pointer, because a laptop or tablet can report a mouse or pen as its
+   primary pointer while still having a touch screen. */
+@media (pointer: coarse), (any-pointer: coarse) {
     .scene-canvas .scene-resize-handle,
     .scene-canvas .scene-point-handle {
         transform-box: fill-box;

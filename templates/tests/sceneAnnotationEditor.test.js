@@ -1713,4 +1713,123 @@ describe("Touch editing (#447)", () => {
         tap(imageNode(), [150, 150]);
         expect($("scene-canvas").style.getPropertyValue("--touch-target-scale")).toBe("6.4");
     });
+
+    describe("responsive resizing", () => {
+        const scale = () => $("scene-canvas").style.getPropertyValue("--touch-target-scale");
+        afterEach(() => {
+            delete global.ResizeObserver;
+            jest.restoreAllMocks();
+        });
+
+        it("recalculates the handle scale when the SVG is resized, without touching the scene or selection", async () => {
+            const observers = [];
+            global.ResizeObserver = class {
+                constructor(callback) {
+                    this.callback = callback;
+                    this.observed = [];
+                    this.disconnect = jest.fn(() => { this.observed = []; });
+                    observers.push(this);
+                }
+                observe(node) { this.observed.push(node); }
+            };
+            await openSceneWithImage();
+            tap(imageNode(), [150, 150]);
+            expect(scale()).toBe("3.2");
+            const before = JSON.stringify(scenesModule.getActiveScene());
+
+            jest.spyOn(Element.prototype, "getBoundingClientRect").mockReturnValue({ left: 0, top: 0, width: 480, height: 300 });
+            observers[0].callback([]);
+
+            expect(scale()).toBe("6.4");
+            expect(isSelected()).toBe(true);
+            expect(JSON.stringify(scenesModule.getActiveScene())).toBe(before);
+            expect(scenesModule.hasUnsavedChanges()).toBe(false);
+
+            // Re-rendering reuses the one observer and points it at the new SVG only.
+            tap(imageNode(), [150, 150]);
+            expect(observers).toHaveLength(1);
+            expect(observers[0].observed).toEqual([canvasSvg()]);
+        });
+
+        it("also follows window resizes where ResizeObserver is missing", async () => {
+            await openSceneWithImage();
+            tap(imageNode(), [150, 150]);
+            expect(scale()).toBe("3.2");
+
+            jest.spyOn(Element.prototype, "getBoundingClientRect").mockReturnValue({ left: 0, top: 0, width: 480, height: 300 });
+            window.dispatchEvent(new Event("resize"));
+
+            expect(scale()).toBe("6.4");
+            expect(isSelected()).toBe(true);
+        });
+    });
+
+    describe("hybrid devices", () => {
+        it("sizes touch handles for any coarse pointer, not just the primary one", () => {
+            const css = require("fs").readFileSync(require("path").join(__dirname, "..", "style.css"), "utf8");
+            expect(css).toMatch(/@media\s*\(pointer:\s*coarse\),\s*\(any-pointer:\s*coarse\)\s*\{/);
+        });
+    });
+
+    describe("dragging through overlapping objects", () => {
+        const dragThrough = (node) => node.classList.contains("scene-drag-through");
+
+        it("lets a selected image be dragged through an annotation over it", async () => {
+            await openSceneWithImage({
+                annotations: [
+                    { id: "t", type: "text", text: "Ilium", x: 150, y: 140, fontSize: 20 },
+                    { id: "far", type: "text", text: "Far", x: 700, y: 500, fontSize: 20 },
+                ],
+            });
+            tap(imageNode(), [110, 110]);
+            expect(isSelected()).toBe(true);
+
+            // The overlay and its hit area can start the drag; the far-away label can't.
+            expect(document.querySelectorAll("#scene-canvas [data-scene-annotation-index=\"0\"].scene-drag-through").length)
+                .toBeGreaterThan(0);
+            expect(dragThrough(annotationNode(1))).toBe(false);
+
+            fingerDrag(annotationNode(0), [160, 150], [190, 180]);
+
+            expect(images()[0]).toMatchObject({ x: 130, y: 130 });
+            expect(isSelected()).toBe(true);
+            expect(document.querySelectorAll("#scene-canvas [data-scene-annotation-index=\"0\"].is-selected")).toHaveLength(0);
+            expect(annotations()[0]).toMatchObject({ x: 150, y: 140 });
+        });
+
+        it("lets a selected annotation be dragged through another object over it", async () => {
+            await openBlankScene({
+                annotations: [
+                    { id: "under", type: "text", text: "Under", x: 100, y: 100, fontSize: 20 },
+                    { id: "over", type: "text", text: "Over", x: 100, y: 100, fontSize: 20 },
+                ],
+            });
+            // The top label is hit first; tapping the same spot again steps down to the one beneath.
+            tap(annotationNode(1), [105, 105]);
+            tap(annotationNode(1), [105, 105]);
+            expect(document.querySelectorAll("#scene-canvas [data-scene-annotation-index=\"0\"].is-selected").length)
+                .toBeGreaterThan(0);
+            expect(dragThrough(annotationNode(1))).toBe(true);
+
+            fingerDrag(annotationNode(1), [105, 105], [145, 135]);
+
+            expect(annotations()[0]).toMatchObject({ x: 140, y: 130 });
+            expect(annotations()[1]).toMatchObject({ x: 100, y: 100 });
+            expect(document.querySelectorAll("#scene-canvas [data-scene-annotation-index=\"0\"].is-selected").length)
+                .toBeGreaterThan(0);
+            expect(document.querySelectorAll("#scene-canvas [data-scene-annotation-index=\"1\"].is-selected")).toHaveLength(0);
+        });
+
+        it("keeps objects away from the selection scrollable, and the css covers the marked ones", async () => {
+            const css = require("fs").readFileSync(require("path").join(__dirname, "..", "style.css"), "utf8");
+            const noScroll = css.match(/([^{}]+)\{\s*touch-action:\s*none;\s*\}/);
+            expect(noScroll[1]).toContain(".scene-drag-through");
+
+            await openSceneWithImage({ annotations: [{ id: "far", type: "text", text: "Far", x: 700, y: 500, fontSize: 20 }] });
+            expect(document.querySelectorAll("#scene-canvas .scene-drag-through")).toHaveLength(0);
+            tap(imageNode(), [150, 150]);
+            expect(dragThrough(annotationNode(0))).toBe(false);
+            expect(dragThrough(canvasSvg())).toBe(false);
+        });
+    });
 });

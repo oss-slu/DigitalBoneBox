@@ -750,6 +750,24 @@ function setTouchTargetScale(svg) {
     dom.canvas.style.setProperty("--touch-target-scale", String(round2(scale)));
 }
 
+// The scale also has to follow the SVG's drawn size when it changes without a
+// re-render (rotating a tablet, resizing the window). One observer is reused
+// and re-pointed at each new SVG; a window listener, added once, covers
+// browsers without ResizeObserver. Neither touches scene data or selection.
+let touchScaleObserver = null;
+
+function refreshTouchTargetScale() {
+    const svg = dom.canvas && dom.canvas.querySelector("svg");
+    if (svg) setTouchTargetScale(svg);
+}
+
+function watchTouchTargetScale(svg) {
+    if (typeof ResizeObserver === "undefined") return;
+    if (!touchScaleObserver) touchScaleObserver = new ResizeObserver(refreshTouchTargetScale);
+    touchScaleObserver.disconnect();
+    touchScaleObserver.observe(svg);
+}
+
 function renderCanvas() {
     const scene = state.active;
     dom.canvas.replaceChildren();
@@ -782,6 +800,7 @@ function renderCanvas() {
     }
     dom.canvas.append(svg);
     setTouchTargetScale(svg);
+    watchTouchTargetScale(svg);
 
     const notes = [];
     if (unsupported > 0) {
@@ -2936,6 +2955,8 @@ export function initializeSceneEditor(root = document) {
     // the browser supports them, with plain mouse events as the fallback. A
     // pointer drag cancels the browser's follow-up mouse events, and a stray
     // one is ignored while a pointer drag runs, so each press is handled once.
+    window.addEventListener("resize", refreshTouchTargetScale);
+    window.addEventListener("orientationchange", refreshTouchTargetScale);
     dom.canvas.addEventListener("pointerdown", handleCanvasPress);
     dom.canvas.addEventListener("mousedown", (event) => {
         if (activeDrag && activeDrag.isPointer) return;
