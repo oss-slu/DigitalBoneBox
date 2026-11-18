@@ -196,10 +196,8 @@ describe("renderScene linked annotations", () => {
     function textCenter(svg) {
         const node = layer(svg).querySelector("text");
         const fontSize = Number(node.getAttribute("font-size"));
-        return [
-            Number(node.getAttribute("x")) + (node.textContent.length * fontSize * 0.6) / 2,
-            Number(node.getAttribute("y")) + fontSize / 2,
-        ];
+        // Text is drawn centered on x (#475).
+        return [Number(node.getAttribute("x")), Number(node.getAttribute("y")) + fontSize / 2];
     }
     const parsePoints = (node) => node.getAttribute("points").trim().split(/\s+/).map((pair) => pair.split(",").map(Number));
     const linePointsOf = (svg) => parsePoints(layer(svg).querySelector("polyline"));

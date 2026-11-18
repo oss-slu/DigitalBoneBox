@@ -295,3 +295,83 @@ describe("Issue 474: highlight alignment", () => {
         expect(strokeWidth({ width: 100, height: 50, rotation: 90 })).toBeCloseTo(1);
     });
 });
+
+describe("Issue 475: line and label alignment", () => {
+    const LINE = [[130, 120], [210, 150], [260, 185]];
+    const pointer = linked({ type: "arrow", points: LINE, strokeWidth: 1.5, source: { type: "legacy-pointer-line" } });
+    const label = linked({ type: "text", text: "Iliac crest", x: 120, y: 112, fontSize: 10, source: { type: "legacy-label" } });
+    const drawnLabel = (svg) => svg.querySelector(".scene-layer-annotations text");
+
+    it.each(TRANSFORMS.map((change) => [describeTransform(change), change]))(
+        "keeps a pointer line's points on the same spots of its image: %s",
+        (_, change) => {
+            const { svg } = renderScene({ images: [sourceImage(change)], annotations: [pointer] });
+
+            expectNear(parsePoints(svg.querySelector(".scene-layer-annotations polyline")), LINE.map(imagePointMapper(svg)));
+        },
+    );
+
+    it.each(TRANSFORMS.map((change) => [describeTransform(change), change]))(
+        "keeps a label centered on the same spot of its image, upright and scaled with it: %s",
+        (_, change) => {
+            const { svg } = renderScene({ images: [sourceImage(change)], annotations: [label] });
+            const node = drawnLabel(svg);
+            const width = label.text.length * label.fontSize * 0.6;
+            const [expected] = [[label.x + width / 2, label.y + label.fontSize / 2]].map(imagePointMapper(svg));
+            const fontSize = Number(node.getAttribute("font-size"));
+            const image = sourceImage(change);
+
+            expect(fontSize).toBeCloseTo(label.fontSize * ((image.width / FRAME.width + image.height / FRAME.height) / 2));
+            expectNear([[Number(node.getAttribute("x")), Number(node.getAttribute("y")) + fontSize / 2]], [expected]);
+            expect(node.getAttribute("transform")).toBeNull();
+        },
+    );
+
+    it("draws a label centered in its box, so text narrower than the estimate isn't pushed left", () => {
+        const { svg } = renderScene({ images: [], annotations: [{ type: "text", text: "Ilium", x: 100, y: 50, fontSize: 20 }] });
+        const node = drawnLabel(svg);
+
+        // The box is 5 characters x 0.6em x 20px = 60px wide: 100 to 160.
+        expect(node.getAttribute("text-anchor")).toBe("middle");
+        expect(Number(node.getAttribute("x"))).toBeCloseTo(130);
+    });
+
+    it("centers every line of a multi-line label", () => {
+        const { svg } = renderScene({ images: [], annotations: [{ type: "text", text: "Greater\ntrochanter", x: 100, y: 50, fontSize: 10 }] });
+        const xs = [...drawnLabel(svg).querySelectorAll("tspan")].map((tspan) => Number(tspan.getAttribute("x")));
+
+        // The longest line, "trochanter", sets the box: 10 x 0.6 x 10 = 60px.
+        expect(xs).toEqual([130, 130]);
+    });
+
+    it("puts an arrow's head on the line's last point and scales it with the line", () => {
+        const { svg } = renderScene({ images: [sourceImage({ width: 400, height: 200, rotation: 90 })], annotations: [pointer] });
+        const line = svg.querySelector(".scene-layer-annotations polyline");
+        const marker = svg.querySelector(`${line.getAttribute("marker-end").slice(4, -1)}`);
+
+        expect(marker).not.toBeNull();
+        // Marker sizes are in units of the stroke width unless set otherwise, so the head grows with the line.
+        expect(marker.getAttribute("markerUnits")).toBeNull();
+        expect(Number(line.getAttribute("stroke-width"))).toBeCloseTo(3);
+    });
+
+    // Known limitation, recorded as R4 in docs/rendering-validation/README.md:
+    // labels stay upright when their image is rotated, but pointer lines turn
+    // with it, so a line that touches the end of a long label comes away from it.
+    it("documents that a pointer line comes away from an upright label when the image is rotated", () => {
+        const box = { x: label.x, y: label.y, width: label.text.length * 6, height: 10 };
+        const touching = linked({ type: "line", x1: box.x + box.width, y1: box.y + 5, x2: 250, y2: 160 });
+        const gap = (change) => {
+            const { svg } = renderScene({ images: [sourceImage(change)], annotations: [label, touching] });
+            const node = drawnLabel(svg);
+            const fontSize = Number(node.getAttribute("font-size"));
+            const width = label.text.length * fontSize * 0.6;
+            const [left, top] = [Number(node.getAttribute("x")) - width / 2, Number(node.getAttribute("y"))];
+            const [[x, y]] = parsePoints(svg.querySelector(".scene-layer-annotations polyline"));
+            return Math.hypot(Math.max(left - x, 0, x - left - width), Math.max(top - y, 0, y - top - fontSize));
+        };
+
+        expect(gap({})).toBeCloseTo(0);
+        expect(gap({ rotation: 90 })).toBeGreaterThan(20);
+    });
+});

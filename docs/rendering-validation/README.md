@@ -135,6 +135,29 @@ The highlights stay aligned because every image and annotation is drawn in one S
 
 This only checks that a region stays where it was imported. Whether it was imported onto the right part of the bone is a separate question: #468 found that older-format (pelvis) regions are a little off (D3), and that items with 3 or more images draw newer-format regions on every image (D5).
 
+## #475 Line and label alignment
+
+### Results
+
+| Check | Result | Evidence |
+|---|---|---|
+| Pointer lines and arrows stay on the same spots of their image, for the same 14 kinds of change as #474 | OK | `sceneRendering.test.js` "keeps a pointer line's points on the same spots of its image" |
+| Labels stay centered on the same spot of their image, upright, with their size following the image | OK | `sceneRendering.test.js` "keeps a label centered on the same spot of its image, upright and scaled with it" |
+| Arrowheads sit on the line's last point and grow with the line | OK | `sceneRendering.test.js` "puts an arrow's head on the line's last point and scales it with the line" |
+| Labels are drawn where they're placed | **Fixed (F4)** | `sceneRendering.test.js` "draws a label centered in its box" and "centers every line of a multi-line label" |
+| Lines and labels in the browser, default size (1024×768) | OK. Lines 0 px off; labels at most 0.9 px | Lines: 90 points, labels: 43, in the 5 scenes from #474 |
+| After zooming (26% to 800%), panning, and actual size | OK. Lines 0 px off; labels at most 5.1 px at 800% (0.6 scene px) | Ilium transformed and Atlas. The small label difference is the font's own top and bottom spacing, which grows with zoom; it doesn't build up. |
+| After resizing the window | OK. Lines 0 px off; labels under 1 px | 768×1024 and 375×812, see #476 |
+| Saved scenes reopen with the same alignment | OK | `scenes.test.js` "rotates a linked label with its image and keeps it there after saving and reopening the scene"; `boneset-api/saveReload.test.js` (#482) |
+| Dense placement | Reviewed | Atlas: 41 annotations (17 labels, 20 pointer lines) on 2 images |
+| Pointer lines touch their label when the image is rotated | **No (R4)** | `sceneRendering.test.js` "documents that a pointer line comes away from an upright label when the image is rotated" |
+
+**Pointer lines vs. labels in imported scenes.** Even with upright images, most imported pointer lines don't quite reach their label's text. In each scene I measured, the typical (median) gap was between 12 and 41 scene px. This is the known label layout difference from #468 (D1): labels and lines were drawn for the viewer's panel layout, and the import maps them over the images instead. F4 didn't change these numbers, so it isn't caused by the renderer.
+
+### Fixed on this branch
+
+**F4. Labels were drawn too far left.** The renderer works out a label's box from an estimated width of 0.6 × the font size per character, and drew the text starting at the box's left edge. Real text is narrower than that estimate (for example, "Anterior Superior Iliac Spine" is 162 px wide, not 209), so every label was left of its box's center by half the difference, about 23 px for longer labels. The import places each label by the center of its original box, the way the viewer shows it, so imported labels were off by that much. In the browser, labels were up to 28 scene px from where they belong (35 on the enlarged image). Now labels are drawn centered in their box (`text-anchor="middle"` in `renderText`) and land within 1 px. The box used for selecting and dragging didn't change.
+
 ## Defects found
 
 ### R1. Annotations aren't stacked with their image
@@ -152,3 +175,10 @@ Possible fix: add captions (side and aspect) for the other bonesets from the Pow
 ### R3. `hand_right_image.jpg` is turned on its side
 
 The second hand image (used by Hand, metacarpals and the other hand items that list it) has the fingers pointing right, while the first one has them pointing up. The viewer and the scene both show the file as it is, so they match each other, but one of the two images is not in the usual anatomical position. Someone who knows the source slides should say whether that is how the slide showed it. If not, the file should be turned 90° counterclockwise; the scene import doesn't need to change.
+
+### R4. Pointer lines come away from labels when an image is rotated
+
+Labels are kept upright so they stay readable, while their pointer lines turn with the image. A line that touches the end of a long label lands beside the label once the image is turned. Across every imported item, 292 pointer lines touch their label when the image is upright. Rotated 45°, 193 of them come loose; rotated 90°, 241 do (half of those by 17 scene px or more, at most 86).
+
+Possible fix: when drawing an imported label on a rotated image, move the label so the point where its line meets it stays on the line, instead of keeping the label's center in place. That changes how imported labels move, so it should be decided as its own issue.
+

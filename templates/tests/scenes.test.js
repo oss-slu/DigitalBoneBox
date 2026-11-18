@@ -1010,10 +1010,8 @@ describe("Scene editor: imported annotations follow their image", () => {
     function labelCenter() {
         const node = document.querySelector(".scene-layer-annotations text");
         const fontSize = Number(node.getAttribute("font-size"));
-        return [
-            Number(node.getAttribute("x")) + (node.textContent.length * fontSize * 0.6) / 2,
-            Number(node.getAttribute("y")) + fontSize / 2,
-        ];
+        // Text is drawn centered on x (#475).
+        return [Number(node.getAttribute("x")), Number(node.getAttribute("y")) + fontSize / 2];
     }
 
     it("rotates a linked label with its image and keeps it there after saving and reopening the scene", async () => {

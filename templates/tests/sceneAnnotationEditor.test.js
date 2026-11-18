@@ -703,7 +703,8 @@ describe("Annotations linked to an image", () => {
 
         expect(annotations()[0]).toMatchObject({ x: 30, y: 25, fontSize: 10, sourceImageFrame: { x: 0, y: 0, width: 100, height: 50 } });
         const text = canvasSvg().querySelector(".scene-layer-annotations text");
-        expect(Number(text.getAttribute("x"))).toBeCloseTo(60);
+        // Drawn centered in its 60px-wide box, which starts at x = 60 (#475).
+        expect(Number(text.getAttribute("x"))).toBeCloseTo(90);
         expect(Number(text.getAttribute("y"))).toBeCloseTo(50);
     });
 });

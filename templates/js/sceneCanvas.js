@@ -378,9 +378,15 @@ function visibleCropPolygon(image, transform) {
 function renderText(annotation) {
     if (typeof annotation.text !== "string" || !isNumber(annotation.x) || !isNumber(annotation.y)) return null;
     const box = textBox(annotation);
+    // Issue #475: centered in its box. The box width is an estimate (0.6em
+    // per character) and real text is usually narrower, so drawing from the
+    // left edge put every label left of where it belongs; an imported label
+    // is placed by the center of its original box, as the viewer shows it.
+    const centerX = box.x + box.width / 2;
     const node = el("text", {
-        x: annotation.x,
+        x: centerX,
         y: annotation.y,
+        "text-anchor": "middle",
         "font-size": box.fontSize,
         "font-weight": annotation.fontWeight,
         fill: annotation.color || DEFAULT_STROKE,
@@ -392,7 +398,7 @@ function renderText(annotation) {
     } else {
         box.lines.forEach((line, index) => {
             const tspan = el("tspan", {
-                x: annotation.x,
+                x: centerX,
                 y: annotation.y + index * box.fontSize * TEXT_LINE_HEIGHT,
                 "dominant-baseline": "hanging",
             });
