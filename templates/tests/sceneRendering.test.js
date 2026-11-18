@@ -77,3 +77,28 @@ describe("Issue 472: image ordering", () => {
         expect(objectsAt(scene, [150, 150])[0]).toEqual({ kind: "annotation", index: 0 });
     });
 });
+
+describe("Issue 471: image orientation", () => {
+    const drawn = (overrides) => renderScene({ images: [image("a", overrides)], annotations: [] }).svg.querySelector(".scene-image-object");
+
+    it("draws an image with no rotation or flip exactly as the file is", () => {
+        const node = drawn({ rotation: 0 });
+
+        expect(node.hasAttribute("transform")).toBe(false);
+        expect(node.getAttribute("preserveAspectRatio")).toBe("none");
+        expect([node.getAttribute("width"), node.getAttribute("height")]).toEqual(["200", "100"]);
+    });
+
+    it("draws a saved rotation and flip about the image's center", () => {
+        // 200x100 at (0, 0): the center is (100, 50).
+        expect(drawn({ rotation: 90 }).getAttribute("transform")).toBe("rotate(90 100 50)");
+        expect(drawn({ flipX: true }).getAttribute("transform")).toBe("translate(100 50) scale(-1 1) translate(-100 -50)");
+        expect(drawn({ flipY: true }).getAttribute("transform")).toBe("translate(100 50) scale(1 -1) translate(-100 -50)");
+    });
+
+    it("flips first and then rotates, so a flipped image turns the same way as an unflipped one", () => {
+        // SVG applies the right-most transform first.
+        expect(drawn({ rotation: 90, flipX: true }).getAttribute("transform"))
+            .toBe("rotate(90 100 50) translate(100 50) scale(-1 1) translate(-100 -50)");
+    });
+});
