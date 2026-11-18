@@ -9,6 +9,16 @@ How I checked:
 
 Zoom and pan (#449) and responsive resizing (#450) were merged before #474-#476, so those sections check alignment at different zoom levels, while panned, and at different window sizes.
 
+## Summary
+
+| #470 acceptance criterion | Result | Section |
+|---|---|---|
+| Image orientation and ordering are verified | Done. Found R2 and R3. | #471, #472 |
+| Image rotation, scaling, and cropping are verified | Done. Fixed F1-F3. | #473 |
+| Highlights, lines, and labels remain aligned | Done. Fixed F4; found R1 and R4. | #474, #475 |
+| Rendering is checked across supported screen sizes | Done. Found R5. | #476 |
+| Rendering defects are recorded as focused issues | R1-R5 are written up below, each with a possible fix, ready to be filed as their own issues | [Defects found](#defects-found) |
+
 ## #472 Image ordering
 
 ### How order works
@@ -158,6 +168,37 @@ This only checks that a region stays where it was imported. Whether it was impor
 
 **F4. Labels were drawn too far left.** The renderer works out a label's box from an estimated width of 0.6 × the font size per character, and drew the text starting at the box's left edge. Real text is narrower than that estimate (for example, "Anterior Superior Iliac Spine" is 162 px wide, not 209), so every label was left of its box's center by half the difference, about 23 px for longer labels. The import places each label by the center of its original box, the way the viewer shows it, so imported labels were off by that much. In the browser, labels were up to 28 scene px from where they belong (35 on the enlarged image). Now labels are drawn centered in their box (`text-anchor="middle"` in `renderText`) and land within 1 px. The box used for selecting and dragging didn't change.
 
+## #476 Rendering across screen sizes
+
+### How I checked
+
+I opened the same 5 scenes from #474 (Ilium, Ilium transformed, Atlas, Hand metacarpals and Femur head) at each size, at the default view (100%, fit to width), and ran the same alignment measurement. The page was reloaded at each size so it started fresh, and at phone size it ran as a phone: mobile user agent and touch input. I also checked that the page never scrolls sideways and how big the smallest label ends up on screen.
+
+All runs were in the Claude desktop app's built-in browser (Chromium, Chrome 156). I didn't test Safari, Firefox, or a real phone or tablet.
+
+### Results
+
+| Device | Viewport | Input | Canvas width | Regions | Lines | Labels | Page scrolls sideways | Smallest label on screen |
+|---|---|---|---|---|---|---|---|---|
+| Desktop | 1440×900 | Mouse | 986 px | 0 px off | 0 px off | ≤ 1.4 px off | No | 9 px (Atlas) |
+| Small laptop | 1024×768 | Mouse | 554 px | 0 px off | 0 px off | ≤ 0.9 px off | No | 5 px (Atlas) |
+| Tablet, portrait | 768×1024 | Mouse | 686 px | 0 px off | 0 px off | ≤ 1.0 px off | No | 6.5 px (Atlas) |
+| Phone, portrait | 375×812 | Touch, mobile | 303 px | 0 px off | 0 px off | ≤ 0.5 px off | No | 2.5 px (Atlas) |
+| Phone, portrait, zoomed to 305% | 375×812 | Touch, mobile | 303 px, panned | 0 px off | 0 px off | ≤ 0.7 px off | No | 8.5 px (Atlas) |
+| Phone, landscape | 812×375 | Mouse | 656 px | 0 px off | 0 px off | ≤ 1.1 px off | No | 6 px (Atlas) |
+| Phone turned from portrait to landscape with a scene open | 375×812 to 812×375 | Touch, mobile | 656 px | 0 px off | 0 px off | ≤ 1.5 px off | No | Not measured |
+
+"Labels" is the distance between the center of the real label text and where it belongs. The rest is the font's own spacing (see #475).
+
+| Check | Result |
+|---|---|
+| Scenes render correctly on desktop layouts | OK |
+| Scenes render correctly on tablet layouts | OK. The controls wrap onto more rows and the canvas uses the full width. |
+| Scenes render correctly on phone layouts | Alignment is OK, but labels are too small to read until you zoom in (R5) |
+| No supported layout causes systematic annotation displacement | OK. Nothing was more than 1.5 screen px off at any size, and the error didn't grow with screen size. |
+
+At 1024×768 the canvas is narrower (554 px) than on the 768 px tablet (686 px), because the scene list sits beside it at that width.
+
 ## Defects found
 
 ### R1. Annotations aren't stacked with their image
@@ -181,4 +222,10 @@ The second hand image (used by Hand, metacarpals and the other hand items that l
 Labels are kept upright so they stay readable, while their pointer lines turn with the image. A line that touches the end of a long label lands beside the label once the image is turned. Across every imported item, 292 pointer lines touch their label when the image is upright. Rotated 45°, 193 of them come loose; rotated 90°, 241 do (half of those by 17 scene px or more, at most 86).
 
 Possible fix: when drawing an imported label on a rotated image, move the label so the point where its line meets it stays on the line, instead of keeping the label's center in place. That changes how imported labels move, so it should be decided as its own issue.
+
+### R5. Labels are too small to read on a phone until you zoom in
+
+The default view fits the whole scene to the canvas width, and the scene is at least 960 scene px wide. On a 375 px phone the canvas is 303 px, so everything is drawn at about a third of its size or less. Labels end up 2.5 to 6 px tall in the reviewed scenes (Atlas is the worst, because its hidden labels make the scene wider, see #468 D2). They line up correctly, and zooming in to about 300% makes them readable (8.5 px), but nothing tells a phone user to do that. It is also a little tight on a small laptop (5 px at 1024×768).
+
+Possible fixes: start phones at a higher zoom centered on the images, or keep labels at a minimum on-screen size.
 
