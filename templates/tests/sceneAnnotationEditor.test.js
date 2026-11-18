@@ -1726,29 +1726,61 @@ describe("Touch editing (#447)", () => {
             global.ResizeObserver = class {
                 constructor(callback) {
                     this.callback = callback;
-                    this.observed = [];
+                    this.observed = []; // what it watches now
+                    this.targets = []; // everything it has ever been pointed at
                     this.disconnect = jest.fn(() => { this.observed = []; });
                     observers.push(this);
                 }
-                observe(node) { this.observed.push(node); }
+                observe(node) {
+                    this.observed.push(node);
+                    this.targets.push(node);
+                }
             };
             await openSceneWithImage();
             tap(imageNode(), [150, 150]);
             expect(scale()).toBe("3.2");
             const before = JSON.stringify(scenesModule.getActiveScene());
 
+            // Two observers with separate jobs: one on #scene-canvas (the layout
+            // changed) and one reusable observer on the current SVG (touch-target scale).
+            const canvas = $("scene-canvas");
+            const isSvg = (node) => node instanceof SVGElement;
+            const canvasObservers = observers.filter((o) => o.targets.length > 0 && o.targets.every((n) => n === canvas));
+            const svgObservers = observers.filter((o) => o.targets.length > 0 && o.targets.every(isSvg));
+            expect(observers).toHaveLength(2);
+            expect(canvasObservers).toHaveLength(1);
+            expect(svgObservers).toHaveLength(1);
+            const [canvasObserver] = canvasObservers;
+            const [svgObserver] = svgObservers;
+            const firstSvg = canvasSvg();
+            expect(svgObserver.observed).toEqual([firstSvg]);
+
             jest.spyOn(Element.prototype, "getBoundingClientRect").mockReturnValue({ left: 0, top: 0, width: 480, height: 300 });
-            observers[0].callback([]);
+            svgObserver.callback([]);
 
             expect(scale()).toBe("6.4");
             expect(isSelected()).toBe(true);
             expect(JSON.stringify(scenesModule.getActiveScene())).toBe(before);
             expect(scenesModule.hasUnsavedChanges()).toBe(false);
 
-            // Re-rendering reuses the one observer and points it at the new SVG only.
+            // Re-rendering reuses the SVG observer and retargets it to the new SVG only.
+            const disconnects = svgObserver.disconnect.mock.calls.length;
             tap(imageNode(), [150, 150]);
-            expect(observers).toHaveLength(1);
-            expect(observers[0].observed).toEqual([canvasSvg()]);
+            const nextSvg = canvasSvg();
+            expect(nextSvg).not.toBe(firstSvg);
+            expect(observers).toHaveLength(2);
+            expect(observers.filter(isSvgObserver)).toEqual([svgObserver]);
+            expect(svgObserver.disconnect.mock.calls.length).toBeGreaterThan(disconnects);
+            expect(svgObserver.observed).toEqual([nextSvg]);
+
+            // The canvas observer is never reset: it stays on #scene-canvas.
+            expect(canvasObserver.disconnect).not.toHaveBeenCalled();
+            expect(canvasObserver.observed).toEqual([canvas]);
+            expect(canvasObserver.targets).toEqual([canvas]);
+
+            function isSvgObserver(observer) {
+                return observer.targets.length > 0 && observer.targets.every(isSvg);
+            }
         });
 
         it("also follows window resizes where ResizeObserver is missing", async () => {
