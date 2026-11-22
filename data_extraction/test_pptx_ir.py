@@ -253,6 +253,23 @@ class OutputPaths(unittest.TestCase):
         for path in written:
             self.assertTrue(pptx_ir.is_within(os.path.realpath(path), os.path.realpath(folder)), path)
 
+    def test_check_reports_the_prerequisites_as_json(self):
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            self.assertEqual(pptx_ir.main(["--check"]), 0)
+        report = json.loads(out.getvalue())
+        self.assertEqual(set(report), {"extractor", "irVersion", "python", "pillow", "labelFonts", "importDir"})
+        self.assertIsInstance(report["pillow"], bool)
+        self.assertEqual(set(report["labelFonts"]), {"regular", "bold"})
+        self.assertTrue(os.path.isabs(report["importDir"]))
+
+    def test_progress_prints_one_json_line_per_slide(self):
+        err = io.StringIO()
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(err):
+            self.assertEqual(pptx_ir.main([self.deck, "out", "--deck-key", "mini", "--progress"]), 0)
+        progress = [json.loads(line)["progress"] for line in err.getvalue().splitlines() if line.startswith('{"progress"')]
+        self.assertEqual(progress, [{"done": 1, "total": 1}])
+
     def test_media_extensions_from_the_deck_are_plain(self):
         self.assertEqual(pptx_ir.media_extension("ppt/media/image1.PNG"), ".png")
         self.assertEqual(pptx_ir.media_extension("ppt/media/image2.jpeg"), ".jpeg")

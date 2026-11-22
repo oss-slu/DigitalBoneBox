@@ -10,7 +10,13 @@ turns this record into Scene Editor scenes, so conversion rules can change
 without reopening the PPTX.
 
 Usage:
-    python3 data_extraction/pptx_ir.py DECK.pptx [OUT_DIR] [--deck-key KEY] [--slides 2-7,9]
+    python3 data_extraction/pptx_ir.py DECK.pptx [OUT_DIR] [--deck-key KEY] [--slides 2-7,9] [--progress]
+    python3 data_extraction/pptx_ir.py --check
+
+--check prints, as JSON, whether this Python can extract decks with measured
+label line breaks (Pillow and Calibri or Carlito) and where the import folder
+is; the Scene Editor's import uses it to check prerequisites. --progress
+prints one JSON line per extracted slide to stderr.
 
 Writes OUT_DIR/<deck-key>.ir.json and OUT_DIR/media/<sha256[:16]><ext>.
 Without OUT_DIR the local import folder is used: DBB_PPTX_IMPORT_DIR when set,
@@ -34,6 +40,7 @@ import json
 import math
 import ntpath
 import os
+import platform as py_platform
 import posixpath
 import re
 import struct
@@ -437,7 +444,8 @@ def media_extension(part):
 # Slide parsing
 # --------------------------------------------------------------------------
 class DeckExtractor:
-    def __init__(self, path, deck_key, out_dir, slide_filter=None):
+    def __init__(self, path, deck_key, out_dir, slide_filter=None, on_progress=None):
+        self.on_progress = on_progress
         self.deck_key = validate_deck_key(deck_key)
         self.out_dir = resolve_out_dir(out_dir)
         self.media_dir = output_path(self.out_dir, "media")
@@ -468,11 +476,12 @@ class DeckExtractor:
             "units": "EMU (914400 per inch, 9525 per CSS px at 96 dpi)",
             "slides": [],
         }
+        selected = [s for s in self.slides if not self.slide_filter or s["index"] in self.slide_filter]
         try:
-            for slide in self.slides:
-                if self.slide_filter and slide["index"] not in self.slide_filter:
-                    continue
+            for done, slide in enumerate(selected, 1):
                 out["slides"].append(self.slide(slide))
+                if self.on_progress:
+                    self.on_progress(done, len(selected))
         finally:
             self.pkg.zip.close()
         out["media"] = self.media
@@ -1004,7 +1013,29 @@ def parse_slide_filter(spec):
     return out
 
 
+def check_environment():
+    """What this Python can do, for a caller deciding whether to run an extraction."""
+    measurer = TextMeasurer()
+    return {
+        "extractor": EXTRACTOR_VERSION,
+        "irVersion": IR_VERSION,
+        "python": py_platform.python_version(),
+        "pillow": measurer.ImageFont is not None,
+        "labelFonts": {"regular": measurer.find_font("calibri", False) is not None,
+                       "bold": measurer.find_font("calibri", True) is not None},
+        "importDir": os.path.realpath(os.path.abspath(default_import_dir())),
+    }
+
+
+def print_progress(done, total):
+    print(json.dumps({"progress": {"done": done, "total": total}}), file=sys.stderr, flush=True)
+
+
 def main(argv=None):
+    argv = sys.argv[1:] if argv is None else list(argv)
+    if argv == ["--check"]:
+        print(json.dumps(check_environment()))
+        return 0
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("deck")
     parser.add_argument("out_dir", nargs="?", default=None,
@@ -1014,6 +1045,7 @@ def main(argv=None):
                         help="stable name for this deck, used for scene ids and the IR file name "
                              "(letters, digits, '.', '_', '-')")
     parser.add_argument("--slides", default=None, help="e.g. 2-7,9 (default: all)")
+    parser.add_argument("--progress", action="store_true", help="print one JSON progress line per slide to stderr")
     args = parser.parse_args(argv)
     key = args.deck_key or re.sub(r"[^a-z0-9]+", "-", os.path.splitext(os.path.basename(args.deck))[0].lower()).strip("-")
     try:
@@ -1024,7 +1056,8 @@ def main(argv=None):
     try:
         out_dir = resolve_out_dir(args.out_dir if args.out_dir is not None else default_import_dir())
         out_path = output_path(out_dir, key + ".ir.json")
-        extractor = DeckExtractor(args.deck, key, out_dir, parse_slide_filter(args.slides))
+        extractor = DeckExtractor(args.deck, key, out_dir, parse_slide_filter(args.slides),
+                                  on_progress=print_progress if args.progress else None)
         ir = extractor.run()
         with open(out_path, "w", encoding="utf-8") as fh:
             json.dump(ir, fh, indent=1)

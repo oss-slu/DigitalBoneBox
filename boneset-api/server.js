@@ -5,8 +5,9 @@ const rateLimit = require("express-rate-limit");
 
 const fs = require("fs").promises; // Use promises for async/await file reading
 const path = require("path");
-const { createScenesRouter } = require("./scenes");
+const { createScenesRouter, resolveSceneStore } = require("./scenes");
 const { createImageCatalogRouter } = require("./images");
+const { createPresentationImportRouter } = require("./presentationImport");
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -30,7 +31,10 @@ const BONESET_NAMES = ["bony_pelvis", "skull", "thorax", "vertebrae", "upper_lim
 
 app.use("/api/images", express.static(IMAGES_DIR));
 app.use("/api/image-catalog", createImageCatalogRouter({ imagesDir: IMAGES_DIR, descriptionsDir: DESCRIPTIONS_DIR }));
-app.use("/api/scenes", createScenesRouter());
+// One scene store for the scenes API and presentation imports, so both use the same per-scene locks.
+const sceneStore = resolveSceneStore();
+app.use("/api/scenes", createScenesRouter(sceneStore));
+app.use("/api/scene-imports", createPresentationImportRouter({ store: sceneStore, imagesDir: IMAGES_DIR }));
 
 // Rate limiter for search endpoint
 const searchLimiter = rateLimit({

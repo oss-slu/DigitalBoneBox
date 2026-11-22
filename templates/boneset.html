@@ -160,10 +160,121 @@
                     <h1 id="scene-editor-heading" tabindex="-1">Scene Editor</h1>
                     <p class="subtitle">Create and organize bone-image scenes</p>
                 </div>
-                <button id="scene-editor-back" type="button" class="scene-btn scene-btn-secondary">&larr; Back to Bone Viewer</button>
+                <div class="scene-editor-header-actions">
+                    <button id="presentation-import-open" type="button" class="scene-btn scene-btn-secondary" aria-controls="presentation-import" aria-expanded="false">Import presentation</button>
+                    <button id="scene-editor-back" type="button" class="scene-btn scene-btn-secondary">&larr; Back to Bone Viewer</button>
+                </div>
             </div>
 
             <p id="scene-editor-status" class="scene-visually-hidden" role="status" aria-live="polite"></p>
+
+            <!-- Import a PowerPoint or Google Slides presentation as draft scenes (Issue #540) -->
+            <section id="presentation-import" class="presentation-import" aria-labelledby="presentation-import-heading" hidden>
+                <div class="presentation-import-header">
+                    <h2 id="presentation-import-heading" tabindex="-1">Import a presentation</h2>
+                    <button id="presentation-import-close" type="button" class="scene-btn scene-btn-secondary">Close</button>
+                </div>
+                <p class="presentation-import-intro">Each slide becomes a draft scene with its photos, labels, pointer lines and highlights. Drafts stay in the Scene Editor until someone publishes them.</p>
+
+                <p id="presentation-import-checking" class="scene-loading">Checking whether this server can import presentations&hellip;</p>
+                <div id="presentation-import-unavailable" class="scene-alert" role="alert" hidden>
+                    <div>
+                        <p><strong>Presentation import isn't available here.</strong></p>
+                        <ul id="presentation-import-problems"></ul>
+                    </div>
+                    <div class="scene-alert-actions">
+                        <button id="presentation-import-recheck" type="button" class="scene-btn scene-btn-secondary">Check again</button>
+                    </div>
+                </div>
+                <div id="presentation-import-warnings" class="presentation-import-note" hidden>
+                    <p><strong>Note:</strong></p>
+                    <ul id="presentation-import-warning-list"></ul>
+                </div>
+
+                <form id="presentation-import-form" class="presentation-import-form" novalidate hidden>
+                    <fieldset class="presentation-import-sources">
+                        <legend>Import from</legend>
+                        <label><input type="radio" name="presentation-import-source" value="pptx" checked /> PowerPoint file (.pptx)</label>
+                        <label><input type="radio" name="presentation-import-source" value="google-slides" /> Google Slides link</label>
+                    </fieldset>
+
+                    <div id="presentation-import-file-field" class="presentation-import-field">
+                        <label for="presentation-import-file">PowerPoint file</label>
+                        <input id="presentation-import-file" type="file" accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation" aria-describedby="presentation-import-file-help presentation-import-file-error" />
+                        <p id="presentation-import-file-help" class="presentation-import-help">A .pptx file.</p>
+                        <p id="presentation-import-file-error" class="scene-field-error" hidden></p>
+                    </div>
+
+                    <div id="presentation-import-link-field" class="presentation-import-field" hidden>
+                        <label for="presentation-import-link">Google Slides link</label>
+                        <input id="presentation-import-link" type="text" inputmode="url" autocomplete="off" placeholder="https://docs.google.com/presentation/d/..." aria-describedby="presentation-import-link-help presentation-import-link-error" />
+                        <p id="presentation-import-link-help" class="presentation-import-help">The presentation must be shared as "Anyone with the link can view". For a private presentation, use File &gt; Download &gt; Microsoft PowerPoint (.pptx) in Google Slides and import that file instead.</p>
+                        <p id="presentation-import-link-error" class="scene-field-error" hidden></p>
+                    </div>
+
+                    <div class="presentation-import-field">
+                        <label for="presentation-import-deck-key">Deck key</label>
+                        <input id="presentation-import-deck-key" type="text" maxlength="128" autocomplete="off" spellcheck="false" list="presentation-import-deck-keys" aria-describedby="presentation-import-deck-key-help presentation-import-deck-key-error" />
+                        <datalist id="presentation-import-deck-keys"></datalist>
+                        <p id="presentation-import-deck-key-help" class="presentation-import-help">A permanent name for this deck. Import it again with the same key and its scenes are updated instead of duplicated. Letters, digits, ".", "_" and "-".</p>
+                        <p id="presentation-import-deck-key-error" class="scene-field-error" hidden></p>
+                    </div>
+
+                    <div class="presentation-import-field">
+                        <label for="presentation-import-slides">Slides <span class="presentation-import-optional">(optional)</span></label>
+                        <input id="presentation-import-slides" type="text" autocomplete="off" placeholder="All slides, or for example 2-7, 9" aria-describedby="presentation-import-slides-error" />
+                        <p id="presentation-import-slides-error" class="scene-field-error" hidden></p>
+                    </div>
+
+                    <div id="presentation-import-key-field" class="presentation-import-field" hidden>
+                        <label for="presentation-import-key">Import key</label>
+                        <input id="presentation-import-key" type="password" autocomplete="off" aria-describedby="presentation-import-key-help presentation-import-key-error" />
+                        <p id="presentation-import-key-help" class="presentation-import-help">This server asks for a key before it imports. Ask the person who runs it.</p>
+                        <p id="presentation-import-key-error" class="scene-field-error" hidden></p>
+                    </div>
+
+                    <label class="presentation-import-check"><input id="presentation-import-dry-run" type="checkbox" /> Check only: report what would happen without saving scenes or copying images</label>
+
+                    <p id="presentation-import-form-error" class="scene-field-error" role="alert" hidden></p>
+                    <div class="presentation-import-actions">
+                        <button id="presentation-import-submit" type="submit" class="scene-btn scene-btn-primary">Import</button>
+                    </div>
+                </form>
+
+                <div id="presentation-import-progress" class="presentation-import-progress" hidden>
+                    <p id="presentation-import-progress-label" role="status" aria-live="polite"></p>
+                    <progress id="presentation-import-progress-bar" max="100" aria-labelledby="presentation-import-progress-label"></progress>
+                    <button id="presentation-import-poll-retry" type="button" class="scene-btn scene-btn-secondary" hidden>Check again</button>
+                </div>
+
+                <div id="presentation-import-result" class="presentation-import-result" hidden>
+                    <h3 id="presentation-import-result-heading" tabindex="-1"></h3>
+                    <p id="presentation-import-summary"></p>
+                    <ul id="presentation-import-result-warnings" class="presentation-import-result-warnings" hidden></ul>
+                    <div class="presentation-import-table-wrap">
+                        <table id="presentation-import-table" class="presentation-import-table" hidden>
+                            <caption class="scene-visually-hidden">Result for each slide</caption>
+                            <thead>
+                                <tr>
+                                    <th scope="col">Slide</th>
+                                    <th scope="col">Scene</th>
+                                    <th scope="col">Result</th>
+                                    <th scope="col">Photos</th>
+                                    <th scope="col">Labels</th>
+                                    <th scope="col">Lines</th>
+                                    <th scope="col">Highlights</th>
+                                    <th scope="col">Needs review</th>
+                                    <th scope="col">Left out</th>
+                                </tr>
+                            </thead>
+                            <tbody id="presentation-import-rows"></tbody>
+                        </table>
+                    </div>
+                    <div class="presentation-import-actions">
+                        <button id="presentation-import-again" type="button" class="scene-btn scene-btn-secondary">Import another presentation</button>
+                    </div>
+                </div>
+            </section>
 
             <div class="scene-editor-layout">
                 <section class="scene-library" aria-labelledby="scene-library-heading">
@@ -446,6 +557,7 @@
     <script type="module" src="js/annotationOverlay.js"></script>
     <script type="module" src="js/imageCaptions.js"></script>
     <script type="module" src="js/scenes.js"></script>
+    <script type="module" src="js/presentationImport.js"></script>
     
     <!-- Simple Escape Key Handler -->
     <script>

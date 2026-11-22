@@ -3350,3 +3350,191 @@ button:disabled {
         display: none;
     }
 }
+/* ---- Import presentation (Issue #540) ---- */
+.scene-editor-header-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.presentation-import {
+    margin-bottom: var(--space-6);
+    padding: var(--space-4);
+    background: white;
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--slu-light-blue);
+    border-radius: var(--radius-lg);
+}
+
+.presentation-import-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+}
+
+.presentation-import-header h2 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: var(--primary);
+}
+
+.presentation-import-intro {
+    margin: var(--space-2) 0 var(--space-4);
+    color: var(--text-secondary);
+}
+
+.presentation-import-note {
+    margin-bottom: var(--space-3);
+    padding: var(--space-3);
+    border: 1px solid #fcd34d;
+    border-left: 4px solid var(--warning);
+    border-radius: var(--radius);
+    background: #fffbeb;
+    color: #78350f;
+}
+
+.presentation-import-note p,
+.presentation-import-note ul,
+.presentation-import .scene-alert ul {
+    margin: 0;
+}
+
+.presentation-import-form {
+    display: grid;
+    gap: var(--space-3);
+    max-width: 640px;
+}
+
+.presentation-import-sources {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.presentation-import-sources legend,
+.presentation-import-field label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: var(--space-1);
+}
+
+.presentation-import-sources label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+.presentation-import-field input[type="text"],
+.presentation-import-field input[type="password"] {
+    width: 100%;
+    box-sizing: border-box;
+    padding: var(--space-2) var(--space-3);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 1rem;
+}
+
+.presentation-import-field input[aria-invalid="true"] {
+    border-color: #b91c1c;
+}
+
+.presentation-import-help {
+    margin: var(--space-1) 0 0;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.presentation-import-optional {
+    font-weight: 400;
+    color: var(--text-secondary);
+}
+
+.presentation-import-check {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
+}
+
+.presentation-import-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.presentation-import-progress progress {
+    width: 100%;
+    max-width: 640px;
+    height: 1rem;
+}
+
+.presentation-import-result h3 {
+    margin: var(--space-2) 0;
+    color: var(--primary);
+}
+
+.presentation-import-result[data-state="stopped"] h3,
+.presentation-import-result[data-state="failed"] h3 {
+    color: #b91c1c;
+}
+
+.presentation-import-table-wrap {
+    overflow-x: auto;
+    margin: var(--space-3) 0;
+}
+
+.presentation-import-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.presentation-import-table th,
+.presentation-import-table td {
+    padding: var(--space-2);
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    vertical-align: top;
+}
+
+.presentation-import-table tr[data-outcome="rejected"] td,
+.presentation-import-table tr[data-outcome="failed"] td {
+    background: #fef2f2;
+}
+
+.presentation-import-reason {
+    color: var(--text-secondary);
+}
+
+.presentation-import .presentation-import-open-scene {
+    padding: 0 var(--space-2);
+    font-size: 0.85rem;
+}
+
+.presentation-import label {
+    font-size: 1rem;
+    color: var(--text-primary);
+    text-transform: none;
+    letter-spacing: 0;
+    text-align: left;
+}
+
+.presentation-import-sources label,
+.presentation-import-check {
+    font-weight: 400;
+    margin-bottom: 0;
+}
+
+.presentation-import-table details {
+    margin-top: var(--space-1);
+}
+
+.presentation-import-table details ul {
+    margin: var(--space-1) 0 0;
+    padding-left: var(--space-4);
+    max-width: 48ch;
+}
