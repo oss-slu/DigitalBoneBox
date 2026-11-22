@@ -932,14 +932,86 @@ describe("Scene editor: crop an image", () => {
 
 // PR #493 review: an imported label follows its image through an edit made in
 // the editor, and still lines up after the scene is reloaded from the server.
+// Issue #473 (parent #470): resizing keeps a crop on the same part of the
+// image, and the handles of a flipped image move the corner they sit on.
+describe("Scene editor: flipped and cropped images - Issue 473", () => {
+    async function openSceneWithImage(overrides) {
+        backend.seed({
+            name: "Solo",
+            images: [{ id: "img-a", src: "/images/a.png", x: 100, y: 100, width: 200, height: 100, ...overrides }],
+        });
+        await enterEditor();
+        await openByName("Solo");
+        selectImage(0);
+        const svg = document.querySelector("#scene-canvas svg");
+        svg.getBoundingClientRect = () => ({ width: 960, height: 600 });
+    }
+
+    function drag(target, from, to) {
+        target.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, clientX: from.x, clientY: from.y }));
+        document.dispatchEvent(new MouseEvent("mousemove", { clientX: to.x, clientY: to.y }));
+        document.dispatchEvent(new MouseEvent("mouseup", { clientX: to.x, clientY: to.y }));
+    }
+
+    const handleAt = (corner) => {
+        const node = document.querySelector(`[data-corner="${corner}"]`);
+        return [Number(node.getAttribute("x")) + 5, Number(node.getAttribute("y")) + 5];
+    };
+
+    it("scales the crop with the image when a cropped image is resized", async () => {
+        await openSceneWithImage({ cropX: 50, cropY: 20, cropWidth: 100, cropHeight: 60 });
+
+        drag(document.querySelector("[data-corner=\"se\"]"), { x: 0, y: 0 }, { x: -100, y: 0 }); // half size
+
+        const image = scenesModule.getActiveScene().images[0];
+        expect(image).toMatchObject({ width: 100, height: 50 });
+        expect(image.cropX).toBeCloseTo(25);
+        expect(image.cropY).toBeCloseTo(10);
+        expect(image.cropWidth).toBeCloseTo(50);
+        expect(image.cropHeight).toBeCloseTo(30);
+        expect(image.cropX + image.cropWidth).toBeLessThanOrEqual(image.width);
+        expect(image.cropY + image.cropHeight).toBeLessThanOrEqual(image.height);
+    });
+
+    it("keeps a crop that reaches the image's edge inside the image after resizing", async () => {
+        await openSceneWithImage({ width: 300, height: 100, cropX: 100, cropY: 0, cropWidth: 200, cropHeight: 100 });
+
+        drag(document.querySelector("[data-corner=\"se\"]"), { x: 0, y: 0 }, { x: -70, y: 0 });
+
+        const image = scenesModule.getActiveScene().images[0];
+        expect(image.cropX + image.cropWidth).toBeLessThanOrEqual(image.width);
+        expect(image.cropY + image.cropHeight).toBeLessThanOrEqual(image.height);
+    });
+
+    it("grows a flipped image when its handle is dragged away from the image", async () => {
+        await openSceneWithImage({ flipX: true });
+        // Flipped horizontally, the image's own se corner is drawn at the bottom left.
+        expect(handleAt("se")).toEqual([100, 200]);
+
+        drag(document.querySelector("[data-corner=\"se\"]"), { x: 0, y: 0 }, { x: -40, y: 0 });
+
+        expect(scenesModule.getActiveScene().images[0].width).toBeCloseTo(240);
+    });
+
+    it("moves a flipped image's crop edge the way the handle is dragged", async () => {
+        await openSceneWithImage({ flipX: true });
+        click("scene-image-crop-start");
+        expect(handleAt("se")).toEqual([100, 200]);
+
+        // Dragging the bottom-left handle right and up crops off the left and bottom of what is shown.
+        drag(document.querySelector("[data-corner=\"se\"]"), { x: 0, y: 0 }, { x: 50, y: -20 });
+
+        expect(scenesModule.getActiveScene().images[0]).toMatchObject({ cropX: 0, cropY: 0, cropWidth: 150, cropHeight: 80 });
+        expect(handleAt("se")).toEqual([150, 180]);
+    });
+});
+
 describe("Scene editor: imported annotations follow their image", () => {
     function labelCenter() {
         const node = document.querySelector(".scene-layer-annotations text");
         const fontSize = Number(node.getAttribute("font-size"));
-        return [
-            Number(node.getAttribute("x")) + (node.textContent.length * fontSize * 0.6) / 2,
-            Number(node.getAttribute("y")) + fontSize / 2,
-        ];
+        // Text is drawn centered on x (#475).
+        return [Number(node.getAttribute("x")), Number(node.getAttribute("y")) + fontSize / 2];
     }
 
     it("rotates a linked label with its image and keeps it there after saving and reopening the scene", async () => {

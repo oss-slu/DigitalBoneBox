@@ -1716,6 +1716,17 @@ function unrotateVector(dx, dy, degrees) {
 }
 
 /**
+ * Issue #473: a drag delta in the image's own (unflipped) axes. The image is
+ * flipped before it is rotated, so the delta is un-rotated first and then
+ * un-flipped - this keeps a handle moving the corner it is drawn on.
+ */
+function toImageAxes(dx, dy, image) {
+    const rotation = typeof image.rotation === "number" ? image.rotation : 0;
+    const local = unrotateVector(dx, dy, rotation);
+    return { x: image.flipX ? -local.x : local.x, y: image.flipY ? -local.y : local.y };
+}
+
+/**
  * Starts a move-or-resize drag on the currently selected image. Moving
  * updates x/y directly (translation is rotation-invariant). Resizing scales
  * from the image's own center (which stays fixed regardless of rotation,
@@ -1738,7 +1749,7 @@ function startImageDrag(event, svg, corner) {
     const startY = image.y;
     const startWidth = image.width;
     const startHeight = image.height;
-    const rotation = typeof image.rotation === "number" ? image.rotation : 0;
+    const startCrop = hasCrop(image) ? currentCropRect(image) : null;
     let didDrag = false;
     const threshold = dragThreshold(event);
 
@@ -1752,7 +1763,7 @@ function startImageDrag(event, svg, corner) {
 
         if (corner) {
             const sign = CORNER_GROWTH_SIGN[corner];
-            const local = unrotateVector(globalDx, globalDy, rotation);
+            const local = toImageAxes(globalDx, globalDy, image);
             const minScale = MIN_IMAGE_SIZE / Math.min(startWidth, startHeight);
             const scaleFactor = Math.max(minScale, (startWidth + sign.x * local.x) / startWidth);
             const newWidth = startWidth * scaleFactor;
@@ -1763,6 +1774,15 @@ function startImageDrag(event, svg, corner) {
             image.height = newHeight;
             image.x = cx - newWidth / 2;
             image.y = cy - newHeight / 2;
+            if (startCrop) {
+                // Issue #473: the crop is in the image's own pixels, so it
+                // scales with the image to keep showing the same part of the
+                // bone (and to stay inside the image, which the API requires).
+                image.cropX = startCrop.x * scaleFactor;
+                image.cropY = startCrop.y * scaleFactor;
+                image.cropWidth = Math.min(startCrop.width * scaleFactor, newWidth - image.cropX);
+                image.cropHeight = Math.min(startCrop.height * scaleFactor, newHeight - image.cropY);
+            }
         } else {
             image.x = startX + globalDx;
             image.y = startY + globalDy;
@@ -1783,10 +1803,13 @@ function startImageDrag(event, svg, corner) {
 // visible" everywhere this is read, matching sceneCanvas.js's cropRectFor.
 const MIN_CROP_SIZE = 10;
 
-function currentCropRect(image) {
-    const hasCrop = [image.cropX, image.cropY, image.cropWidth, image.cropHeight]
+function hasCrop(image) {
+    return [image.cropX, image.cropY, image.cropWidth, image.cropHeight]
         .every((value) => typeof value === "number" && Number.isFinite(value));
-    return hasCrop
+}
+
+function currentCropRect(image) {
+    return hasCrop(image)
         ? { x: image.cropX, y: image.cropY, width: image.cropWidth, height: image.cropHeight }
         : { x: 0, y: 0, width: image.width, height: image.height };
 }
@@ -1799,7 +1822,7 @@ function currentCropRect(image) {
  * shrink below MIN_CROP_SIZE.
  * @param {"nw"|"ne"|"se"|"sw"} corner
  * @param {{x: number, y: number, width: number, height: number}} start - crop rect at drag-start.
- * @param {{x: number, y: number}} localDelta - mouse delta, already un-rotated.
+ * @param {{x: number, y: number}} localDelta - mouse delta in the image's own axes (toImageAxes).
  * @param {number} imageWidth
  * @param {number} imageHeight
  */
@@ -1841,7 +1864,6 @@ function startCropDrag(event, svg, corner) {
     const startClientX = event.clientX;
     const startClientY = event.clientY;
     const startCrop = currentCropRect(image);
-    const rotation = typeof image.rotation === "number" ? image.rotation : 0;
     let didDrag = false;
     const threshold = dragThreshold(event);
 
@@ -1850,7 +1872,7 @@ function startCropDrag(event, svg, corner) {
         const dyClient = moveEvent.clientY - startClientY;
         if (Math.abs(dxClient) > threshold || Math.abs(dyClient) > threshold) didDrag = true;
         if (!didDrag) return;
-        const local = unrotateVector(dxClient * scale.x, dyClient * scale.y, rotation);
+        const local = toImageAxes(dxClient * scale.x, dyClient * scale.y, image);
 
         const next = computeCropRect(corner, startCrop, local, image.width, image.height);
         image.cropX = next.x;
