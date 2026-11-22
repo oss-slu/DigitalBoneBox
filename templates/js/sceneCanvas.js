@@ -400,16 +400,17 @@ function renderText(annotation) {
     // left edge put every label left of where it belongs; an imported label
     // is placed by the center of its original box, as the viewer shows it.
     const centerX = box.x + box.width / 2;
+    const textAnchor = TEXT_ANCHORS[annotation.align] || "middle";
+    const textX = annotation.align === "right" ? box.x + box.width : centerX;
     const node = el("text", {
-        x: centerX,
+        x: textX,
         y: annotation.y,
-        "text-anchor": "middle",
+        "text-anchor": textAnchor,
         "font-size": box.fontSize,
         "font-weight": annotation.fontWeight,
         "font-family": typeof annotation.fontFamily === "string" ? annotation.fontFamily : undefined,
         fill: annotation.color || DEFAULT_STROKE,
         "dominant-baseline": "hanging",
-        "text-anchor": TEXT_ANCHORS[annotation.align],
         class: "scene-text",
     });
     if (box.lines.length === 1) {
@@ -417,7 +418,7 @@ function renderText(annotation) {
     } else {
         box.lines.forEach((line, index) => {
             const tspan = el("tspan", {
-                x: centerX,
+                x: textX,
                 y: annotation.y + index * box.fontSize * TEXT_LINE_HEIGHT,
                 "dominant-baseline": "hanging",
             });

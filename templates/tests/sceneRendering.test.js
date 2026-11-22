@@ -336,6 +336,14 @@ describe("Issue 475: line and label alignment", () => {
         expect(Number(node.getAttribute("x"))).toBeCloseTo(130);
     });
 
+    it("uses the imported alignment when rendering a right-aligned label", () => {
+        const { svg } = renderScene({ images: [], annotations: [{ type: "text", text: "Ilium", x: 160, y: 50, fontSize: 20, align: "right" }] });
+        const node = drawnLabel(svg);
+
+        expect(node.getAttribute("text-anchor")).toBe("end");
+        expect(Number(node.getAttribute("x"))).toBeCloseTo(160);
+    });
+
     it("centers every line of a multi-line label", () => {
         const { svg } = renderScene({ images: [], annotations: [{ type: "text", text: "Greater\ntrochanter", x: 100, y: 50, fontSize: 10 }] });
         const xs = [...drawnLabel(svg).querySelectorAll("tspan")].map((tspan) => Number(tspan.getAttribute("x")));

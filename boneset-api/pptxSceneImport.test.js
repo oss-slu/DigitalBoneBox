@@ -384,7 +384,7 @@ describe("PowerPoint slide import: repeatable and traceable", () => {
         const plain = { type: "text", text: "Ilium", x: 10, y: 20, fontSize: 18 };
         expect(textBox(plain).x).toBe(10);
         const { svg } = renderScene({ images: [], annotations: [plain] });
-        expect(svg.querySelector("text").getAttribute("text-anchor")).toBeNull();
+        expect(svg.querySelector("text").getAttribute("text-anchor")).toBe("middle");
     });
 });
 
