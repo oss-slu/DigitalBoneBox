@@ -840,6 +840,43 @@ function updateViewControls() {
     dom.zoomOut.disabled = state.zoom <= MIN_ZOOM;
     dom.zoomIn.disabled = state.zoom >= MAX_ZOOM;
     dom.canvas.classList.toggle("can-pan", canPan());
+    updateLabelHint();
+}
+
+// Issue #539 (R5 in docs/rendering-validation): the default view fits the
+// whole scene to the canvas, so on a phone labels can be drawn only 2-3 screen
+// pixels tall. Labels keep their size and position in the scene (so nothing
+// can overlap or move); instead, when the smallest label is drawn smaller than
+// MIN_READABLE_LABEL_PX, a hint offers to zoom in until it is
+// READABLE_LABEL_PX tall. Desktop and tablet layouts draw labels larger than
+// that, so they don't see the hint.
+const MIN_READABLE_LABEL_PX = 6;
+const READABLE_LABEL_PX = 10;
+
+/** How tall, in screen pixels, the smallest drawn label is, or null if there are none. */
+function smallestLabelPx(svg) {
+    const sizes = [...svg.querySelectorAll(".scene-layer-annotations text")]
+        .map((node) => Number(node.getAttribute("font-size")))
+        .filter((size) => size > 0);
+    if (sizes.length === 0 || !svg.getBoundingClientRect().width) return null;
+    return Math.min(...sizes) / getSceneScale(svg).x;
+}
+
+function updateLabelHint() {
+    if (!dom.labelHint) return;
+    const svg = dom.canvas.hidden ? null : dom.canvas.querySelector("svg");
+    const size = svg ? smallestLabelPx(svg) : null;
+    dom.labelHint.hidden = !(size !== null && size < MIN_READABLE_LABEL_PX && state.zoom < MAX_ZOOM);
+}
+
+/** Zooms in, around the middle of the canvas, until the smallest label is readable. */
+function zoomToReadLabels() {
+    const svg = dom.canvas.querySelector("svg");
+    const size = svg ? smallestLabelPx(svg) : null;
+    if (!size) return;
+    setZoom(state.zoom * (READABLE_LABEL_PX / size), undefined, { announce: false });
+    announce(`Zoom ${Math.round(state.zoom * 100)}%. Swipe or drag to see the rest of the scene.`);
+    dom.canvas.focus();
 }
 
 // Issue #450: when the editor changes size (a resized window, a rotated phone),
@@ -3002,6 +3039,8 @@ export function initializeSceneEditor(root = document) {
         zoomIn: $("scene-zoom-in"),
         zoomLevel: $("scene-zoom-level"),
         zoomReset: $("scene-zoom-reset"),
+        labelHint: $("scene-label-hint"),
+        zoomToLabels: $("scene-zoom-to-labels"),
         importButton: $("scene-import-image"),
         importButtonEmpty: $("scene-canvas-empty-import"),
         importInput: $("scene-import-input"),
@@ -3098,6 +3137,7 @@ export function initializeSceneEditor(root = document) {
     dom.zoomOut.addEventListener("click", () => setZoom(state.zoom / ZOOM_STEP));
     dom.zoomIn.addEventListener("click", () => setZoom(state.zoom * ZOOM_STEP));
     dom.zoomReset.addEventListener("click", resetView);
+    if (dom.zoomToLabels) dom.zoomToLabels.addEventListener("click", zoomToReadLabels);
     // Ctrl + the scroll wheel (also what a trackpad pinch sends) zooms around
     // the pointer; the scroll wheel on its own still scrolls, which pans.
     dom.canvas.addEventListener("wheel", (event) => {

@@ -3178,6 +3178,23 @@ button:disabled {
     }
 }
 
+/* Issue #539: offers to zoom in when labels are drawn too small to read. */
+.scene-label-hint {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+.scene-label-hint[hidden] {
+    display: none;
+}
+
 /* Issue #449: dragging empty space pans a canvas that is larger than its box. */
 .scene-canvas.can-pan svg {
     cursor: grab;

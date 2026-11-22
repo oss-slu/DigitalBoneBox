@@ -2633,4 +2633,107 @@ describe("Responsive resizing (#450)", () => {
         expect(narrow).not.toBeNull();
         expect(css).toMatch(/@media \(pointer: coarse\) \{\s*\.scene-view-hint \{\s*display: none;/);
     });
+
+    describe("label readability on small screens (#539)", () => {
+        // The scene is 960 scene px wide (the minimum), so at fit-to-width a
+        // label is drawn fontSize x canvas width / 960 screen px tall. The
+        // canvas widths are the ones measured in docs/rendering-validation (#476).
+        const SMALL_LABELS = {
+            images: [{ id: "img-a", src: "/images/a.png", x: 100, y: 100, width: 200, height: 100 }],
+            annotations: [
+                { id: "t1", type: "text", text: "Ilium", x: 600, y: 300, fontSize: 10 },
+                { id: "t2", type: "text", text: "Pubis", x: 300, y: 450, fontSize: 14 },
+                { id: "l", type: "line", x1: 100, y1: 400, x2: 300, y2: 400 },
+            ],
+        };
+        const PHONE_PORTRAIT = 303;
+        const PHONE_LANDSCAPE = 656;
+        const NARROW_LAPTOP = 554;
+        const TABLET = 686;
+        const DESKTOP = 986;
+        const hint = () => $("scene-label-hint");
+        const labelPx = () => {
+            const svg = canvasSvg();
+            const [, , viewWidth] = svg.getAttribute("viewBox").split(" ").map(Number);
+            const sizes = [...svg.querySelectorAll(".scene-layer-annotations text")].map((node) => Number(node.getAttribute("font-size")));
+            return (Math.min(...sizes) * svg.getBoundingClientRect().width) / viewWidth;
+        };
+
+        async function openSmallLabels(content = SMALL_LABELS) {
+            await openBlankScene(content);
+            mockLayout();
+            click("scene-zoom-reset");
+            resizeTo(960);
+        }
+
+        it("offers to zoom when labels are too small to read in phone portrait", async () => {
+            await openSmallLabels();
+            resizeTo(PHONE_PORTRAIT);
+
+            expect(labelPx()).toBeLessThan(6);
+            expect(hint().hidden).toBe(false);
+            expect($("scene-zoom-to-labels").textContent).toBe("Zoom to read labels");
+        });
+
+        it("zooms until the smallest label is readable, without changing the scene", async () => {
+            await openSmallLabels();
+            resizeTo(PHONE_PORTRAIT);
+            const drawing = canvasSvg().innerHTML;
+
+            click("scene-zoom-to-labels");
+
+            expect(labelPx()).toBeCloseTo(10, 0);
+            expect($("scene-zoom-level").textContent).toBe("317%");
+            expect(hint().hidden).toBe(true);
+            // Only how large the scene is drawn changed: labels keep their size and place.
+            expect(canvasSvg().innerHTML).toBe(drawing);
+            expect(scenesModule.getActiveScene()).toMatchObject(SMALL_LABELS);
+            expect(scenesModule.hasUnsavedChanges()).toBe(false);
+        });
+
+        it("leaves touch zoom and pan usable after zooming to read labels", async () => {
+            await openSmallLabels();
+            resizeTo(PHONE_PORTRAIT);
+            click("scene-zoom-to-labels");
+
+            expect($("scene-canvas").classList.contains("can-pan")).toBe(true);
+            click("scene-zoom-out");
+            expect($("scene-zoom-level").textContent).toBe("253%");
+            click("scene-zoom-reset");
+            expect($("scene-zoom-level").textContent).toBe("100%");
+            expect(hint().hidden).toBe(false);
+        });
+
+        it("shows the hint on a narrow laptop, and not in phone landscape, on a tablet or on a desktop", async () => {
+            await openSmallLabels();
+            const shown = (width) => {
+                resizeTo(width);
+                return !hint().hidden;
+            };
+
+            expect(shown(NARROW_LAPTOP)).toBe(true);
+            expect(shown(PHONE_LANDSCAPE)).toBe(false);
+            expect(shown(TABLET)).toBe(false);
+            expect(shown(DESKTOP)).toBe(false);
+            expect($("scene-zoom-level").textContent).toBe("100%");
+        });
+
+        it("updates the hint when a phone is turned between portrait and landscape", async () => {
+            await openSmallLabels();
+
+            resizeTo(PHONE_PORTRAIT, 640);
+            expect(hint().hidden).toBe(false);
+            resizeTo(PHONE_LANDSCAPE, 303);
+            expect(hint().hidden).toBe(true);
+            resizeTo(PHONE_PORTRAIT, 640);
+            expect(hint().hidden).toBe(false);
+        });
+
+        it("doesn't show the hint for a scene without labels", async () => {
+            await openSmallLabels({ ...SMALL_LABELS, annotations: [SMALL_LABELS.annotations[2]] });
+            resizeTo(PHONE_PORTRAIT);
+
+            expect(hint().hidden).toBe(true);
+        });
+    });
 });
