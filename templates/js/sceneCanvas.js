@@ -238,6 +238,21 @@ function imageTransform(image, frame) {
 }
 
 /**
+ * How far a text annotation's x sits from the left edge of its box: 0 for
+ * left-aligned text (the default, and every label made before `align`
+ * existed), half the width for "center", the full width for "right". Labels
+ * imported from PowerPoint keep their paragraph alignment this way, so a
+ * centered multi-line label stays centered on the same point at any size.
+ */
+function alignOffset(annotation, width) {
+    if (annotation.align === "center") return width / 2;
+    if (annotation.align === "right") return width;
+    return 0;
+}
+
+const TEXT_ANCHORS = { center: "middle", right: "end" };
+
+/**
  * The box a text annotation is drawn in. Width is estimated from the longest
  * line (the same 0.6em-per-character estimate legacyAnnotations.js uses);
  * a single line is exactly `fontSize` tall, as before multi-line labels.
@@ -247,10 +262,11 @@ export function textBox(annotation) {
     const fontSize = isNumber(annotation.fontSize) ? annotation.fontSize : DEFAULT_FONT_SIZE;
     const lines = annotation.text.split("\n");
     const longest = Math.max(...lines.map((line) => line.length));
+    const width = longest * fontSize * 0.6;
     return {
-        x: annotation.x,
+        x: annotation.x - alignOffset(annotation, width),
         y: annotation.y,
-        width: longest * fontSize * 0.6,
+        width,
         height: fontSize + (lines.length - 1) * fontSize * TEXT_LINE_HEIGHT,
         fontSize,
         lines,
@@ -267,7 +283,7 @@ function mapLinkedAnnotation(annotation, transform) {
             const [centerX, centerY] = transform.map([box.x + box.width / 2, box.y + box.height / 2]);
             return {
                 ...annotation,
-                x: centerX - (box.width * transform.scale) / 2,
+                x: centerX + (alignOffset(annotation, box.width) - box.width / 2) * transform.scale,
                 y: centerY - (box.height * transform.scale) / 2,
                 fontSize: box.fontSize * transform.scale,
             };
@@ -338,7 +354,8 @@ export function storeAnnotationGeometry(annotation, displayed, scene) {
         const fontSize = box.fontSize / scale;
         const [centerX, centerY] = toStored([box.x + box.width / 2, box.y + box.height / 2]);
         annotation.fontSize = round2(fontSize);
-        annotation.x = round2(centerX - box.width / scale / 2);
+        const storedWidth = box.width / scale;
+        annotation.x = round2(centerX + alignOffset(annotation, storedWidth) - storedWidth / 2);
         annotation.y = round2(centerY - box.height / scale / 2);
         return;
     }
@@ -380,8 +397,10 @@ function renderText(annotation) {
         y: annotation.y,
         "font-size": box.fontSize,
         "font-weight": annotation.fontWeight,
+        "font-family": typeof annotation.fontFamily === "string" ? annotation.fontFamily : undefined,
         fill: annotation.color || DEFAULT_STROKE,
         "dominant-baseline": "hanging",
+        "text-anchor": TEXT_ANCHORS[annotation.align],
         class: "scene-text",
     });
     if (box.lines.length === 1) {
