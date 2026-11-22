@@ -16,6 +16,8 @@ const {
     createPresentationImportRouter,
     parseGoogleSlidesId,
     deckKeyFromName,
+    bearerToken,
+    checkPresentationBytes,
     safeFileName,
     fileNameFromDisposition,
     PPTX_CONTENT_TYPE,
@@ -276,6 +278,98 @@ describe("checks before a presentation is processed", () => {
         expect(parseGoogleSlidesId(`https://evil.example/presentation/d/${id}/edit`)).toBeNull();
         expect(parseGoogleSlidesId(`https://docs.google.com/document/d/${id}/edit`)).toBeNull();
         expect(parseGoogleSlidesId("short")).toBeNull();
+    });
+});
+
+// ---------------------------------------------------------------- hostile and malformed input
+
+describe("hostile and malformed input", () => {
+    // What the earlier regular-expression version returned for each name.
+    test.each([
+        ["Bone Box (Boney Pelvis).pptx", "bone-box-boney-pelvis"],
+        ["Bone Project 2.0 (final).pptx", "bone-project-2-0-final"],
+        ["UPPER_case-Name.PPTX", "upper-case-name"],
+        ["-lead and trail-.pptx", "lead-and-trail"],
+        ["  \u00dcn\u00efc\u00f6d\u00e9 \u2014 Slides!!.pptx", "n-c-d-slides"],
+        ["emoji \ud83d\ude00 deck.pptx", "emoji-deck"],
+        ["a.b.c.pptx", "a-b-c"],
+        ["a/b\\c.pptx", "a-b-c"],
+        ["---.pptx", ""],
+        [".pptx", ""],
+        ["noext", "noext"],
+        ["", ""],
+        [null, ""],
+        [`${"x".repeat(127)} y.pptx`, "x".repeat(127)],
+        [`${"x".repeat(127)}y.pptx`, `${"x".repeat(127)}y`],
+    ])("deck key from %j is %j, as before", (name, key) => {
+        expect(deckKeyFromName(name)).toBe(key);
+    });
+
+    test("a deck key is made in one bounded pass, however hostile the name", () => {
+        const started = Date.now();
+        for (const name of ["-".repeat(200000), `${"-".repeat(200000)}a.pptx`, `a${"-".repeat(200000)}!`, `${".".repeat(200000)}pptx`, "\u00e9".repeat(200000)]) {
+            const key = deckKeyFromName(name);
+            expect(key.length).toBeLessThanOrEqual(128);
+            expect(key).not.toMatch(/^-|-$/);
+            expect(key).toMatch(/^[a-z0-9-]*$/);
+        }
+        expect(deckKeyFromName(`${"ab-".repeat(200)}.pptx`)).toHaveLength(128);
+        expect(Date.now() - started).toBeLessThan(1000);
+    });
+
+    test("only a well-formed Bearer header gives a token", () => {
+        expect(bearerToken("Bearer abc")).toBe("abc");
+        expect(bearerToken("bearer   abc  ")).toBe("abc");
+        expect(bearerToken("BEARER\tabc")).toBe("abc");
+        expect(bearerToken("Bearer a b")).toBe("a b");
+        for (const header of ["Basic abc", "Bearer", "Bearer    ", "Bearerabc", " ", "", undefined, null, 42, ["Bearer abc"], { toString: () => "Bearer abc" }]) {
+            expect(bearerToken(header)).toBeNull();
+        }
+        const started = Date.now();
+        expect(bearerToken(`Bearer ${" ".repeat(200000)}x`)).toBeNull(); // over the length limit
+        expect(bearerToken(`bearer ${" ".repeat(1000)}`)).toBeNull();
+        expect(bearerToken(`Bearer ${"k".repeat(1000)}`)).toBe("k".repeat(1000));
+        expect(Date.now() - started).toBeLessThan(1000);
+    });
+
+    test("a malformed Authorization header is refused quickly when a key is required", async () => {
+        const h = harness({ env: { SCENE_IMPORT_TOKEN: "s3cret-import-key" } });
+        for (const header of [`Bearer ${" ".repeat(5000)}`, `Bearer ${" ".repeat(5000)}s3cret-import-key`, "Basic s3cret-import-key", "Bearers3cret-import-key"]) {
+            const res = await upload(h, { headers: { Authorization: header } });
+            expect(res.status).toBe(401);
+        }
+        expect(h.tools.calls).toEqual([]);
+    });
+
+    test("anything but a Buffer is refused before its bytes are read", () => {
+        const lookalike = { length: 30, 0: 0x50, 1: 0x4b, 2: 0x03, 3: 0x04, includes: () => true };
+        for (const body of ["PK\u0003\u0004ppt/presentation.xml", [0x50, 0x4b, 0x03, 0x04], lookalike, {}, null, undefined, 0]) {
+            expect(() => checkPresentationBytes(body, 1024)).toThrow("The request did not contain a presentation file.");
+        }
+        expect(() => checkPresentationBytes(PPTX_BYTES, 1024)).not.toThrow();
+        expect(() => checkPresentationBytes(Buffer.alloc(0), 1024)).toThrow("The file is empty.");
+    });
+
+    test("a JSON body sent to the .pptx upload is refused", async () => {
+        const h = harness();
+        const res = await request(h.app).post("/api/scene-imports/pptx?deckKey=k")
+            .set("Content-Type", "application/json")
+            .set("X-File-Name", "deck.pptx")
+            .send({ 0: 80, 1: 75, 2: 3, 3: 4, length: 30, includes: "ppt/presentation.xml" });
+        expect(res.status).toBe(400);
+        expect(res.body.error).toBe("The request did not contain a presentation file.");
+        expect(h.tools.calls).toEqual([]);
+    });
+
+    test("a hostile file name is reduced to a short, plain .pptx name", async () => {
+        const h = harness();
+        const name = `${"../".repeat(100)}${"-".repeat(5000)}deck.pptx`;
+        const started = await upload(h, { name, query: "" });
+        expect(started.status).toBe(202);
+        expect(started.body.job.source.name).toMatch(/^[A-Za-z0-9 ._()-]{1,124}\.pptx$/);
+        expect(started.body.job.deckKey).toBe("deck");
+        await h.finish(started.body.job.id);
+        expect(h.tools.calls[0].deckName).not.toMatch(/[\\/]/);
     });
 });
 

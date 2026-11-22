@@ -1032,10 +1032,11 @@ def print_progress(done, total):
 
 
 def main(argv=None):
+    """Runs the command line. Argument and output-path errors exit with status 2 (argparse)."""
     argv = sys.argv[1:] if argv is None else list(argv)
     if argv == ["--check"]:
         print(json.dumps(check_environment()))
-        return 0
+        return
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("deck")
     parser.add_argument("out_dir", nargs="?", default=None,
@@ -1070,8 +1071,7 @@ def main(argv=None):
               "Install Pillow (pip install pillow) and make sure Calibri or Carlito is installed, "
               "or point PPTX_IR_FONT_DIR at a folder that has one.", file=sys.stderr)
     print(f"{out_path}: {len(ir['slides'])} slides, {objects} objects, {len(ir['media'])} media files, {warned} objects with warnings")
-    return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()

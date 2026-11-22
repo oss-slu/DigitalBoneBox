@@ -53,10 +53,33 @@ const OUTCOME_TEXT = {
     "dry-run": "Check only",
 };
 
-/** A deck key from a file name, the way the server and pptx_ir.py derive one. */
+const MAX_FILE_NAME_CHARS = 255;
+const MAX_DECK_KEY_CHARS = 128;
+const isKeyCharacter = (ch) => (ch >= "a" && ch <= "z") || (ch >= "0" && ch <= "9");
+
+/**
+ * A deck key from a file name, the way the server and pptx_ir.py derive one:
+ * the name without its extension, lower-cased, each run of other characters
+ * turned into one "-", no "-" at either end, at most 128 characters. One pass
+ * over the last 255 characters at most.
+ */
 export function deckKeyFromFileName(name) {
-    const stem = String(name || "").replace(/\.[^.]*$/, "");
-    return stem.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 128).replace(/-+$/, "");
+    const text = String(name || "").slice(-MAX_FILE_NAME_CHARS); // the end holds the name and extension
+    const dot = text.lastIndexOf(".");
+    const stem = (dot >= 0 ? text.slice(0, dot) : text).toLowerCase();
+    let key = "";
+    let gap = false;
+    for (const ch of stem) {
+        if (!isKeyCharacter(ch)) {
+            gap = true;
+            continue;
+        }
+        const piece = gap && key ? `-${ch}` : ch;
+        if (key.length + piece.length > MAX_DECK_KEY_CHARS) break;
+        key += piece;
+        gap = false;
+    }
+    return key;
 }
 
 /** The presentation id in a Google Slides link (or the id itself), or null. */
@@ -455,7 +478,7 @@ export function initializePresentationImport(root = document, { fetchImpl = (...
         dom.summary.textContent = job.state === "failed" ? job.error : String(job.summary || "").replace(/^[^:]{1,40}:\s*/, "");
         fillList(dom.resultWarnings, job.warnings || []);
         dom.resultWarnings.hidden = !(job.warnings && job.warnings.length);
-        dom.rows.replaceChildren(...job.results.map(rowFor));
+        dom.rows.replaceChildren(...job.results.map((result) => rowFor(result)));
         dom.table.hidden = job.results.length === 0;
         dom.resultHeading.focus();
         if (job.results.some((r) => SAVED_OUTCOMES.has(r.outcome))) {

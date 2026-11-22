@@ -380,11 +380,26 @@ describe("PowerPoint slide import: repeatable and traceable", () => {
         expect(scene.importLog[0].deck.sha256).toBe(ir.deck.sha256);
     });
 
-    test("labels without align render exactly as before (backward compatible)", () => {
+    test("labels without align keep their box and are drawn centered in it, like every label (Issue #475)", () => {
         const plain = { type: "text", text: "Ilium", x: 10, y: 20, fontSize: 18 };
-        expect(textBox(plain).x).toBe(10);
-        const { svg } = renderScene({ images: [], annotations: [plain] });
-        expect(svg.querySelector("text").getAttribute("text-anchor")).toBeNull();
+        expect(textBox(plain).x).toBe(10); // the stored geometry is unchanged by align
+        const node = renderScene({ images: [], annotations: [plain] }).svg.querySelectorAll("text");
+        expect(node).toHaveLength(1);
+        expect(node[0].getAttribute("text-anchor")).toBe("middle");
+        expect(Number(node[0].getAttribute("x"))).toBeCloseTo(10 + textBox(plain).width / 2, 6);
+    });
+
+    test("a centered label is drawn from its center and a right-aligned one from its exact right edge", () => {
+        const centered = { type: "text", text: "Ilium", x: 100, y: 20, fontSize: 18, align: "center" };
+        const right = { type: "text", text: "Ilium", x: 100, y: 20, fontSize: 18, align: "right" };
+        const [c] = renderScene({ images: [], annotations: [centered] }).svg.querySelectorAll("text");
+        const [r] = renderScene({ images: [], annotations: [right] }).svg.querySelectorAll("text");
+        expect(c.getAttribute("text-anchor")).toBe("middle");
+        expect(Number(c.getAttribute("x"))).toBeCloseTo(100, 6);
+        expect(r.getAttribute("text-anchor")).toBe("end");
+        expect(Number(r.getAttribute("x"))).toBeCloseTo(100, 6);
+        const twoLines = renderScene({ images: [], annotations: [{ ...right, text: "Iliac\ncrest" }] }).svg.querySelectorAll("text tspan");
+        expect([...twoLines].map((t) => Number(t.getAttribute("x")))).toEqual([100, 100]);
     });
 });
 

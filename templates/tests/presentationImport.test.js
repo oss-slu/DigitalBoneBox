@@ -3,8 +3,11 @@
 const fs = require("fs");
 const path = require("path");
 
+// The page's body without its scripts, taken with the DOM parser rather than regular expressions.
 const pageHtml = fs.readFileSync(path.join(__dirname, "..", "boneset.html"), "utf8");
-const bodyHtml = pageHtml.match(/<body[^>]*>([\s\S]*)<\/body>/i)[1].replace(/<script[\s\S]*?<\/script>/gi, "");
+const page = new DOMParser().parseFromString(pageHtml, "text/html");
+for (const script of page.querySelectorAll("script")) script.remove();
+const bodyHtml = page.body.innerHTML;
 const GOOGLE_ID = "1AbCdEfGhIjKlMnOpQrStUvWxYz_0123456789-ab";
 const NOW = "2026-11-22T00:00:00.000Z";
 
@@ -247,6 +250,26 @@ describe("checks in the browser before anything is sent", () => {
         $("presentation-import-link").dispatchEvent(new Event("input"));
         expect($("presentation-import-deck-key").value).toBe(`gslides-${GOOGLE_ID}`);
         expect(importCalls(backend)).toEqual([]);
+    });
+});
+
+describe("deck keys from hostile file names", () => {
+    test("match the earlier rule and stay short and plain, in one bounded pass", () => {
+        jest.resetModules();
+        const { deckKeyFromFileName } = require("../js/presentationImport.js");
+        expect(deckKeyFromFileName("Bone Box (Boney Pelvis).pptx")).toBe("bone-box-boney-pelvis");
+        expect(deckKeyFromFileName("-lead and trail-.pptx")).toBe("lead-and-trail");
+        expect(deckKeyFromFileName("---.pptx")).toBe("");
+        expect(deckKeyFromFileName(`${"x".repeat(127)} y.pptx`)).toBe("x".repeat(127));
+        const started = Date.now();
+        for (const name of ["-".repeat(200000), `${"-".repeat(200000)}deck.pptx`, `${".".repeat(200000)}pptx`]) {
+            const key = deckKeyFromFileName(name);
+            expect(key.length).toBeLessThanOrEqual(128);
+            expect(key).toMatch(/^[a-z0-9-]*$/);
+            expect(key.startsWith("-") || key.endsWith("-")).toBe(false);
+        }
+        expect(deckKeyFromFileName(`${"-".repeat(200000)}deck.pptx`)).toBe("deck");
+        expect(Date.now() - started).toBeLessThan(1000);
     });
 });
 

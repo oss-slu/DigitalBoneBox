@@ -51,6 +51,9 @@ const MAX_QUEUED = 5;
 const JOB_FOLDER = "scene-editor-jobs";
 const DECK_KEY = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/; // the extractor's own rule (validate_deck_key)
 const GOOGLE_SLIDES_ID = /^[A-Za-z0-9_-]{20,128}$/;
+const MAX_FILE_NAME_CHARS = 255; // the longest file name Windows, macOS and Linux allow
+const MAX_DECK_KEY_CHARS = 128;
+const MAX_AUTHORIZATION_CHARS = 1024;
 const FINISHED = new Set(["succeeded", "checked", "stopped", "failed"]);
 
 /** An error whose message is written for the person importing, and safe to show in the browser. */
@@ -74,15 +77,36 @@ function positiveInt(value, fallback) {
     return Number.isInteger(n) && n > 0 ? n : fallback;
 }
 
-/** A deck key from a file name, the way pptx_ir.py derives one. */
+const isKeyCharacter = (ch) => (ch >= "a" && ch <= "z") || (ch >= "0" && ch <= "9");
+
+/**
+ * A deck key from a file name, the way pptx_ir.py derives one: the name
+ * without its extension, lower-cased, each run of other characters turned
+ * into one "-", no "-" at either end, at most 128 characters. One pass over the
+ * last 255 characters at most, so a hostile name cannot make it slow.
+ */
 function deckKeyFromName(name) {
-    const stem = String(name || "").replace(/\.[^.]*$/, "");
-    return stem.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 128).replace(/-+$/, "");
+    const text = String(name || "").slice(-MAX_FILE_NAME_CHARS); // the end holds the name and extension
+    const dot = text.lastIndexOf(".");
+    const stem = (dot >= 0 ? text.slice(0, dot) : text).toLowerCase();
+    let key = "";
+    let gap = false;
+    for (const ch of stem) {
+        if (!isKeyCharacter(ch)) {
+            gap = true;
+            continue;
+        }
+        const piece = gap && key ? `-${ch}` : ch;
+        if (key.length + piece.length > MAX_DECK_KEY_CHARS) break;
+        key += piece;
+        gap = false;
+    }
+    return key;
 }
 
 /** The presentation's name for provenance (importLog deck.file), reduced to a plain .pptx file name. */
 function safeFileName(name, fallback = "presentation.pptx") {
-    const base = String(name || "").split(/[\\/]/).pop().replace(/[^A-Za-z0-9 ._()-]/g, "_").replace(/^[.\s]+/, "").trim();
+    const base = String(name || "").slice(-MAX_FILE_NAME_CHARS).split(/[\\/]/).pop().replace(/[^A-Za-z0-9 ._()-]/g, "_").replace(/^[.\s]+/, "").trim();
     const stem = base.replace(/\.pptx$/i, "").slice(0, 120).trim();
     return stem ? `${stem}.pptx` : fallback;
 }
@@ -117,15 +141,27 @@ function fileNameFromDisposition(header) {
     return plain ? (plain[1] || plain[2] || "").trim() || null : null;
 }
 
-/** Quick checks that bytes are a .pptx before the extractor sees them. */
+/** Quick checks that bytes are a .pptx before the extractor sees them. Anything but a Buffer is refused. */
 function checkPresentationBytes(bytes, maxBytes) {
-    if (!bytes || !bytes.length) throw new ImportError(400, "The file is empty.");
+    if (!Buffer.isBuffer(bytes)) throw new ImportError(400, "The request did not contain a presentation file.");
+    if (bytes.length === 0) throw new ImportError(400, "The file is empty.");
     if (bytes.length > maxBytes) throw new ImportError(413, `The presentation is larger than the ${megabytes(maxBytes)} limit.`);
     const zip = bytes[0] === 0x50 && bytes[1] === 0x4b && bytes[2] === 0x03 && bytes[3] === 0x04;
     if (!zip) throw new ImportError(400, "This isn't a .pptx presentation. If it is password-protected, remove the password and try again.");
     if (!bytes.includes("ppt/presentation.xml")) {
         throw new ImportError(400, "This file is not a PowerPoint presentation. Choose a .pptx file.");
     }
+}
+
+/**
+ * The uploaded file's bytes: a new Buffer over the body express.raw read, or
+ * null when the body is anything else (for example JSON parsed by an earlier
+ * body parser). The checks below then work on a value of known type, never
+ * on the request parameter itself.
+ */
+function uploadedBytes(body) {
+    if (!Buffer.isBuffer(body)) return null;
+    return Buffer.from(body.buffer, body.byteOffset, body.byteLength);
 }
 
 function isLoopback(address) {
@@ -137,6 +173,21 @@ function isLoopback(address) {
 function isLoopbackHost(hostname) {
     const host = hostname.replace(/^\[|\]$/g, "");
     return host === "localhost" || isLoopback(host);
+}
+
+/**
+ * The token in an "Authorization: Bearer <token>" header, or null. Parsed
+ * with string operations on a header of bounded length; anything malformed
+ * (another scheme, no token, a non-string, an overlong header) gives null.
+ */
+function bearerToken(header) {
+    if (typeof header !== "string" || header.length > MAX_AUTHORIZATION_CHARS) return null;
+    const text = header.trim();
+    let split = 0;
+    while (split < text.length && text[split] !== " " && text[split] !== "\t") split += 1;
+    if (split === 0 || split === text.length || text.slice(0, split).toLowerCase() !== "bearer") return null;
+    const token = text.slice(split).trim();
+    return token || null;
 }
 
 function sameSecret(given, expected) {
@@ -239,7 +290,9 @@ function runPython(python, args, { timeoutMs, env, onStderrLine }) {
             partial += chunk;
             const lines = partial.split(/\r?\n/);
             partial = lines.pop();
-            if (onStderrLine) lines.forEach(onStderrLine);
+            if (onStderrLine) {
+                for (const line of lines) onStderrLine(line);
+            }
         });
         child.on("error", (error) => {
             clearTimeout(timer);
@@ -410,8 +463,8 @@ function createPresentationImportRouter({ store, imagesDir = DEFAULT_IMAGES_DIR,
 
     function accessFor(req) {
         if (config.token) {
-            const match = /^Bearer\s+(.+)$/i.exec(req.get("authorization") || "");
-            const allowed = Boolean(match) && sameSecret(match[1].trim(), config.token);
+            const token = bearerToken(req.get("authorization"));
+            const allowed = token !== null && sameSecret(token, config.token);
             return { mode: "key", allowed, message: allowed ? null : "Enter this server's import key to import presentations." };
         }
         const origin = req.get("origin");
@@ -520,7 +573,7 @@ function createPresentationImportRouter({ store, imagesDir = DEFAULT_IMAGES_DIR,
                     job.progress = { done, total };
                 },
             });
-            job.results = outcome.results.map(publicResult).map((r) => ({ ...r, action: scrub(r.action) }));
+            job.results = outcome.results.map((result) => publicResult(result)).map((r) => ({ ...r, action: scrub(r.action) }));
             job.summary = outcome.summary;
             job.state = { finished: "succeeded", "dry-run": "checked", stopped: "stopped" }[outcome.status];
         } catch (error) {
@@ -618,7 +671,7 @@ function createPresentationImportRouter({ store, imagesDir = DEFAULT_IMAGES_DIR,
             }
             if (given && !/\.pptx$/i.test(given)) throw new ImportError(415, "Choose a PowerPoint .pptx file. Older .ppt files and other formats can't be imported.");
             const options = await commonOptions(req.query, deckKeyFromName(given) || "presentation");
-            const bytes = Buffer.isBuffer(req.body) ? req.body : Buffer.alloc(0);
+            const bytes = uploadedBytes(req.body);
             checkPresentationBytes(bytes, config.maxBytes);
             const job = startJob({ ...options, source: { type: "pptx", name: safeFileName(given) } }, async () => ({ bytes }));
             res.status(202).json({ job: publicJob(job, positionOf(job)) });
@@ -669,6 +722,7 @@ module.exports = {
     createPythonExtractor,
     parseGoogleSlidesId,
     deckKeyFromName,
+    bearerToken,
     safeFileName,
     fileNameFromDisposition,
     checkPresentationBytes,

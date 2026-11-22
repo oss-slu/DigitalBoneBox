@@ -253,8 +253,6 @@ function alignOffset(annotation, width) {
     return 0;
 }
 
-const TEXT_ANCHORS = { center: "middle", right: "end" };
-
 /**
  * The box a text annotation is drawn in. Width is estimated from the longest
  * line (the same 0.6em-per-character estimate legacyAnnotations.js uses);
@@ -399,17 +397,19 @@ function renderText(annotation) {
     // per character) and real text is usually narrower, so drawing from the
     // left edge put every label left of where it belongs; an imported label
     // is placed by the center of its original box, as the viewer shows it.
-    const centerX = box.x + box.width / 2;
+    // A right-aligned label (align: "right", from PowerPoint) is the one
+    // exception: its right edge is exact, so it is drawn from there.
+    const right = annotation.align === "right";
+    const anchorX = right ? box.x + box.width : box.x + box.width / 2;
     const node = el("text", {
-        x: centerX,
+        x: anchorX,
         y: annotation.y,
-        "text-anchor": "middle",
+        "text-anchor": right ? "end" : "middle",
         "font-size": box.fontSize,
         "font-weight": annotation.fontWeight,
         "font-family": typeof annotation.fontFamily === "string" ? annotation.fontFamily : undefined,
         fill: annotation.color || DEFAULT_STROKE,
         "dominant-baseline": "hanging",
-        "text-anchor": TEXT_ANCHORS[annotation.align],
         class: "scene-text",
     });
     if (box.lines.length === 1) {
@@ -417,7 +417,7 @@ function renderText(annotation) {
     } else {
         box.lines.forEach((line, index) => {
             const tspan = el("tspan", {
-                x: centerX,
+                x: anchorX,
                 y: annotation.y + index * box.fontSize * TEXT_LINE_HEIGHT,
                 "dominant-baseline": "hanging",
             });
