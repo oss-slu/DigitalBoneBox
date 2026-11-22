@@ -307,6 +307,39 @@ function mapLinkedAnnotation(annotation, transform) {
 }
 
 /**
+ * Whether `line` is a pointer line for `label` (Issue #432): one created for it
+ * (`labelId`), or one imported with it from the same legacy label and image.
+ */
+export function isPointerLineFor(line, label) {
+    if (!line || !label || (line.type !== "line" && line.type !== "arrow")) return false;
+    if (typeof line.labelId === "string") return line.labelId === label.id;
+    const lineSource = line.source;
+    const labelSource = label.source;
+    return Boolean(lineSource && labelSource) &&
+        lineSource.type === "legacy-pointer-line" &&
+        labelSource.type === "legacy-label" &&
+        lineSource.boneId === labelSource.boneId &&
+        lineSource.annotationId === labelSource.annotationId &&
+        line.sourceImageId === label.sourceImageId;
+}
+
+/**
+ * Which end of a displayed pointer line sits at its label: the first point of
+ * a line created for the label, otherwise whichever end is nearer the label.
+ * @returns {number} The point index.
+ */
+export function labelEndIndex(line, labelBox) {
+    const points = annotationPoints(line);
+    if (!points) return -1;
+    const last = points.length - 1;
+    if (typeof line.labelId === "string") return 0;
+    const centerX = labelBox.x + labelBox.width / 2;
+    const centerY = labelBox.y + labelBox.height / 2;
+    const distance = ([x, y]) => Math.hypot(x - centerX, y - centerY);
+    return distance(points[0]) <= distance(points[last]) ? 0 : last;
+}
+
+/**
  * The points that shape a line, arrow, or polygon, as [x, y] pairs, or null
  * for text and for objects without usable points.
  */
@@ -324,6 +357,69 @@ function linkedTransform(annotation, scene) {
     return image && isValidBox(image) ? imageTransform(image, annotation.sourceImageFrame) : null;
 }
 
+// Issue #538: how far, in the label's own (source image) pixels, a pointer
+// line's label end can be from the label's box and still count as touching it.
+const POINTER_TOUCH_TOLERANCE = 2;
+
+const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+
+function distanceToBox([x, y], box) {
+    return Math.hypot(Math.max(box.x - x, 0, x - box.x - box.width), Math.max(box.y - y, 0, y - box.y - box.height));
+}
+
+const sameFrame = (a, b) => a.x === b.x && a.y === b.y && a.width === b.width && a.height === b.height;
+
+/**
+ * Issue #538 (R4 in docs/rendering-validation): a linked label is drawn
+ * upright so it stays readable, but its pointer lines turn with the image, so
+ * on a rotated image a line that touched the label comes away from it. This
+ * is how far to move the drawn label, `shown`, so that the label end of every
+ * pointer line that touches the label in its own coordinates still lands on
+ * the drawn label's box. The move is the smallest one that does it, so a label
+ * whose lines already land on it (no rotation, or only a flip) doesn't move.
+ * If no one position can reach every line, the earlier lines win.
+ * @returns {[number, number]} The move in scene pixels.
+ */
+function pointerLineShift(label, shown, scene) {
+    if (!scene || !Array.isArray(scene.annotations)) return [0, 0];
+    const ownBox = textBox(label);
+    const box = textBox(shown);
+    let range = null;
+    for (const line of scene.annotations) {
+        if (!line || line === label || !isPointerLineFor(line, label)) continue;
+        if (line.sourceImageId !== label.sourceImageId || !isValidBox(line.sourceImageFrame) ||
+            !sameFrame(line.sourceImageFrame, label.sourceImageFrame)) continue;
+        const points = linePoints(line);
+        if (!points) continue;
+        const end = points[labelEndIndex(line, ownBox)];
+        if (distanceToBox(end, ownBox) > POINTER_TOUCH_TOLERANCE) continue;
+        const transform = linkedTransform(line, scene);
+        if (!transform) continue;
+        const [x, y] = transform.map(end);
+        // Where the box's top-left corner can be with (x, y) on or in the box.
+        const reach = { x0: x - box.width, x1: x, y0: y - box.height, y1: y };
+        if (!range) {
+            range = reach;
+            continue;
+        }
+        const both = {
+            x0: Math.max(range.x0, reach.x0), x1: Math.min(range.x1, reach.x1),
+            y0: Math.max(range.y0, reach.y0), y1: Math.min(range.y1, reach.y1),
+        };
+        if (both.x0 <= both.x1 && both.y0 <= both.y1) range = both;
+    }
+    if (!range) return [0, 0];
+    return [clamp(box.x, range.x0, range.x1) - box.x, clamp(box.y, range.y0, range.y1) - box.y];
+}
+
+/** A linked annotation mapped onto its image, with a label kept on its pointer lines (Issue #538). */
+function drawnLinkedAnnotation(annotation, transform, scene) {
+    const mapped = mapLinkedAnnotation(annotation, transform);
+    if (annotation.type !== "text" || mapped === annotation) return mapped;
+    const [dx, dy] = pointerLineShift(annotation, mapped, scene);
+    return dx || dy ? { ...mapped, x: mapped.x + dx, y: mapped.y + dy } : mapped;
+}
+
 /**
  * An annotation as it is drawn, in scene pixels: a linked annotation is mapped
  * onto its image's current box; any other annotation is returned as-is.
@@ -331,7 +427,7 @@ function linkedTransform(annotation, scene) {
  */
 export function displayedAnnotation(annotation, scene) {
     const transform = linkedTransform(annotation, scene);
-    return transform ? mapLinkedAnnotation(annotation, transform) : annotation;
+    return transform ? drawnLinkedAnnotation(annotation, transform, scene) : annotation;
 }
 
 const round2 = (value) => Math.round(value * 100) / 100;
@@ -351,7 +447,13 @@ export function storeAnnotationGeometry(annotation, displayed, scene) {
     const toStored = (point) => (transform ? transform.unmap(point) : point).map(round2);
 
     if (annotation.type === "text") {
-        const box = textBox(displayed);
+        // Issue #538: `displayed` includes any move that keeps the label on its
+        // pointer lines. That move is worked out again every time the label is
+        // drawn, so it is taken off here instead of being stored.
+        const [shiftX, shiftY] = transform
+            ? pointerLineShift(annotation, mapLinkedAnnotation(annotation, transform), scene)
+            : [0, 0];
+        const box = textBox({ ...displayed, x: displayed.x - shiftX, y: displayed.y - shiftY });
         const fontSize = box.fontSize / scale;
         const [centerX, centerY] = toStored([box.x + box.width / 2, box.y + box.height / 2]);
         annotation.fontSize = round2(fontSize);
@@ -673,7 +775,7 @@ export function objectsAt(scene, point) {
         const annotation = annotations[index];
         if (!annotation) return false;
         const transform = linkedTransform(annotation, scene);
-        if (!annotationHit(transform ? mapLinkedAnnotation(annotation, transform) : annotation, point)) return false;
+        if (!annotationHit(transform ? drawnLinkedAnnotation(annotation, transform, scene) : annotation, point)) return false;
         if (transform && clipsToCrop(annotation)) {
             const image = images.find((candidate) => candidate && candidate.id === annotation.sourceImageId);
             const visible = visibleCropPolygon(image, transform);
@@ -801,7 +903,7 @@ export function renderScene(scene, { selectedIndex, cropMode = false, selectedAn
             const entry = imagesById.get(annotation.sourceImageId);
             if (entry && isValidBox(entry.image) && isValidBox(annotation.sourceImageFrame)) {
                 const transform = imageTransform(entry.image, annotation.sourceImageFrame);
-                toRender = mapLinkedAnnotation(annotation, transform);
+                toRender = drawnLinkedAnnotation(annotation, transform, scene);
                 const isEditingCrop = cropMode && entry.index === selectedIndex;
                 if (clipsToCrop(annotation) && !isEditingCrop) clipPoints = visibleCropPolygon(entry.image, transform);
             } else {

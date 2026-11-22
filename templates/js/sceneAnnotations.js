@@ -7,7 +7,11 @@
 // annotation's own coordinates if it is linked to an image. All annotation
 // tools therefore share the scene's one coordinate system.
 
-import { annotationPoints, textBox } from "./sceneCanvas.js";
+import { annotationPoints, isPointerLineFor, labelEndIndex, textBox } from "./sceneCanvas.js";
+
+// Issue #538: these moved to sceneCanvas.js, which needs them to keep pointer
+// lines on their labels when drawing; they are still exported from here.
+export { isPointerLineFor, labelEndIndex };
 
 export const MIN_FONT_SIZE = 8;
 export const MAX_FONT_SIZE = 200;
@@ -84,39 +88,6 @@ export function anchorOnBox(box, toward) {
         { distance: bottom - ty, point: [centerX, bottom] },
     ];
     return edges.reduce((best, edge) => (edge.distance < best.distance ? edge : best)).point;
-}
-
-/**
- * Whether `line` is a pointer line for `label` (Issue #432): one created for it
- * (`labelId`), or one imported with it from the same legacy label and image.
- */
-export function isPointerLineFor(line, label) {
-    if (!line || !label || (line.type !== "line" && line.type !== "arrow")) return false;
-    if (typeof line.labelId === "string") return line.labelId === label.id;
-    const lineSource = line.source;
-    const labelSource = label.source;
-    return Boolean(lineSource && labelSource) &&
-        lineSource.type === "legacy-pointer-line" &&
-        labelSource.type === "legacy-label" &&
-        lineSource.boneId === labelSource.boneId &&
-        lineSource.annotationId === labelSource.annotationId &&
-        line.sourceImageId === label.sourceImageId;
-}
-
-/**
- * Which end of a displayed pointer line sits at its label: the first point of
- * a line created for the label, otherwise whichever end is nearer the label.
- * @returns {number} The point index.
- */
-export function labelEndIndex(line, labelBox) {
-    const points = annotationPoints(line);
-    if (!points) return -1;
-    const last = points.length - 1;
-    if (typeof line.labelId === "string") return 0;
-    const centerX = labelBox.x + labelBox.width / 2;
-    const centerY = labelBox.y + labelBox.height / 2;
-    const distance = ([x, y]) => Math.hypot(x - centerX, y - centerY);
-    return distance(points[0]) <= distance(points[last]) ? 0 : last;
 }
 
 /**
