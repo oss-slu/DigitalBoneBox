@@ -6,12 +6,19 @@ The math tests need nothing else. Set PPTX_IR_TEST_DECK to the path of
 "Bone Box (Boney Pelvis).pptx" to also run the integration checks against the
 real deck (they are skipped otherwise, because the deck is not in the repo).
 """
+import contextlib
+import io
 import json
 import math
 import os
+import pathlib
+import shutil
+import struct
 import sys
 import tempfile
 import unittest
+import zipfile
+import zlib
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import pptx_ir  # noqa: E402
@@ -80,13 +87,173 @@ class TextWrap(unittest.TestCase):
         self.assertEqual(pptx_ir.wrap_paragraph("Acetabulum", 10, lambda s: len(s) * 6.0), ["Acetabulum"])
 
 
+def tiny_png(width, height):
+    raw = b"".join(b"\x00" + b"\xff\x00\x00" * width for _ in range(height))
+
+    def chunk(kind, data):
+        return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data) & 0xFFFFFFFF)
+
+    header = struct.pack(">IIBBBBB", width, height, 8, 2, 0, 0, 0)
+    return b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", header) + chunk(b"IDAT", zlib.compress(raw)) + chunk(b"IEND", b"")
+
+
+def write_minimal_deck(path):
+    """A one-slide deck with one picture: enough for main() to run end to end without the client deck."""
+    ns = ('xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" '
+          'xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" '
+          'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"')
+    rel = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+    rels_ns = "http://schemas.openxmlformats.org/package/2006/relationships"
+    parts = {
+        "[Content_Types].xml": '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+                               '<Default Extension="png" ContentType="image/png"/></Types>',
+        "ppt/presentation.xml": f'<p:presentation {ns}><p:sldIdLst><p:sldId id="256" r:id="rId2"/></p:sldIdLst>'
+                                '<p:sldSz cx="9144000" cy="6858000"/></p:presentation>',
+        "ppt/_rels/presentation.xml.rels": f'<Relationships xmlns="{rels_ns}"><Relationship Id="rId2" '
+                                           f'Type="{rel}/slide" Target="slides/slide1.xml"/></Relationships>',
+        "ppt/slides/slide1.xml": (
+            f'<p:sld {ns}><p:cSld><p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/>'
+            '</p:nvGrpSpPr><p:grpSpPr/><p:pic><p:nvPicPr><p:cNvPr id="2" name="Picture 1"/><p:cNvPicPr/><p:nvPr/>'
+            '</p:nvPicPr><p:blipFill><a:blip r:embed="rId3"/><a:stretch><a:fillRect/></a:stretch></p:blipFill>'
+            '<p:spPr><a:xfrm><a:off x="914400" y="914400"/><a:ext cx="1828800" cy="1371600"/></a:xfrm>'
+            '<a:prstGeom prst="rect"/></p:spPr></p:pic></p:spTree></p:cSld></p:sld>'),
+        "ppt/slides/_rels/slide1.xml.rels": f'<Relationships xmlns="{rels_ns}"><Relationship Id="rId3" '
+                                            f'Type="{rel}/image" Target="../media/image1.png"/></Relationships>',
+    }
+    with zipfile.ZipFile(path, "w") as z:
+        for name, text in parts.items():
+            z.writestr(name, text)
+        z.writestr("ppt/media/image1.png", tiny_png(4, 3))
+
+
+def files_under(folder):
+    return sorted(os.path.join(root, name) for root, _, names in os.walk(folder) for name in names)
+
+
+class OutputPaths(unittest.TestCase):
+    """OUT_DIR and --deck-key are checked before anything is written (Sonar pythonsecurity:S8707)."""
+
+    def setUp(self):
+        self.work = os.path.realpath(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.work, ignore_errors=True)
+        previous = os.getcwd()
+        os.chdir(self.work)
+        self.addCleanup(os.chdir, previous)
+        self.deck = os.path.join(self.work, "mini.pptx")
+        write_minimal_deck(self.deck)
+
+    def run_main(self, *args):
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()) as err:
+            try:
+                code = pptx_ir.main([self.deck, *args])
+            except SystemExit as exit_:
+                code = exit_.code
+        return code, err.getvalue()
+
+    def test_valid_relative_output_directory(self):
+        code, _ = self.run_main("out", "--deck-key", "mini")
+        self.assertEqual(code, 0)
+        out = os.path.join(self.work, "out")
+        self.assertEqual(pptx_ir.resolve_out_dir("out"), pathlib.Path(out))
+        with open(os.path.join(out, "mini.ir.json"), encoding="utf-8") as fh:
+            ir = json.load(fh)
+        self.assertEqual(ir["deck"]["key"], "mini")
+        self.assertEqual(len(ir["media"]), 1)
+        media_file = next(iter(ir["media"].values()))["file"]
+        self.assertTrue(os.path.isfile(os.path.join(out, media_file)))
+
+    def test_valid_absolute_temporary_output_directory(self):
+        target = os.path.realpath(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, target, ignore_errors=True)
+        self.assertTrue(os.path.isabs(target))
+        code, _ = self.run_main(target, "--deck-key", "mini")
+        self.assertEqual(code, 0)
+        self.assertTrue(os.path.isfile(os.path.join(target, "mini.ir.json")))
+        self.assertEqual(pptx_ir.resolve_out_dir(target), pathlib.Path(target))
+
+    def test_parent_traversal_is_rejected(self):
+        for bad in ("..", "../out", "out/../../out", "..\\out", "out\\..\\..\\x", os.path.join(self.work, "..", "x")):
+            with self.subTest(out_dir=bad):
+                with self.assertRaises(pptx_ir.OutputPathError):
+                    pptx_ir.resolve_out_dir(bad)
+                before = files_under(os.path.dirname(self.work))
+                code, err = self.run_main(bad, "--deck-key", "mini")
+                self.assertEqual(code, 2)
+                self.assertIn("must not contain '..'", err)
+                self.assertEqual(files_under(os.path.dirname(self.work)), before)
+
+    def test_directory_outside_the_allowed_roots_is_rejected(self):
+        outside = os.path.join(os.path.abspath(os.sep), "pptx-ir-test-not-allowed")
+        if any(pptx_ir.is_within(os.path.realpath(outside), root) for root in pptx_ir.allowed_output_roots()):
+            self.skipTest("the filesystem root is inside an allowed root here")
+        with self.assertRaises(pptx_ir.OutputPathError):
+            pptx_ir.resolve_out_dir(outside)
+        code, _ = self.run_main(outside, "--deck-key", "mini")
+        self.assertEqual(code, 2)
+        self.assertFalse(os.path.exists(outside))
+
+    def test_unsafe_deck_keys_are_rejected(self):
+        for bad in ("", ".", "..", "../evil", "..\\evil", "a/b", "a\\b", "/abs", "C:\\deck", "C:deck", ".hidden",
+                    "-flag", "key with space", "key\x00", "k" * 129, None):
+            with self.subTest(deck_key=bad):
+                with self.assertRaises(pptx_ir.OutputPathError):
+                    pptx_ir.validate_deck_key(bad)
+        for bad in ("../evil", "a/b", "/abs"):
+            with self.subTest(main_deck_key=bad):
+                code, err = self.run_main("out", "--deck-key", bad)
+                self.assertEqual(code, 2)
+                self.assertIn("invalid deck key", err)
+                self.assertFalse(os.path.exists(os.path.join(self.work, "out")))
+        for good in ("bone-project-2", "bony-pelvis-deck", "Deck_1.v2", "k" * 128):
+            self.assertEqual(pptx_ir.validate_deck_key(good), good)
+
+    def test_output_files_remain_inside_the_requested_output_directory(self):
+        before = set(files_under(self.work))
+        code, _ = self.run_main("out", "--deck-key", "mini")
+        self.assertEqual(code, 0)
+        out = os.path.join(self.work, "out")
+        written = sorted(set(files_under(self.work)) - before)
+        self.assertGreaterEqual(len(written), 2)  # the IR and one media file
+        for path in written:
+            self.assertTrue(pptx_ir.is_within(os.path.realpath(path), out), path)
+
+        base = pptx_ir.resolve_out_dir("out")
+        self.assertEqual(pptx_ir.output_path(base, "media", "a.png"), base / "media" / "a.png")
+        for bad in (("..", "x"), ("media", "..", "..", "x"), (os.path.join(self.work, "elsewhere"),), ("",)):
+            with self.subTest(parts=bad):
+                with self.assertRaises(pptx_ir.OutputPathError):
+                    pptx_ir.output_path(base, *bad)
+
+    def test_a_symlink_inside_the_output_directory_cannot_redirect_a_write(self):
+        outside = os.path.realpath(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, outside, ignore_errors=True)
+        base = pptx_ir.resolve_out_dir("out")
+        base.mkdir()
+        try:
+            os.symlink(outside, os.path.join(base, "media"), target_is_directory=True)
+        except (OSError, NotImplementedError):
+            self.skipTest("symlinks are not available here")
+        with self.assertRaises(pptx_ir.OutputPathError):
+            pptx_ir.output_path(base, "media", "a.png")
+        code, _ = self.run_main("out", "--deck-key", "mini")
+        self.assertNotEqual(code, 0)
+        self.assertEqual(os.listdir(outside), [])
+
+    def test_media_extensions_from_the_deck_are_plain(self):
+        self.assertEqual(pptx_ir.media_extension("ppt/media/image1.PNG"), ".png")
+        self.assertEqual(pptx_ir.media_extension("ppt/media/image2.jpeg"), ".jpeg")
+        for odd in ("ppt/media/noext", "ppt/media/a.b\\..\\..\\c", "ppt/media/x.p ng", "ppt/media/x." + "a" * 11):
+            self.assertEqual(pptx_ir.media_extension(odd), ".bin")
+
+
 @unittest.skipUnless(os.environ.get("PPTX_IR_TEST_DECK"), "set PPTX_IR_TEST_DECK to the pelvis deck to run")
 class PelvisDeck(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.out = tempfile.mkdtemp()
         pptx_ir.main([os.environ["PPTX_IR_TEST_DECK"], cls.out, "--deck-key", "pelvis-test"])
-        cls.ir = json.load(open(os.path.join(cls.out, "pelvis-test.ir.json")))
+        with open(os.path.join(cls.out, "pelvis-test.ir.json"), encoding="utf-8") as fh:
+            cls.ir = json.load(fh)
         cls.slides = {s["index"]: s for s in cls.ir["slides"]}
 
     def obj(self, slide, shape_id):

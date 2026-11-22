@@ -28,7 +28,7 @@ What the converter does with a slide:
 - **Pointer lines** are attached to their label (`labelId`) using the connector glue stored in PowerPoint, with geometry as the fallback. A line glued to a highlight records it in `source.gluedTo`.
 - **Linking.** Labels, lines and highlights are stored in the coordinates of the photo under them (`sourceImageId`, `sourceImageFrame`), so they follow that photo when it is moved, resized, rotated or flipped.
 - **Hidden shapes.** The Scene Editor draws annotations above photos. A shape fully covered by a photo on the slide is left out and reported; a partly covered one is flagged.
-- **Traceability.** Every object has a `source` (deck, slide, slide id, shape id). Uncertain objects carry `importReview: { status: "needs-review", reasons: [...] }`. The scene's `importLog` records deck and slide hashes, tool versions, counts and a content hash.
+- **Traceability.** Scene and object ids are name-based UUIDs (version 8, SHA-256, RFC 9562) derived from the deck key and the PowerPoint slide and shape ids, so a re-import produces the same ids. Every object has a `source` (deck, slide, slide id, shape id). Uncertain objects carry `importReview: { status: "needs-review", reasons: [...] }`. The scene's `importLog` records deck and slide hashes, tool versions, counts and a content hash.
 
 ## Running an import
 
@@ -49,9 +49,11 @@ node boneset-api/scripts/import-pptx-scenes.js --ir "$HOME\dbb-import\ir\bone-pr
 
 The .pptx is read only by the first command. It is never copied into the repository or uploaded.
 
+The output folder can be relative (`out/`) or absolute, but it must not contain `..` and must be inside the current folder, your home folder or the system temporary folder. The extractor checks that every file it writes lands inside that folder.
+
 | Option | Command | Effect |
 |---|---|---|
-| `--deck-key` | `pptx_ir.py` | The deck's permanent name. Scene ids are derived from it and each slide's PowerPoint id, so use the same key every time: a re-import then updates the same scenes, even after slides are reordered. A new key creates new scenes. |
+| `--deck-key` | `pptx_ir.py` | The deck's permanent name. Scene ids are derived from it and each slide's PowerPoint id, so use the same key every time: a re-import then updates the same scenes, even after slides are reordered. A new key creates new scenes. It is also the IR file name, so it may only use letters, digits, `.`, `_` and `-`, starting with a letter or digit. |
 | `--slides 2-7,9` | both | Only these slides. |
 | `--dry-run` | import | Convert and validate; save nothing. |
 | `--force` | import | Replace scenes edited since their last import (otherwise they are kept). |

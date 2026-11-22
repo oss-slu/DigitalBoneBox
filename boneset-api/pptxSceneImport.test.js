@@ -11,7 +11,7 @@ import { renderScene, displayedAnnotation, textBox, storeAnnotationGeometry } fr
 
 const ir = require("./test-fixtures/bony-pelvis-slides-2-3-18.ir.json");
 const { convertSlide, canvasTextBox, flattenCommands, stableUuid } = require("./pptxSceneImport");
-const { validateSceneContent } = require("./scenes");
+const { validateSceneContent, isValidSceneId } = require("./scenes");
 
 const EMU = 9525;
 const TOLERANCE = 0.02; // px: the converter rounds stored values to 0.01
@@ -308,6 +308,54 @@ describe("PowerPoint slide import: repeatable and traceable", () => {
         const ids = [...first.images, ...first.annotations].map((o) => o.id);
         expect(new Set(ids).size).toBe(ids.length);
         expect(first.id).toBe(stableUuid(ir.deck.key, "slide", slide(2).slideId));
+    });
+
+    test("ids are name-based UUID version 8 values from SHA-256 (RFC 9562)", () => {
+        // Expected values computed independently with Python's hashlib and
+        // uuid modules, which also report version 8 and the RFC variant.
+        expect(stableUuid("bone-project-2", "slide", "256")).toBe("5ffc29fe-bf15-8f00-81c9-311588b4dabb");
+        expect(stableUuid("bony-pelvis", "257", "12", "0")).toBe("f622f88c-1c87-8df8-8fdd-a982940e2e02");
+    });
+
+    test("repeated conversion of every fixture slide gives identical ids", () => {
+        const idsOf = (scene) => [scene.id, ...scene.images.map((o) => o.id), ...scene.annotations.map((o) => o.id)];
+        for (const { index } of ir.slides) {
+            expect(idsOf(convert(index).scene)).toEqual(idsOf(convert(index).scene));
+        }
+        expect(stableUuid("deck", "257", "12", "0")).toBe(stableUuid("deck", "257", "12", "0"));
+        expect(stableUuid("deck", 257, 12, 0)).toBe(stableUuid("deck", "257", "12", "0"));
+    });
+
+    test("different objects, slides and decks receive different ids", () => {
+        const ids = [];
+        for (const { index } of ir.slides) {
+            const { scene } = convert(index);
+            ids.push(scene.id, ...scene.images.map((o) => o.id), ...scene.annotations.map((o) => o.id));
+        }
+        expect(ids.length).toBeGreaterThan(40); // 3 scenes, 48 ids: guards against a vacuous check
+        expect(new Set(ids).size).toBe(ids.length);
+
+        const other = clone(ir);
+        other.deck.key = "another-deck";
+        const otherScene = convertSlide(other, 2, { mediaSrc, now: NOW }).scene;
+        expect(otherScene.id).not.toBe(convert(2).scene.id);
+        expect(otherScene.annotations.map((o) => o.id).filter((id) => ids.includes(id))).toEqual([]);
+
+        // the encoding keeps part boundaries, so shifting text between parts changes the id
+        expect(stableUuid("ab", "c")).not.toBe(stableUuid("a", "bc"));
+        expect(stableUuid("a\u0000b", "c")).not.toBe(stableUuid("a", "b\u0000c"));
+        expect(stableUuid("a", "b")).not.toBe(stableUuid("a,b"));
+    });
+
+    test("every id is a valid UUID string the scene store accepts", () => {
+        const UUID_V8 = /^[0-9a-f]{8}-[0-9a-f]{4}-8[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+        for (const { index } of ir.slides) {
+            const { scene } = convert(index);
+            for (const id of [scene.id, ...scene.images.map((o) => o.id), ...scene.annotations.map((o) => o.id)]) {
+                expect(id).toMatch(UUID_V8);
+                expect(isValidSceneId(id)).toBe(true);
+            }
+        }
     });
 
     test("every object records the deck, slide and shape it came from", () => {

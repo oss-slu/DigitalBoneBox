@@ -13,6 +13,10 @@ Usage:
     python3 data_extraction/pptx_ir.py DECK.pptx OUT_DIR [--deck-key KEY] [--slides 2-7,9]
 
 Writes OUT_DIR/<deck-key>.ir.json and OUT_DIR/media/<sha256[:16]><ext>.
+OUT_DIR may be relative or absolute, but it must not contain '..' and must
+resolve inside the current directory, the user's home directory or the system
+temporary directory. The deck key may only use letters, digits, '.', '_' and
+'-'. Every file is checked to land inside OUT_DIR before it is written.
 Only the Python standard library is required. Pillow is used, when installed,
 to measure text with Calibri (or the metric-compatible Carlito), found in the
 usual Windows, macOS and Linux font folders; without it, line breaks fall
@@ -28,8 +32,10 @@ import posixpath
 import re
 import struct
 import sys
+import tempfile
 import zipfile
 import xml.etree.ElementTree as ET
+from pathlib import Path
 
 IR_VERSION = 1
 EXTRACTOR_VERSION = "0.1.0"
@@ -323,17 +329,94 @@ def wrap_paragraph(words_text, max_width, measure):
 
 
 # --------------------------------------------------------------------------
+# Output paths
+#
+# OUT_DIR and --deck-key come from the command line, which may be composed by
+# a script or an agent rather than typed by a person. They are checked before
+# anything is created: OUT_DIR is resolved to a real absolute path inside an
+# allowed root, the deck key is limited to a plain file-name stem, and every
+# file is resolved again and confirmed to be inside OUT_DIR just before it is
+# written, so a symlink inside OUT_DIR cannot redirect a write either.
+# --------------------------------------------------------------------------
+DECK_KEY_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}")
+MEDIA_EXT_PATTERN = re.compile(r"\.[a-z0-9]{1,10}")
+
+
+class OutputPathError(ValueError):
+    """An output directory, deck key or file name that could write outside OUT_DIR."""
+
+
+def is_within(path, root):
+    """True when the real path `path` is `root` or inside it (both already resolved)."""
+    path = os.path.normcase(path)
+    root = os.path.normcase(root)
+    prefix = root if root.endswith(os.sep) else root + os.sep
+    return path == root or path.startswith(prefix)
+
+
+def allowed_output_roots():
+    """Real paths of the folders an output directory may be in."""
+    roots = []
+    for root in (os.getcwd(), os.path.expanduser("~"), tempfile.gettempdir()):
+        real = os.path.realpath(root)
+        if real not in roots:
+            roots.append(real)
+    return roots
+
+
+def resolve_out_dir(out_dir):
+    """The output directory as a real absolute Path, or OutputPathError."""
+    raw = os.fspath(out_dir)
+    if not raw.strip():
+        raise OutputPathError("the output directory is empty")
+    if ".." in re.split(r"[\\/]+", raw):
+        raise OutputPathError(f"the output directory must not contain '..': {raw!r}")
+    resolved = os.path.realpath(os.path.abspath(raw))
+    for root in allowed_output_roots():
+        if is_within(resolved, root):
+            return Path(resolved)
+    raise OutputPathError(
+        f"the output directory {resolved!r} is not inside the current directory, "
+        f"the home directory or the temporary directory ({', '.join(allowed_output_roots())})")
+
+
+def validate_deck_key(key):
+    """The deck key unchanged, or OutputPathError if it is not a plain file-name stem."""
+    if not isinstance(key, str) or not DECK_KEY_PATTERN.fullmatch(key):
+        raise OutputPathError(
+            f"invalid deck key {key!r}: use 1 to 128 letters, digits, '.', '_' or '-', "
+            "starting with a letter or digit (no path separators, drive letters or '..')")
+    return key
+
+
+def output_path(base, *parts):
+    """`base` joined with `parts`, resolved, and confirmed to be strictly inside `base`."""
+    real_base = os.path.realpath(os.fspath(base))
+    target = os.path.realpath(os.path.join(real_base, *parts))
+    if target == real_base or not is_within(target, real_base):
+        raise OutputPathError(f"{os.path.join(*parts)!r} would be written outside {real_base!r}")
+    return Path(target)
+
+
+def media_extension(part):
+    """The lower-case extension of a media part name, or '.bin' if it is not a plain extension."""
+    ext = posixpath.splitext(posixpath.basename(part))[1].lower()
+    return ext if MEDIA_EXT_PATTERN.fullmatch(ext) else ".bin"
+
+
+# --------------------------------------------------------------------------
 # Slide parsing
 # --------------------------------------------------------------------------
 class DeckExtractor:
     def __init__(self, path, deck_key, out_dir, slide_filter=None):
+        self.deck_key = validate_deck_key(deck_key)
+        self.out_dir = resolve_out_dir(out_dir)
+        self.media_dir = output_path(self.out_dir, "media")
         self.pkg = Package(path)
-        self.deck_key = deck_key
-        self.out_dir = out_dir
         self.slide_filter = slide_filter
         self.media = {}
         self.measurer = TextMeasurer()
-        os.makedirs(os.path.join(out_dir, "media"), exist_ok=True)
+        self.media_dir.mkdir(parents=True, exist_ok=True)
 
     # ---- presentation ----
     def run(self):
@@ -578,10 +661,9 @@ class DeckExtractor:
     def store_media(self, part):
         data = self.pkg.bytes(part)
         sha = hashlib.sha256(data).hexdigest()
-        ext = os.path.splitext(part)[1].lower()
-        name = sha[:16] + ext
+        name = sha[:16] + media_extension(part)
         if sha not in self.media:
-            with open(os.path.join(self.out_dir, "media", name), "wb") as fh:
+            with open(output_path(self.media_dir, name), "wb") as fh:
                 fh.write(data)
             self.media[sha] = {"file": "media/" + name, "sourcePart": part, "bytes": len(data),
                                "pixelSize": image_pixel_size(data), "mayBeTransparent": may_be_transparent(data)}
@@ -897,15 +979,26 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("deck")
     parser.add_argument("out_dir")
-    parser.add_argument("--deck-key", default=None, help="stable name for this deck (used for scene ids)")
+    parser.add_argument("--deck-key", default=None,
+                        help="stable name for this deck, used for scene ids and the IR file name "
+                             "(letters, digits, '.', '_', '-')")
     parser.add_argument("--slides", default=None, help="e.g. 2-7,9 (default: all)")
     args = parser.parse_args(argv)
     key = args.deck_key or re.sub(r"[^a-z0-9]+", "-", os.path.splitext(os.path.basename(args.deck))[0].lower()).strip("-")
-    extractor = DeckExtractor(args.deck, key, args.out_dir, parse_slide_filter(args.slides))
-    ir = extractor.run()
-    out_path = os.path.join(args.out_dir, key + ".ir.json")
-    with open(out_path, "w") as fh:
-        json.dump(ir, fh, indent=1)
+    try:
+        validate_deck_key(key)
+    except OutputPathError as err:
+        hint = "" if args.deck_key else " (derived from the deck's file name; pass --deck-key)"
+        parser.error(f"{err}{hint}")
+    try:
+        out_dir = resolve_out_dir(args.out_dir)
+        out_path = output_path(out_dir, key + ".ir.json")
+        extractor = DeckExtractor(args.deck, key, out_dir, parse_slide_filter(args.slides))
+        ir = extractor.run()
+        with open(out_path, "w", encoding="utf-8") as fh:
+            json.dump(ir, fh, indent=1)
+    except OutputPathError as err:
+        parser.error(str(err))
     objects = sum(len(s["objects"]) for s in ir["slides"])
     warned = sum(1 for s in ir["slides"] for o in s["objects"] if o["warnings"])
     if any("line breaks estimated" in w for s in ir["slides"] for o in s["objects"] for w in o["warnings"]):

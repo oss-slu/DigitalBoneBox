@@ -15,7 +15,7 @@
 const crypto = require("crypto");
 const zlib = require("zlib");
 
-const CONVERTER_VERSION = "0.1.0";
+const CONVERTER_VERSION = "0.2.0";
 const EMU_PER_PX = 9525; // 96 dpi, the CSS pixel
 const FLATTEN_TOLERANCE_PX = 0.1; // max distance between a curve and its polygon
 const ENDPOINT_SNAP_PX = 3; // connector ends closer than this are one joint
@@ -27,10 +27,20 @@ const TEXT_TOP_OFFSET_EM = 0.21;
 const round2 = (value) => Math.round(value * 100) / 100;
 const px = (emu) => emu / EMU_PER_PX;
 
-/** A UUID (version 5 layout) derived from the parts, so re-imports reuse ids. */
+/**
+ * A deterministic UUID derived from the parts, so a re-import reuses the same
+ * ids. Name-based UUID version 8 with SHA-256 (RFC 9562, section 5.8 and
+ * appendix B.2): the first 128 bits of SHA-256 over the namespace and the
+ * parts, with the version set to 8 and the variant to 10. The parts are
+ * encoded as a JSON array so that different part lists can never produce the
+ * same hash input.
+ * @param {...string} parts
+ * @returns {string}
+ */
 function stableUuid(...parts) {
-    const hash = crypto.createHash("sha1").update([UUID_NAMESPACE, ...parts].join("\u0000")).digest();
-    hash[6] = (hash[6] & 0x0f) | 0x50;
+    const name = JSON.stringify([UUID_NAMESPACE, ...parts.map(String)]);
+    const hash = crypto.createHash("sha256").update(name, "utf8").digest();
+    hash[6] = (hash[6] & 0x0f) | 0x80;
     hash[8] = (hash[8] & 0x3f) | 0x80;
     const hex = hash.subarray(0, 16).toString("hex");
     return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
