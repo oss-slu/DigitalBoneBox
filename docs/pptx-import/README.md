@@ -69,19 +69,34 @@ An output folder given on the command line can be relative (`out/`) or absolute,
 |---|---|---|
 | `--deck-key` | `pptx_ir.py` | The deck's permanent name. Scene ids and source identities are derived from it and each slide's PowerPoint id, so use the same key every time: a re-import then updates the same scenes, even after slides are reordered. It is also the IR file name, so it may only use letters, digits, `.`, `_` and `-`, starting with a letter or digit. |
 | `--slides 2-7,9` | both | Only these slides. |
-| `--dry-run` | import | Convert and validate, check names and identities; save nothing. |
+| `--dry-run` | import | Run the full preflight and report what would happen to each slide; write no scenes or images. |
 | `--force` | import | Replace scenes edited since their last import (otherwise they are kept). |
 | `--images-dir <folder>` | import | The images folder the API serves (default: `boneset-api/data/images`). |
 | `--report <file>` | import | Where the review report goes (default: next to the IR). |
 
-Each slide is reported as created, unchanged, updated, kept (edited since import), replaced (`--force`) or rejected. The command exits with status 1 if any slide was rejected. The report lists every flagged object and everything left out of the scene.
+Each slide is reported as created, unchanged, updated, kept (edited since import), replaced (`--force`), rejected, or not saved because another slide was rejected. The command exits with status 1 if any slide was rejected or not saved. The report lists every flagged object and everything left out of the scene.
+
+### Preflight, then write
+
+The import runs in two phases.
+
+1. **Preflight.** Every selected slide is converted and checked before anything is written: scene content (`validateSceneContent`), the scene name (`normalizeSceneName`, and no other scene or other slide in the import may use it, compared without case), the scene and source identity, each media path (inside the IR's folder, including through symlinks), each media file's SHA-256 against the IR, and that no different file already sits where a new image would be copied.
+2. **Write.** Only if every slide passes are the new images copied, and then the scenes saved. Images are copied only for scenes that are being created, updated or replaced, so a scene kept because it was edited, or one that is unchanged, never adds images.
+
+If any slide is rejected, the import makes no change to scenes or images: no scene is created or updated and no image is copied, whichever slide was rejected. The command lists every rejected slide at once, so all conflicts can be fixed before running it again. The review report is still written to the import folder (or to `--report`), so the reasons can be read.
+
+The write phase is not a transaction. Failures that cannot be predicted, such as a full disk or a store outage, can still stop it part way:
+
+- If copying an image fails, the images this run had copied are removed and no scene is saved.
+- If saving a scene fails, the import stops. Scenes saved before it stay saved, and the remaining slides are reported as not saved. Running the same import again finishes the job, because a re-import reports saved scenes as unchanged and copies no image twice.
+- Each scene is re-read under its lock just before it is saved. If it changed since the preflight, it is skipped and reported, never overwritten.
 
 ### Scene identity and re-imports
 
 - `scene.id` is the scene's permanent record id: a UUID (version 8, SHA-256) derived from the deck key and the PowerPoint slide id. The scene name is not part of it.
 - The name starts as "&lt;slide title&gt; (slide N)" and can be changed in the editor. Renaming changes neither the id nor the source identity, and a re-import keeps the new name.
 - A re-import finds each scene by its id or by its source identity (the deck key and slide id in its `importLog`), which also matches scenes imported by an earlier converter version. The scene is then updated, reported unchanged, or kept if it was edited since the import. A second scene for the same slide is never created.
-- A new scene whose name is already used by another scene, compared without case as the API does, is rejected and not saved. This happens, for example, when the same deck is imported again under a different deck key.
+- A new scene whose name is already used by another scene, compared without case as the API does, is rejected, and so the whole import is stopped before writing. This happens, for example, when the same deck is imported again under a different deck key. Existing scenes found by id or source identity keep their current name, so they never clash with themselves.
 - Every object keeps its `source` (deck, slide, slide id, shape id) and every scene its `importLog`, so later migration work can trace each object to the slide shape it came from.
 
 ### Where scenes are saved
@@ -99,8 +114,8 @@ The tool picks the store the same way the server does:
 Scenes reference images by `/api/images/...`, served from `boneset-api/data/images`. This is a transitional local implementation until images move to an image-storage service:
 
 - An image whose bytes are already in that folder, such as a legacy bone image or one imported earlier, is reused by its SHA-256 hash and not copied.
-- Any other image is copied once into `boneset-api/data/images/pptx/` as `<sha256 prefix>.<ext>` and referenced as `/api/images/pptx/<file>`. The legacy images and the image catalog, which lists only the top level of the folder, are not changed, and git ignores the `pptx/` folder.
-- Media is read only from inside the IR's folder, must match the SHA-256 recorded in the IR, and never overwrites an existing file.
+- Any other image is copied once into `boneset-api/data/images/pptx/` as `<sha256 prefix>.<ext>` and referenced as `/api/images/pptx/<file>`, even when several slides or several media file names hold the same bytes. The legacy images and the image catalog, which lists only the top level of the folder, are not changed, and git ignores the `pptx/` folder.
+- Media is read only from inside the IR's folder and must match the SHA-256 recorded in the IR. An existing image file is never overwritten.
 
 The full Bone Project 2.0 deck uses 180 images: 34 are reused from the repository and 146 (9.4 MB) are copied into `pptx/`.
 
@@ -118,6 +133,7 @@ Publishing imported scenes into the live bone viewer, and moving images to R2 or
 | Label text position, 31 labels | mean 0.67 px, max 2.1 px |
 | Pointer label vs. the author's connector glue | 36 of 36 agree |
 | Re-import of the same deck | every scene unchanged, with the same scene and object ids; no image copied again |
+| A duplicate scene name on any slide, including the last one | the import stops before writing: no scene saved, no image copied, legacy images unchanged |
 | Pelvis scenes saved by the previous converter version (different ids) | found by source identity and updated in place; ids kept, no duplicates |
 | Full Bone Project 2.0 deck, dry run (232 slides) | no errors; 449 photos, 1,005 labels, 612 pointer lines, 536 highlights and outlines; 75 of 2,833 objects flagged |
 | Full Bone Project 2.0 deck imported twice into a scratch store | 232 scenes created, then 232 unchanged; 34 legacy images reused and 146 copied once; legacy images unchanged |

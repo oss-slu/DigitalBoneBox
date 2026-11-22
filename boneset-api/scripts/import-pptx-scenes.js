@@ -8,13 +8,24 @@
 // otherwise SCENES_DIR or boneset-api/data/scenes). Set SCENES_DIR to a scratch
 // folder to try an import without touching real scenes.
 //
+// Preflight, then write. Every selected slide is converted and checked before
+// anything is written: scene content, scene name, scene and source identity,
+// media paths, media hashes and image file names. If any slide is rejected,
+// no scene is saved and no image is copied; the command reports every rejected
+// slide and exits with status 1. Only when every slide passes are the new
+// images written and then the scenes saved. The write phase is not a
+// transaction: if the disk or the store fails part way through, the images
+// written by this run are removed when the failure is in the image step, but
+// scenes saved before a failing scene save stay saved. Running the same
+// import again finishes it, because imports are idempotent.
+//
 // Identity. A scene's id is its permanent record id; its name is only a label
 // and can be changed in the editor. An imported scene is found again by its id
 // or, failing that, by its source identity (deck key + PowerPoint slide id in
 // its importLog), so a re-import updates or reports the existing scene and
 // never creates a second one, and a renamed scene keeps both its id and name.
 // A new scene whose name is already used by another scene (compared without
-// case, as the API does) is rejected, not saved.
+// case, as the API does) is rejected.
 //
 // Re-import safety. A scene is replaced only if nobody edited it since the last
 // import (its content still matches the importLog's contentHash); edited scenes
@@ -26,9 +37,10 @@
 // folder (a legacy bone image, or one imported before) is reused by its content
 // hash. Other images are copied once into the images folder's pptx/ subfolder,
 // which the API serves at /api/images/pptx/..., which stays out of the legacy
-// image catalog (it lists only the top level), and which git ignores. Media is
-// read only from inside the IR's folder and must match the hash in the IR;
-// existing image files are never overwritten.
+// image catalog (it lists only the top level), and which git ignores. Only
+// images used by a scene that is being saved are copied. Media is read only
+// from inside the IR's folder and must match the hash in the IR; existing image
+// files are never overwritten.
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
@@ -39,6 +51,16 @@ const DEFAULT_IMAGES_DIR = path.join(__dirname, "..", "data", "images");
 const IMPORTED_IMAGES_SUBDIR = "pptx";
 const LEGACY_IMAGE_FILE = /\.(jpe?g|png)$/i; // what the image catalog lists (boneset-api/images.js)
 const MEDIA_EXTENSION = /^\.[a-z0-9]{1,10}$/;
+
+// What happens to a slide's scene. Only the first, third and fifth write.
+const DECISIONS = {
+    create: { saves: true, done: "created", planned: "would create" },
+    unchanged: { saves: false, done: "unchanged", planned: "unchanged" },
+    update: { saves: true, done: "updated", planned: "would update" },
+    keep: { saves: false, done: "kept (edited since import; use --force)", planned: "would keep (edited since import; use --force)" },
+    replace: { saves: true, done: "replaced (--force)", planned: "would replace (--force)" },
+};
+const FAILED_ACTION = /^(rejected|failed|not saved|skipped)/;
 
 function parseArgs(argv) {
     const args = { slides: null, dryRun: false, force: false, imagesDir: DEFAULT_IMAGES_DIR, report: null };
@@ -111,23 +133,49 @@ function readMedia(irDir, mediaFile, expectedSha) {
     return bytes;
 }
 
-/** Writes an imported image into images/pptx/ once; an existing file is never overwritten. */
-function writeImportedImage(imagesDir, fileName, bytes) {
-    const folder = path.join(imagesDir, IMPORTED_IMAGES_SUBDIR);
-    fs.mkdirSync(folder, { recursive: true });
-    const base = fs.realpathSync(imagesDir);
-    const realFolder = fs.realpathSync(folder);
-    const target = path.join(realFolder, fileName);
-    if (!isInside(base, realFolder) || !isInside(realFolder, target)) {
-        throw new Error(`Refusing to write ${fileName} outside ${base}`);
+/** The file name an imported image gets in images/pptx/: its hash prefix and a plain extension. */
+function importedImageName(sha, mediaFile) {
+    const extension = path.extname(String(mediaFile)).toLowerCase();
+    return `${sha.slice(0, 16)}${MEDIA_EXTENSION.test(extension) ? extension : ".bin"}`;
+}
+
+/** Where an imported image would be written, refusing anything that is not a plain file name inside images/pptx/. */
+function importedImagePath(imagesDir, fileName) {
+    const folder = path.resolve(imagesDir, IMPORTED_IMAGES_SUBDIR);
+    const target = path.resolve(folder, fileName);
+    if (path.dirname(target) !== folder) throw new Error(`Refusing to write ${fileName} outside ${folder}`);
+    return target;
+}
+
+/** Preflight: an image may be written only if nothing is at its path yet. Nothing is written here. */
+function checkImportedImageTarget(imagesDir, fileName) {
+    const target = importedImagePath(imagesDir, fileName);
+    if (fs.existsSync(target)) {
+        throw new Error(`${target} already exists with different content; not overwriting it`);
     }
+}
+
+/**
+ * Writes an imported image into images/pptx/ unless an identical file is
+ * already there; an existing file is never overwritten. Returns the path when
+ * this call created the file, otherwise null.
+ */
+function writeImportedImage(imagesDir, fileName, bytes) {
+    const target = importedImagePath(imagesDir, fileName);
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    const base = fs.realpathSync(imagesDir);
+    const realFolder = fs.realpathSync(path.dirname(target));
+    if (!isInside(base, realFolder)) throw new Error(`Refusing to write ${fileName} outside ${base}`);
+    const realTarget = path.join(realFolder, fileName);
     try {
-        fs.writeFileSync(target, bytes, { flag: "wx" });
+        fs.writeFileSync(realTarget, bytes, { flag: "wx" });
+        return realTarget;
     } catch (error) {
         if (error.code !== "EEXIST") throw error;
-        if (sha256(fs.readFileSync(target)) !== sha256(bytes)) {
-            throw new Error(`${target} already exists with different content; not overwriting it`);
+        if (sha256(fs.readFileSync(realTarget)) !== sha256(bytes)) {
+            throw new Error(`${realTarget} already exists with different content; not overwriting it`);
         }
+        return null;
     }
 }
 
@@ -151,9 +199,20 @@ function sceneWithName(scenes, name, exceptId = null) {
     return scenes.find((s) => s.id !== exceptId && typeof s.name === "string" && s.name.toLowerCase() === lowered) || null;
 }
 
-function markdownReport(results, ir) {
+/** What a re-import does to an existing scene, without writing anything. */
+function decideUpdate(current, scene, force) {
+    const lastImport = lastPptxImport(current);
+    const currentHash = contentHash({ images: current.images, annotations: current.annotations });
+    const untouched = Boolean(lastImport) && lastImport.contentHash === currentHash;
+    if (!untouched && !force) return "keep";
+    if (untouched && lastImport.contentHash === scene.importLog[0].contentHash) return "unchanged";
+    return untouched ? "update" : "replace";
+}
+
+function markdownReport(results, ir, summary) {
     const lines = [`# PowerPoint import report: ${ir.deck.file}`, "",
         `Deck sha256 \`${ir.deck.sha256}\`, slide size ${ir.deck.slideSize.cx} x ${ir.deck.slideSize.cy} EMU.`, "",
+        summary, "",
         "| Slide | Scene | Result | Photos | Labels | Lines | Regions | Needs review | Skipped |",
         "|---|---|---|---|---|---|---|---|---|"];
     for (const r of results) {
@@ -177,22 +236,65 @@ function markdownReport(results, ir) {
     return lines.join("\n") + "\n";
 }
 
-/** Saves an imported scene over `current` (same id, name, status and creation time), or reports why not. */
-async function updateExisting(store, current, scene, force) {
-    const lastImport = lastPptxImport(current);
-    const currentHash = contentHash({ images: current.images, annotations: current.annotations });
-    const untouched = lastImport && lastImport.contentHash === currentHash;
-    if (!untouched && !force) return { action: "kept (edited since import; use --force)", saved: current };
-    if (untouched && lastImport.contentHash === scene.importLog[0].contentHash) return { action: "unchanged", saved: current };
-    const saved = {
-        ...current,
-        images: scene.images,
-        annotations: scene.annotations,
-        importLog: [...(current.importLog || []), ...scene.importLog].slice(-50),
-        updatedAt: scene.updatedAt,
-    };
-    await store.save(saved);
-    return { action: untouched ? "updated" : "replaced (--force)", saved };
+/**
+ * Converts and checks one slide without writing anything. Returns a plan:
+ * `{ rejected }`, `{ noFigure }`, or `{ scene, targetId, current, decision, shas }`.
+ */
+function preflightSlide(context, slide) {
+    const { ir, args, known, claimedNames } = context;
+    const shas = new Set();
+    context.slideShas = shas;
+    let converted;
+    try {
+        converted = convertSlide(ir, slide.index, { mediaSrc: context.mediaSrc });
+    } catch (error) {
+        return { report: { slide: slide.index }, rejected: error.message };
+    }
+    const { scene, report } = converted;
+    if (!scene) return { report, noFigure: true };
+    const content = validateSceneContent({ images: scene.images, annotations: scene.annotations, importLog: scene.importLog });
+    if (content.error) return { report, name: scene.name, rejected: content.error };
+    const named = normalizeSceneName(scene.name);
+    if (named.error) return { report, name: scene.name, rejected: named.error };
+    scene.name = named.name;
+
+    const source = sourceIdentity(ir.deck.key, slide.slideId);
+    const current = known.find((s) => s.id === scene.id) || known.find((s) => sceneSource(s) === source) || null;
+    if (current) {
+        return { report, name: current.name, scene, targetId: current.id, current, decision: decideUpdate(current, scene, args.force), shas };
+    }
+    const clash = sceneWithName(known, scene.name);
+    if (clash) return { report, name: scene.name, rejected: `a scene named "${clash.name}" already exists (${clash.id})` };
+    const lowered = scene.name.toLowerCase();
+    if (claimedNames.has(lowered)) {
+        return { report, name: scene.name, rejected: `slide ${claimedNames.get(lowered)} of this import already uses the name "${scene.name}"` };
+    }
+    claimedNames.set(lowered, slide.index);
+    return { report, name: scene.name, scene, targetId: scene.id, current: null, decision: "create", shas };
+}
+
+/** Saves one planned scene, re-reading it under its lock so a concurrent change is never overwritten. */
+async function savePlanned(store, plan, force) {
+    return store.withLock(plan.targetId, async () => {
+        const current = await store.get(plan.targetId);
+        const decision = current ? decideUpdate(current, plan.scene, force) : "create";
+        if (decision !== plan.decision) {
+            return { action: "skipped: the scene changed during the import; run it again", saved: current };
+        }
+        if (decision === "create") {
+            await store.save(plan.scene);
+            return { action: DECISIONS.create.done, saved: plan.scene };
+        }
+        const saved = {
+            ...current,
+            images: plan.scene.images,
+            annotations: plan.scene.annotations,
+            importLog: [...(current.importLog || []), ...plan.scene.importLog].slice(-50),
+            updatedAt: plan.scene.updatedAt,
+        };
+        await store.save(saved);
+        return { action: DECISIONS[decision].done, saved };
+    });
 }
 
 async function run(argv = process.argv.slice(2), env = process.env) {
@@ -204,78 +306,104 @@ async function run(argv = process.argv.slice(2), env = process.env) {
     const existing = indexImages(args.imagesDir);
     const store = resolveSceneStore(env);
     const known = await store.list();
-    const results = [];
+    const pending = new Map(); // sha256 -> { fileName, bytes }: images to copy if their scene is saved
 
-    const mediaSrc = (sha, mediaFile) => {
+    // 1. Preflight: convert and check every selected slide. Nothing is written.
+    const context = { ir, args, known, claimedNames: new Map(), slideShas: new Set() };
+    context.mediaSrc = (sha, mediaFile) => {
         let name = existing.get(sha);
         if (!name) {
             const bytes = readMedia(irDir, mediaFile, sha);
-            const extension = path.extname(String(mediaFile)).toLowerCase();
-            const fileName = `${sha.slice(0, 16)}${MEDIA_EXTENSION.test(extension) ? extension : ".bin"}`;
-            if (!args.dryRun) writeImportedImage(args.imagesDir, fileName, bytes);
+            const fileName = importedImageName(sha, mediaFile);
+            checkImportedImageTarget(args.imagesDir, fileName);
             name = `${IMPORTED_IMAGES_SUBDIR}/${fileName}`;
             existing.set(sha, name);
+            pending.set(sha, { fileName, bytes });
         }
+        if (pending.has(sha)) context.slideShas.add(sha);
         return `/api/images/${name.split("/").map(encodeURIComponent).join("/")}`;
     };
+    const plans = ir.slides
+        .filter((slide) => !args.slides || args.slides.has(slide.index))
+        .map((slide) => preflightSlide(context, slide));
 
-    for (const slide of ir.slides) {
-        if (args.slides && !args.slides.has(slide.index)) continue;
-        const { scene, report } = convertSlide(ir, slide.index, { mediaSrc });
-        if (!scene) {
-            results.push({ report, action: "no figure" });
-            continue;
-        }
-        const content = validateSceneContent({ images: scene.images, annotations: scene.annotations, importLog: scene.importLog });
-        if (content.error) {
-            results.push({ report, name: scene.name, action: `rejected: ${content.error}` });
-            continue;
-        }
-        const named = normalizeSceneName(scene.name);
-        if (named.error) {
-            results.push({ report, name: scene.name, action: `rejected: ${named.error}` });
-            continue;
-        }
-        scene.name = named.name;
+    const rejected = plans.filter((plan) => plan.rejected);
+    const results = [];
+    const finish = (summary) => {
+        const reportPath = args.report || path.join(irDir, `${ir.deck.key}.import-report.md`);
+        fs.writeFileSync(reportPath, markdownReport(results, ir, summary));
+        for (const r of results) console.log(`slide ${r.report.slide}: ${r.action}${r.sceneId ? ` ${r.sceneId}` : ""}`);
+        console.log(summary);
+        console.log(`report: ${reportPath}`);
+        return results;
+    };
 
-        const source = sourceIdentity(ir.deck.key, slide.slideId);
-        const match = known.find((s) => s.id === scene.id) || known.find((s) => sceneSource(s) === source) || null;
-        if (!match) {
-            const clash = sceneWithName(known, scene.name);
-            if (clash) {
-                results.push({ report, name: scene.name, action: `rejected: a scene named "${clash.name}" already exists (${clash.id})` });
-                continue;
-            }
+    if (rejected.length) {
+        for (const plan of plans) {
+            let action = `not saved: ${rejected.length} slide(s) rejected`;
+            if (plan.rejected) action = `rejected: ${plan.rejected}`;
+            else if (plan.noFigure) action = "no figure";
+            results.push({ report: plan.report, name: plan.name, action, sceneId: plan.targetId });
         }
-        if (args.dryRun) {
-            results.push({ report, name: match ? match.name : scene.name, action: match ? "dry run (exists)" : "dry run (new)", sceneId: match ? match.id : scene.id });
-            continue;
+        return finish(`Import stopped before writing: ${rejected.length} slide(s) rejected. No scenes were saved and no images were copied.`);
+    }
+    if (args.dryRun) {
+        for (const plan of plans) {
+            const action = plan.noFigure ? "no figure" : `dry run: ${DECISIONS[plan.decision].planned}`;
+            results.push({ report: plan.report, name: plan.name, action, sceneId: plan.targetId });
         }
-        const targetId = match ? match.id : scene.id;
-        const outcome = await store.withLock(targetId, async () => {
-            const current = await store.get(targetId);
-            if (current) return updateExisting(store, current, scene, args.force);
-            await store.save(scene);
-            return { action: "created", saved: scene };
-        });
-        const position = known.findIndex((s) => s.id === outcome.saved.id);
-        if (position >= 0) known[position] = outcome.saved;
-        else known.push(outcome.saved);
-        results.push({ report, name: outcome.saved.name, action: outcome.action, sceneId: outcome.saved.id });
+        return finish("Dry run: every slide passed the checks. Nothing was written.");
     }
 
-    const reportText = markdownReport(results, ir);
-    const reportPath = args.report || path.join(irDir, `${ir.deck.key}.import-report.md`);
-    fs.writeFileSync(reportPath, reportText);
-    for (const r of results) console.log(`slide ${r.report.slide}: ${r.action}${r.sceneId ? ` ${r.sceneId}` : ""}`);
-    console.log(`report: ${reportPath}`);
-    return results;
+    // 2. Write the images used by the scenes that will be saved. If one fails,
+    //    remove the images this run wrote, so a failed image step leaves none.
+    const saving = plans.filter((plan) => plan.decision && DECISIONS[plan.decision].saves);
+    const needed = new Set(saving.flatMap((plan) => [...plan.shas]));
+    const written = [];
+    try {
+        for (const sha of needed) {
+            const { fileName, bytes } = pending.get(sha);
+            const created = writeImportedImage(args.imagesDir, fileName, bytes);
+            if (created) written.push(created);
+        }
+    } catch (error) {
+        for (const file of written) fs.rmSync(file, { force: true });
+        throw new Error(`${error.message}. No scenes were saved, and the ${written.length} image(s) this run had written were removed.`);
+    }
+
+    // 3. Save the scenes. A store failure stops here; scenes saved before it stay saved.
+    let failure = null;
+    for (const plan of plans) {
+        if (plan.noFigure) {
+            results.push({ report: plan.report, action: "no figure" });
+            continue;
+        }
+        if (failure) {
+            results.push({ report: plan.report, name: plan.name, action: "not saved: stopped after a storage error", sceneId: plan.targetId });
+            continue;
+        }
+        if (!DECISIONS[plan.decision].saves) {
+            results.push({ report: plan.report, name: plan.name, action: DECISIONS[plan.decision].done, sceneId: plan.targetId });
+            continue;
+        }
+        try {
+            const outcome = await savePlanned(store, plan, args.force);
+            results.push({ report: plan.report, name: outcome.saved ? outcome.saved.name : plan.name, action: outcome.action, sceneId: plan.targetId });
+        } catch (error) {
+            failure = error;
+            results.push({ report: plan.report, name: plan.name, action: `failed: ${error.message}`, sceneId: plan.targetId });
+        }
+    }
+    const saved = results.filter((r) => ["created", "updated", "replaced (--force)"].includes(r.action)).length;
+    return finish(failure
+        ? `Import stopped by a storage error after saving ${saved} scene(s). Run the same import again to finish it.`
+        : `Import finished: ${saved} scene(s) saved, ${written.length} image(s) copied.`);
 }
 
 if (require.main === module) {
     run()
         .then((results) => {
-            if (results.some((r) => r.action.startsWith("rejected"))) process.exitCode = 1;
+            if (results.some((r) => FAILED_ACTION.test(r.action))) process.exitCode = 1;
         })
         .catch((error) => {
             console.error(error.message);
@@ -283,4 +411,4 @@ if (require.main === module) {
         });
 }
 
-module.exports = { run, parseArgs, indexImages, readMedia, sourceIdentity, IMPORTED_IMAGES_SUBDIR };
+module.exports = { run, parseArgs, indexImages, readMedia, sourceIdentity, IMPORTED_IMAGES_SUBDIR, FAILED_ACTION };

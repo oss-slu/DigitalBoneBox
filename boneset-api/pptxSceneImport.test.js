@@ -10,7 +10,7 @@
 import { renderScene, displayedAnnotation, textBox, storeAnnotationGeometry } from "../templates/js/sceneCanvas.js";
 
 const ir = require("./test-fixtures/bony-pelvis-slides-2-3-18.ir.json");
-const { convertSlide, canvasTextBox, flattenCommands, stableUuid } = require("./pptxSceneImport");
+const { convertSlide, canvasTextBox, flattenCommands, stableUuid, contentHash, CONVERTER_VERSION } = require("./pptxSceneImport");
 const { validateSceneContent, isValidSceneId } = require("./scenes");
 
 const EMU = 9525;
@@ -394,13 +394,13 @@ describe("PowerPoint slide import: repeatable and traceable", () => {
 // store and images folder. The fixture IR's media are replaced by small files
 // written next to a copy of it (one of them a copy of a real legacy bone
 // image), so the importer's hashing, reuse and copying run for real.
-describe("PowerPoint import command: identity, names and images", () => {
+describe("PowerPoint import command: preflight, identity, names and images", () => {
     const fs = require("fs");
     const os = require("os");
     const path = require("path");
     const crypto = require("crypto");
     const { Buffer } = require("buffer"); // Jest's jsdom environment has no global Buffer
-    const { run, sourceIdentity, IMPORTED_IMAGES_SUBDIR } = require("./scripts/import-pptx-scenes");
+    const { run, sourceIdentity, IMPORTED_IMAGES_SUBDIR, FAILED_ACTION } = require("./scripts/import-pptx-scenes");
     const { resolveSceneStore } = require("./scenes");
     const { buildImageCatalog } = require("./images");
 
@@ -544,24 +544,69 @@ describe("PowerPoint import command: identity, names and images", () => {
         expect(await w.store.list()).toHaveLength(3);
     });
 
-    test("a new scene whose name another scene already uses is rejected (case-insensitive), as the API does", async () => {
+    const userScene = (name) => ({ id: crypto.randomUUID(), name, images: [], annotations: [], status: "draft", createdAt: NOW, updatedAt: NOW });
+    const copiedImages = (w) => {
+        const folder = path.join(w.imagesDir, IMPORTED_IMAGES_SUBDIR);
+        return fs.existsSync(folder) ? fs.readdirSync(folder) : [];
+    };
+
+    test("a duplicate scene name creates no scene and copies no image, in a dry run or a real one", async () => {
         const w = workspace();
-        const taken = convert(2).scene.name;
-        const userScene = { id: crypto.randomUUID(), name: taken.toUpperCase(), images: [], annotations: [], status: "draft", createdAt: NOW, updatedAt: NOW };
-        await w.store.save(userScene);
+        const taken = userScene(convert(2).scene.name.toUpperCase()); // names compare without case, as the API does
+        await w.store.save(taken);
+        const legacyBefore = filesUnder(w.imagesDir);
 
         for (const extra of [["--dry-run"], []]) {
             const results = await w.importDeck(...extra);
-            expect(results.find((r) => r.report.slide === 2).action).toBe(`rejected: a scene named "${userScene.name}" already exists (${userScene.id})`);
+            expect(results.find((r) => r.report.slide === 2).action).toBe(`rejected: a scene named "${taken.name}" already exists (${taken.id})`);
+            expect(results.filter((r) => r.report.slide !== 2).map((r) => r.action)).toEqual(["not saved: 1 slide(s) rejected", "not saved: 1 slide(s) rejected"]);
+            expect(results.some((r) => FAILED_ACTION.test(r.action))).toBe(true); // the command exits with status 1
         }
-        const scenes = await w.store.list();
-        expect(scenes.map((s) => s.id).sort()).toEqual([userScene.id, convert(3).scene.id, convert(18).scene.id].sort());
-        expect(await w.store.get(userScene.id)).toEqual(userScene);
+        expect((await w.store.list()).map((s) => s.id)).toEqual([taken.id]);
+        expect(await w.store.get(taken.id)).toEqual(taken);
+        expect(copiedImages(w)).toEqual([]);
+        expect(filesUnder(w.imagesDir)).toEqual(legacyBefore);
+    });
+
+    test("a rejected later slide leaves no earlier new scene or image behind", async () => {
+        const w = workspace();
+        const taken = userScene(convert(18).scene.name); // the last slide clashes; slides 2 and 3 are valid and new
+        await w.store.save(taken);
+        const legacyBefore = filesUnder(w.imagesDir);
+
+        const results = await w.importDeck();
+        expect(results.map((r) => [r.report.slide, r.action.split(":")[0]])).toEqual([[2, "not saved"], [3, "not saved"], [18, "rejected"]]);
+        expect((await w.store.list()).map((s) => s.id)).toEqual([taken.id]);
+        for (const { index } of ir.slides) expect(await w.store.get(convert(index).scene.id)).toBeNull();
+        expect(copiedImages(w)).toEqual([]);
+        expect(filesUnder(w.imagesDir)).toEqual(legacyBefore);
+        expect(fs.readFileSync(path.join(w.irDir, `${w.data.deck.key}.import-report.md`), "utf8")).toMatch(/No scenes were saved and no images were copied/);
+
+        // once the conflict is gone, the same import goes through
+        await w.store.remove(taken.id);
+        expect(actions(await w.importDeck())).toEqual(["created", "created", "created"]);
+        expect(copiedImages(w)).toHaveLength(Object.keys(w.data.media).length - 1);
+    });
+
+    test("two slides of one import that end up with the same name are rejected before anything is saved", async () => {
+        const w = workspace();
+        const long = "Posterior view of the bony pelvis ".repeat(4); // names are cut to 100 characters
+        w.data.slides.find((s) => s.index === 3).title = long;
+        w.data.slides.find((s) => s.index === 18).title = long;
+        w.write();
+        expect(convertSlide(w.data, 3, { mediaSrc, now: NOW }).scene.name).toBe(convertSlide(w.data, 18, { mediaSrc, now: NOW }).scene.name);
+
+        const results = await w.importDeck();
+        expect(results.find((r) => r.report.slide === 18).action).toMatch(/^rejected: slide 3 of this import already uses the name/);
+        expect(results.filter((r) => r.report.slide !== 18).map((r) => r.action)).toEqual(["not saved: 1 slide(s) rejected", "not saved: 1 slide(s) rejected"]);
+        expect(await w.store.list()).toEqual([]);
+        expect(copiedImages(w)).toEqual([]);
     });
 
     test("the same deck under another deck key gets new identities, and its duplicate names are rejected", async () => {
         const w = workspace();
         await w.importDeck();
+        const before = filesUnder(w.imagesDir);
         w.data.deck.key = "bony-pelvis-copy";
         w.write();
         const results = await w.importDeck();
@@ -569,38 +614,95 @@ describe("PowerPoint import command: identity, names and images", () => {
         expect(await w.store.list()).toHaveLength(3);
         const otherIds = w.data.slides.map((s) => convertSlide(w.data, s.index, { mediaSrc, now: NOW }).scene.id);
         for (const id of otherIds) expect(await w.store.get(id)).toBeNull();
+        expect(filesUnder(w.imagesDir)).toEqual(before);
     });
 
-    test("a scene saved under another id, such as by an earlier converter version, is found by its source identity", async () => {
+    test("a scene saved by the earlier SHA-1 converter is found by deck key and slide id and updated in place", async () => {
         const w = workspace();
         await w.importDeck();
         const newId = convert(3).scene.id;
-        const oldId = crypto.randomUUID();
-        const scene = await w.store.get(newId);
-        await w.store.save({ ...scene, id: oldId });
+        const current = await w.store.get(newId);
+        // What converter 0.1.0 (SHA-1, UUID version 5) stored for this slide: its
+        // own scene id and object ids, and the content hash of that content.
+        const oldSceneId = "f72746f2-ee25-585b-a060-c4786072e411";
+        const remap = new Map();
+        const oldContent = JSON.parse(JSON.stringify({ images: current.images, annotations: current.annotations })
+            .replace(/[0-9a-f]{8}-[0-9a-f]{4}-8[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/g, (id) => {
+                if (!remap.has(id)) remap.set(id, crypto.randomUUID());
+                return remap.get(id);
+            }));
+        const oldLog = { ...current.importLog[0], converter: { name: "pptxSceneImport.js", version: "0.1.0" }, contentHash: contentHash(oldContent) };
+        await w.store.save({ ...current, id: oldSceneId, ...oldContent, importLog: [oldLog] });
         await w.store.remove(newId);
 
         const results = await w.importDeck();
-        expect(results.find((r) => r.report.slide === 3)).toEqual(expect.objectContaining({ action: "unchanged", sceneId: oldId }));
+        expect(results.find((r) => r.report.slide === 3)).toEqual(expect.objectContaining({ action: "updated", sceneId: oldSceneId }));
         expect(await w.store.get(newId)).toBeNull();
         expect(await w.store.list()).toHaveLength(3);
+        const updated = await w.store.get(oldSceneId);
+        expect(updated.importLog.map((e) => e.converter.version)).toEqual(["0.1.0", CONVERTER_VERSION]);
+        expect(updated.images.map((i) => i.id)).toEqual(current.images.map((i) => i.id));
+        expect(actions(await w.importDeck())).toEqual(["unchanged", "unchanged", "unchanged"]);
     });
 
-    test("media outside the IR folder, or not matching its hash, is refused and nothing is copied", async () => {
+    test("identical image bytes are copied once, even under two media file names", async () => {
+        const w = workspace();
+        // slides 2 and 3 show the same photo; give slide 3's copy of it a second file name
+        const twin = w.data.slides.find((s) => s.index === 3).objects.find((o) => o.picture && o.picture.mediaFile.endsWith(".png")).picture;
+        const first = w.data.slides.find((s) => s.index === 2).objects.find((o) => o.picture && o.picture.mediaSha256 === twin.mediaSha256).picture;
+        expect(first.mediaFile).toBe(twin.mediaFile);
+        fs.copyFileSync(path.join(w.irDir, twin.mediaFile), path.join(w.irDir, "media", "same-bytes-again.png"));
+        twin.mediaFile = "media/same-bytes-again.png";
+        w.write();
+        await w.importDeck();
+        const hashes = Object.values(filesUnder(path.join(w.imagesDir, IMPORTED_IMAGES_SUBDIR)));
+        expect(new Set(hashes).size).toBe(hashes.length);
+        expect(hashes).toHaveLength(Object.keys(w.data.media).length - 1);
+    });
+
+    test("a scene kept because it was edited does not pull its new images in", async () => {
+        const w = workspace();
+        await w.importDeck();
+        const sceneId = convert(2).scene.id;
+        const scene = await w.store.get(sceneId);
+        await w.store.save({ ...scene, annotations: scene.annotations.slice(1) }); // edited in the editor
+        const before = copiedImages(w).sort();
+
+        const bytes = Buffer.from("an image only slide 2 would use");
+        const next = sha256(bytes);
+        fs.writeFileSync(path.join(w.irDir, `media/${next.slice(0, 16)}.png`), bytes);
+        const picture = w.data.slides.find((s) => s.index === 2).objects.find((o) => o.picture).picture;
+        picture.mediaSha256 = next;
+        picture.mediaFile = `media/${next.slice(0, 16)}.png`;
+        w.write();
+
+        const results = await w.importDeck();
+        expect(results.find((r) => r.report.slide === 2).action).toBe("kept (edited since import; use --force)");
+        expect(copiedImages(w).sort()).toEqual(before);
+        expect(actions(await w.importDeck("--force"))).toContain("replaced (--force)");
+        expect(copiedImages(w)).toContain(`${next.slice(0, 16)}.png`);
+    });
+
+    test("media outside the IR folder, through a symlink, or not matching its hash is rejected before anything is written", async () => {
         const w = workspace();
         const picture = w.data.slides.find((s) => s.index === 2).objects.find((o) => o.picture && o.picture.mediaFile.endsWith(".png")).picture;
         const outside = path.join(w.root, "outside.png");
         fs.copyFileSync(path.join(w.irDir, picture.mediaFile), outside);
         const original = picture.mediaFile;
+        const expectNothingWritten = (results, reason) => {
+            expect(results.find((r) => r.report.slide === 2).action).toMatch(reason);
+            // slide 3 uses the same image, so it can be rejected too; nothing is saved either way
+            expect(results.filter((r) => r.report.slide !== 2).every((r) => /^(not saved|rejected)/.test(r.action))).toBe(true);
+        };
 
         picture.mediaFile = "../outside.png";
         w.write();
-        await expect(w.importDeck()).rejects.toThrow(/outside the IR folder/);
+        expectNothingWritten(await w.importDeck(), /^rejected: Media file .* is outside the IR folder/);
 
         picture.mediaFile = original;
         w.write();
         fs.writeFileSync(path.join(w.irDir, original), "tampered");
-        await expect(w.importDeck()).rejects.toThrow(/does not match its sha256/);
+        expectNothingWritten(await w.importDeck(), /^rejected: .*does not match its sha256/);
 
         let linked = true;
         try {
@@ -609,19 +711,41 @@ describe("PowerPoint import command: identity, names and images", () => {
         } catch {
             linked = false;
         }
-        if (linked) await expect(w.importDeck()).rejects.toThrow(/outside the IR folder/);
-        const copied = path.join(w.imagesDir, IMPORTED_IMAGES_SUBDIR);
-        const names = fs.existsSync(copied) ? fs.readdirSync(copied) : [];
-        expect(names).not.toContain(path.basename(original));
+        if (linked) expectNothingWritten(await w.importDeck(), /^rejected: Media file .* is outside the IR folder/);
+        expect(await w.store.list()).toEqual([]);
+        expect(copiedImages(w)).toEqual([]);
     });
 
-    test("an existing image file is never overwritten", async () => {
+    test("an existing image file is never overwritten, and the clash is found before anything is written", async () => {
         const w = workspace();
         const picture = w.data.slides.find((s) => s.index === 2).objects.find((o) => o.picture && o.picture.mediaFile.endsWith(".png")).picture;
         const target = path.join(w.imagesDir, IMPORTED_IMAGES_SUBDIR, path.basename(picture.mediaFile));
         fs.mkdirSync(path.dirname(target), { recursive: true });
         fs.writeFileSync(target, "someone else's file");
-        await expect(w.importDeck()).rejects.toThrow(/already exists with different content/);
+        const results = await w.importDeck();
+        expect(results.filter((r) => r.action.includes("already exists with different content")).length).toBeGreaterThan(0);
         expect(fs.readFileSync(target, "utf8")).toBe("someone else's file");
+        expect(copiedImages(w)).toEqual([path.basename(target)]);
+        expect(await w.store.list()).toEqual([]);
+    });
+
+    test("if writing an image fails, the images this run wrote are removed and no scene is saved", async () => {
+        const w = workspace();
+        const realWrite = fs.writeFileSync;
+        let imageWrites = 0;
+        const spy = jest.spyOn(fs, "writeFileSync").mockImplementation((file, ...rest) => {
+            if (String(file).includes(`${path.sep}${IMPORTED_IMAGES_SUBDIR}${path.sep}`)) {
+                imageWrites += 1;
+                if (imageWrites === 2) throw Object.assign(new Error("disk full"), { code: "ENOSPC" });
+            }
+            return realWrite(file, ...rest);
+        });
+        try {
+            await expect(w.importDeck()).rejects.toThrow(/disk full\. No scenes were saved, and the 1 image\(s\) this run had written were removed/);
+        } finally {
+            spy.mockRestore();
+        }
+        expect(copiedImages(w)).toEqual([]);
+        expect(await w.store.list()).toEqual([]);
     });
 });
