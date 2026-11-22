@@ -1,4 +1,4 @@
-import { OPEN_SCENE_EVENT, SHOW_IN_VIEWER_EVENT, sceneSources, readableName } from "./sceneLinks.js";
+import { OPEN_SCENE_EVENT, SCENES_CHANGED_EVENT, SHOW_IN_VIEWER_EVENT, sceneSources, readableName } from "./sceneLinks.js";
 import { renderScene, displayedAnnotation, objectsAt, storeAnnotationGeometry, textBox } from "./sceneCanvas.js";
 import {
     DEFAULT_HIGHLIGHT_COLOR,
@@ -3062,6 +3062,10 @@ export function initializeSceneEditor(root = document) {
         // Skip if this page was re-rendered and this editor is no longer on it.
         if (!editorView.isConnected || !event.detail || !event.detail.sceneId) return;
         openSceneFromViewer(event.detail.sceneId);
+    });
+    document.addEventListener(SCENES_CHANGED_EVENT, () => {
+        // A presentation import added or updated scenes: refresh the list (Issue #540).
+        if (editorView.isConnected) void loadLibrary();
     });
     dom.newButton.addEventListener("click", handleCreate);
     dom.emptyNewButton.addEventListener("click", handleCreate);

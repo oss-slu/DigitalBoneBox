@@ -2,6 +2,11 @@
 
 The client's anatomy slides can be imported straight from the PowerPoint file into Scene Editor scenes. Every photo, label, pointer line and highlight lands where the author placed it on the slide, and each one is an ordinary scene object that can be moved, edited or deleted. The legacy annotation JSON is not read or changed.
 
+There are two ways to run an import, and both use the same pipeline and rules:
+
+- **From the Scene Editor**: the **Import presentation** button takes a .pptx file or a shared Google Slides link. See [Importing from the Scene Editor](#importing-from-the-scene-editor).
+- **From the command line**: see [Running an import](#running-an-import).
+
 ## How it works
 
 ```
@@ -12,9 +17,11 @@ deck.pptx
                                               measured line breaks, connector glue, hyperlinks, media
   -> boneset-api/pptxSceneImport.js          converts one IR slide into a scene:
                                               scene px = EMU / 9525 - origin
-  -> boneset-api/scripts/import-pptx-scenes.js
-                                              validates each scene with validateSceneContent and saves
-                                              it through the normal scene store, as a draft
+  -> boneset-api/pptxImportPipeline.js       preflights every slide (content, name, identity, media),
+                                              then copies new images and saves each scene through the
+                                              normal scene store, as a draft
+       used by boneset-api/scripts/import-pptx-scenes.js   (command line)
+       and by  boneset-api/presentationImport.js           (Scene Editor: /api/scene-imports)
 ```
 
 The extractor records facts and makes no Digital Bone Box decisions, so the converter can change and rerun from the IR without reopening the deck.
@@ -29,6 +36,77 @@ What the converter does with a slide:
 - **Linking.** Labels, lines and highlights are stored in the coordinates of the photo under them (`sourceImageId`, `sourceImageFrame`), so they follow that photo when it is moved, resized, rotated or flipped.
 - **Hidden shapes.** The Scene Editor draws annotations above photos. A shape fully covered by a photo on the slide is left out and reported; a partly covered one is flagged.
 - **Traceability.** Scene and object ids are name-based UUIDs (version 8, SHA-256, RFC 9562) derived from the deck key and the PowerPoint slide and shape ids, so a re-import produces the same ids. Every object has a `source` (deck, slide, slide id, shape id). Uncertain objects carry `importReview: { status: "needs-review", reasons: [...] }`. The scene's `importLog` records deck and slide hashes, tool versions, counts and a content hash.
+
+## Importing from the Scene Editor
+
+The Scene Editor's **Import presentation** button (next to **Back to Bone Viewer**) opens a panel that runs the same extractor and pipeline on the server, as a background job:
+
+1. Choose **PowerPoint file (.pptx)** and pick the file, or choose **Google Slides link** and paste the link.
+2. Check the **deck key**. It is suggested from the file name (or `gslides-<presentation id>` for a link). Decks imported before are offered in the list. Use the same key every time you import the same deck, so its scenes are updated instead of duplicated.
+3. Optionally limit the **slides** (for example `2-7, 9`), or tick **Check only** to see what would happen without saving anything.
+4. **Import**. The panel shows progress (reading, checking, copying images, saving), then a row for every slide: created, updated, unchanged, kept (edited since its last import), rejected with the reason, not saved, or no figure, with counts, what needs review and what was left out. **Open** goes to the scene.
+
+The browser checks the file type (.pptx only, not .ppt), the size, the link, the deck key and the slide list before anything is sent. The server checks them again, then checks the presentation itself before the job starts.
+
+Imported scenes are always drafts until someone publishes them. The panel never offers `--force`, so a scene edited since its last import is always kept. Use the command line to replace one on purpose.
+
+### Google Slides
+
+The server downloads Google's own .pptx export of the presentation, so the result is the same as **File > Download > Microsoft PowerPoint (.pptx)**:
+
+- The presentation must be shared as **Anyone with the link can view**. For a private presentation, download it as .pptx in Google Slides and import the file instead.
+- The download URL is built from the presentation id, never taken from the request, and redirects are only followed to Google's download hosts (`docs.google.com`, `*.googleusercontent.com`). The server needs outbound HTTPS to Google.
+- A Google Slides export may number slides afresh each time it is downloaded, and slide ids are part of a scene's identity. If slides were added or reordered in Google Slides, check the results of a re-import; scenes edited since their import are kept either way.
+
+### Who can import
+
+The app has no user accounts, so the server decides:
+
+| Server setting | Who can import |
+|---|---|
+| `SCENE_IMPORT_TOKEN` not set (default) | Only the computer the API runs on: a loopback connection, no proxy header, and a page served from `localhost` or the API's own host. |
+| `SCENE_IMPORT_TOKEN=<a long random value>` | Anyone who enters that key in the panel. The browser keeps it in memory for the page only and sends it as `Authorization: Bearer <key>`. |
+| Vercel | Nobody: import reports itself unavailable, because the deployment has no Python and cannot store imported images. |
+
+Nothing the server sends to the browser contains server paths, credentials, command lines or Python output. Errors are written for the person importing, and the details go to the server log.
+
+### Running it locally
+
+Start the API as usual (`npm run dev`, or `npm start --prefix boneset-api`). The panel checks these prerequisites when it opens and explains anything missing:
+
+- **Python 3.8 or newer**, run as `python3` (`python` on Windows). Set `PPTX_IMPORT_PYTHON` to use another executable.
+- **Pillow and Calibri or Carlito** for measured label line breaks. Without them the import still works, but every label is flagged for review, and the panel warns about it.
+- **A writable import folder and images folder.** The upload and the extracted IR go to a job folder inside the import folder (above), which is deleted when the job ends. New images go to `boneset-api/data/images/pptx/`.
+
+Other settings, all optional:
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `SCENE_IMPORT_TOKEN` | not set | Allow imports from other computers with this key (see above). |
+| `PPTX_IMPORT_MAX_BYTES` | 52428800 (50 MB) | Largest presentation accepted, uploaded or downloaded. The full Bone Project 2.0 deck is 17.7 MB. |
+| `PPTX_IMPORT_TIMEOUT_MS` | 600000 (10 minutes) | How long the extractor may run before it is stopped. The full deck takes about 5 seconds. |
+| `PPTX_IMPORT_PYTHON` | `python3` (`python` on Windows) | The Python that runs `data_extraction/pptx_ir.py`. |
+| `DBB_PPTX_IMPORT_DIR`, `PPTX_IR_FONT_DIR` | see above | The extractor's import folder and an extra font folder. |
+
+One import runs at a time; up to five more wait in a queue, and the panel says how many are ahead. A finished import's results are kept for an hour. The API's Docker image (`boneset-api/Dockerfile`) contains neither Python nor `data_extraction/`, so in Docker the panel reports import as unavailable until the image adds them.
+
+The API, under `/api/scene-imports`:
+
+| Request | Purpose |
+|---|---|
+| `GET /api/scene-imports` | Whether import is available here, problems and warnings, access mode, size limit, decks imported before |
+| `POST /api/scene-imports/pptx?deckKey=&slides=&dryRun=1` | Body: the .pptx bytes. Header `X-File-Name`: the URL-encoded file name. Responds 202 with the job |
+| `POST /api/scene-imports/google-slides` | JSON `{ "source": "<link or id>", "deckKey", "slides", "dryRun" }`. Responds 202 with the job |
+| `GET /api/scene-imports/jobs/<id>` | The job: `state` (queued, running, succeeded, checked, stopped, failed), `phase`, `progress`, `summary`, `warnings`, `error`, and one result per slide |
+
+### Toward object storage
+
+Two things in this workflow are local today, and both have a single seam to replace:
+
+- **Imported images** are written by the image step of `boneset-api/pptxImportPipeline.js` (`indexImages`, `readMedia`, `writeImportedImage`) into `boneset-api/data/images/pptx/` and referenced as `/api/images/pptx/<file>`. An image-storage adapter (for example R2) would implement those three operations and return its own URL. Reuse by content hash already depends only on SHA-256.
+- **The job folder** holds the uploaded deck and the IR while one job runs. A hosted deployment needs a writable temporary location for it, and Python for the extractor, or an extraction service that returns the same IR.
+
+Until then, run imports on a local copy of the app. Publishing and R2 storage are out of scope here (see below).
 
 ## Running an import
 
@@ -140,10 +218,18 @@ Publishing imported scenes into the live bone viewer, and moving images to R2 or
 
 Reference renders should be exported from PowerPoint or Google Slides. LibreOffice re-routes connectors that are glued to shapes, so its renders are not a valid reference for pointer lines.
 
+Importing from the Scene Editor, through `/api/scene-imports` with the real extractor:
+
+| Check | Result |
+|---|---|
+| Pelvis deck uploaded twice | 19 draft scenes created in about 0.5 s, then 19 unchanged; job folder removed; no server path in any response |
+| Full Bone Project 2.0 deck (17.7 MB) uploaded twice | 232 created and 146 images copied in about 4.4 s, then 232 unchanged and none copied |
+| Same deck under a different deck key, in the browser | import stopped before writing; every slide rejected with its name clash; nothing saved |
+
 Tests:
 
 ```bash
-npx jest pptxSceneImport
+npx jest pptxSceneImport presentationImport
 PPTX_IR_TEST_DECK="Bone Box (Boney Pelvis).pptx" python3 -m unittest data_extraction/test_pptx_ir.py
 ```
 

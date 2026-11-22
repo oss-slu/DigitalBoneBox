@@ -15,6 +15,7 @@ import os
 import pathlib
 import shutil
 import struct
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -147,7 +148,8 @@ class OutputPaths(unittest.TestCase):
     def run_main(self, *args):
         with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()) as err:
             try:
-                code = pptx_ir.main([self.deck, *args])
+                pptx_ir.main([self.deck, *args])
+                code = 0  # main() returns nothing when it succeeds, so the process exits with 0
             except SystemExit as exit_:
                 code = exit_.code
         return code, err.getvalue()
@@ -252,6 +254,34 @@ class OutputPaths(unittest.TestCase):
         self.assertTrue(any(p.startswith(os.path.join(folder, "media") + os.sep) for p in written))
         for path in written:
             self.assertTrue(pptx_ir.is_within(os.path.realpath(path), os.path.realpath(folder)), path)
+
+    def test_check_reports_the_prerequisites_as_json(self):
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            self.assertIsNone(pptx_ir.main(["--check"]))
+        report = json.loads(out.getvalue())
+        self.assertEqual(set(report), {"extractor", "irVersion", "python", "pillow", "labelFonts", "importDir"})
+        self.assertIsInstance(report["pillow"], bool)
+        self.assertEqual(set(report["labelFonts"]), {"regular", "bold"})
+        self.assertTrue(os.path.isabs(report["importDir"]))
+
+    def test_progress_prints_one_json_line_per_slide(self):
+        err = io.StringIO()
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(err):
+            self.assertIsNone(pptx_ir.main([self.deck, "out", "--deck-key", "mini", "--progress"]))
+        progress = [json.loads(line)["progress"] for line in err.getvalue().splitlines() if line.startswith('{"progress"')]
+        self.assertEqual(progress, [{"done": 1, "total": 1}])
+
+    def test_the_command_exits_0_on_success_and_2_on_bad_arguments(self):
+        script = os.path.join(os.path.dirname(os.path.abspath(pptx_ir.__file__)), "pptx_ir.py")
+        checked = subprocess.run([sys.executable, script, "--check"], capture_output=True, text=True)
+        self.assertEqual(checked.returncode, 0)
+        self.assertIn("importDir", json.loads(checked.stdout))
+        ran = subprocess.run([sys.executable, script, self.deck, "out", "--deck-key", "mini"], capture_output=True, text=True, cwd=self.work)
+        self.assertEqual(ran.returncode, 0, ran.stderr)
+        bad = subprocess.run([sys.executable, script, self.deck, "out", "--deck-key", "../evil"], capture_output=True, text=True, cwd=self.work)
+        self.assertEqual(bad.returncode, 2)
+        self.assertIn("invalid deck key", bad.stderr)
 
     def test_media_extensions_from_the_deck_are_plain(self):
         self.assertEqual(pptx_ir.media_extension("ppt/media/image1.PNG"), ".png")

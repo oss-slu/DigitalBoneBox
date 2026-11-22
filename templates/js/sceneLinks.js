@@ -6,6 +6,8 @@
 // Events the two views use to talk to each other.
 export const OPEN_SCENE_EVENT = "bonebox:open-scene";
 export const SHOW_IN_VIEWER_EVENT = "bonebox:show-in-viewer";
+// Sent when scenes were added or changed outside the Scene Editor list, such as by a presentation import (Issue #540).
+export const SCENES_CHANGED_EVENT = "bonebox:scenes-changed";
 
 let latestRequest = 0;
 
