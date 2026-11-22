@@ -34,32 +34,55 @@ What the converter does with a slide:
 
 Requirements: Python 3.8+ with Pillow (`pip install pillow`) and Calibri or the metric-compatible Carlito installed, used to measure label line breaks; Node and the repository's npm dependencies.
 
-```bash
-python3 data_extraction/pptx_ir.py "deck.pptx" out/ --deck-key bone-project-2
-SCENES_DIR=/tmp/scenes node boneset-api/scripts/import-pptx-scenes.js --ir out/bone-project-2.ir.json
-```
+Both tools use one local import folder for the IR, the extracted media and the import report. It belongs to the user and is outside the repository:
+
+| Platform | Default import folder |
+|---|---|
+| Windows | `%LOCALAPPDATA%\DigitalBoneBox\imports\pptx` |
+| macOS | `~/Library/Application Support/DigitalBoneBox/imports/pptx` |
+| Linux | `$XDG_DATA_HOME/DigitalBoneBox/imports/pptx`, or `~/.local/share/DigitalBoneBox/imports/pptx` |
+
+Set `DBB_PPTX_IMPORT_DIR` to use another folder (the tests do this), or pass an output folder to `pptx_ir.py` as its second argument.
 
 PowerShell:
 
 ```powershell
-python data_extraction/pptx_ir.py "$HOME\Downloads\deck.pptx" "$HOME\dbb-import\ir" --deck-key bone-project-2
-$env:SCENES_DIR = "$HOME\dbb-import\scenes"
-node boneset-api/scripts/import-pptx-scenes.js --ir "$HOME\dbb-import\ir\bone-project-2.ir.json"
+python data_extraction/pptx_ir.py "$HOME\Downloads\deck.pptx" --deck-key bone-project-2
+node boneset-api/scripts/import-pptx-scenes.js --ir "$env:LOCALAPPDATA\DigitalBoneBox\imports\pptx\bone-project-2.ir.json"
 ```
+
+bash:
+
+```bash
+export DBB_PPTX_IMPORT_DIR="$HOME/.local/share/DigitalBoneBox/imports/pptx"   # optional; this is the Linux default
+python3 data_extraction/pptx_ir.py "deck.pptx" --deck-key bone-project-2
+node boneset-api/scripts/import-pptx-scenes.js --ir "$DBB_PPTX_IMPORT_DIR/bone-project-2.ir.json"
+```
+
+Scenes are saved to the scene store (see below). To try an import without touching your scenes, set `SCENES_DIR` to a scratch folder, such as `scenes` inside the import folder, for both the import and the server.
 
 The .pptx is read only by the first command. It is never copied into the repository or uploaded.
 
-The output folder can be relative (`out/`) or absolute, but it must not contain `..` and must be inside the current folder, your home folder or the system temporary folder. The extractor checks that every file it writes lands inside that folder.
+An output folder given on the command line can be relative (`out/`) or absolute, but it must not contain `..` and must be inside the current folder, your home folder, the system temporary folder or the import folder. The extractor checks that every file it writes lands inside that folder.
 
 | Option | Command | Effect |
 |---|---|---|
-| `--deck-key` | `pptx_ir.py` | The deck's permanent name. Scene ids are derived from it and each slide's PowerPoint id, so use the same key every time: a re-import then updates the same scenes, even after slides are reordered. A new key creates new scenes. It is also the IR file name, so it may only use letters, digits, `.`, `_` and `-`, starting with a letter or digit. |
+| `--deck-key` | `pptx_ir.py` | The deck's permanent name. Scene ids and source identities are derived from it and each slide's PowerPoint id, so use the same key every time: a re-import then updates the same scenes, even after slides are reordered. It is also the IR file name, so it may only use letters, digits, `.`, `_` and `-`, starting with a letter or digit. |
 | `--slides 2-7,9` | both | Only these slides. |
-| `--dry-run` | import | Convert and validate; save nothing. |
+| `--dry-run` | import | Convert and validate, check names and identities; save nothing. |
 | `--force` | import | Replace scenes edited since their last import (otherwise they are kept). |
+| `--images-dir <folder>` | import | The images folder the API serves (default: `boneset-api/data/images`). |
 | `--report <file>` | import | Where the review report goes (default: next to the IR). |
 
-Each slide is reported as created, unchanged, updated, or kept (edited since import). The report lists every flagged object and everything left out of the scene.
+Each slide is reported as created, unchanged, updated, kept (edited since import), replaced (`--force`) or rejected. The command exits with status 1 if any slide was rejected. The report lists every flagged object and everything left out of the scene.
+
+### Scene identity and re-imports
+
+- `scene.id` is the scene's permanent record id: a UUID (version 8, SHA-256) derived from the deck key and the PowerPoint slide id. The scene name is not part of it.
+- The name starts as "&lt;slide title&gt; (slide N)" and can be changed in the editor. Renaming changes neither the id nor the source identity, and a re-import keeps the new name.
+- A re-import finds each scene by its id or by its source identity (the deck key and slide id in its `importLog`), which also matches scenes imported by an earlier converter version. The scene is then updated, reported unchanged, or kept if it was edited since the import. A second scene for the same slide is never created.
+- A new scene whose name is already used by another scene, compared without case as the API does, is rejected and not saved. This happens, for example, when the same deck is imported again under a different deck key.
+- Every object keeps its `source` (deck, slide, slide id, shape id) and every scene its `importLog`, so later migration work can trace each object to the slide shape it came from.
 
 ### Where scenes are saved
 
@@ -69,17 +92,21 @@ The tool picks the store the same way the server does:
 |---|---|
 | `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` set | Redis (production) |
 | `SCENES_DIR` set | that folder |
-| neither | `boneset-api/data/scenes` in the repository, which git tracks |
+| neither | `boneset-api/data/scenes` in the repository, which git ignores |
 
-### Images and production
+### Images (transitional)
 
-Scenes load images from `/api/images/<file>`, served from `boneset-api/data/images`. The tool reuses byte-identical images already there and copies new ones in as `pptx_<sha256 prefix>.<ext>`. On Vercel the images come from the repository, so new images must be committed and deployed before production scenes can show them:
+Scenes reference images by `/api/images/...`, served from `boneset-api/data/images`. This is a transitional local implementation until images move to an image-storage service:
 
-1. Import locally with `SCENES_DIR`, review the scenes, commit the new images.
-2. Deploy.
-3. Run the same import with the Redis variables set. Scene ids and image names are the same, so nothing is duplicated.
+- An image whose bytes are already in that folder, such as a legacy bone image or one imported earlier, is reused by its SHA-256 hash and not copied.
+- Any other image is copied once into `boneset-api/data/images/pptx/` as `<sha256 prefix>.<ext>` and referenced as `/api/images/pptx/<file>`. The legacy images and the image catalog, which lists only the top level of the folder, are not changed, and git ignores the `pptx/` folder.
+- Media is read only from inside the IR's folder, must match the SHA-256 recorded in the IR, and never overwrites an existing file.
 
-The full Bone Project 2.0 deck uses 180 images: 34 are already in the repository and 146 (9.4 MB) are new.
+The full Bone Project 2.0 deck uses 180 images: 34 are reused from the repository and 146 (9.4 MB) are copied into `pptx/`.
+
+### Out of scope
+
+Publishing imported scenes into the live bone viewer, and moving images to R2 or another image-storage service, are future work. Until then, imported scenes and their images are local to the machine that ran the import. Do not run the import against the production Redis store yet: the deployed app does not have the `pptx/` images.
 
 ## Validation
 
@@ -90,8 +117,10 @@ The full Bone Project 2.0 deck uses 180 images: 34 are already in the repository
 | Edge alignment of each pelvis scene vs. a reference render of its slide | mean 0.08 to 0.21 px; 95th percentile at most 1.0 px |
 | Label text position, 31 labels | mean 0.67 px, max 2.1 px |
 | Pointer label vs. the author's connector glue | 36 of 36 agree |
-| Re-import of the same deck | every scene unchanged |
+| Re-import of the same deck | every scene unchanged, with the same scene and object ids; no image copied again |
+| Pelvis scenes saved by the previous converter version (different ids) | found by source identity and updated in place; ids kept, no duplicates |
 | Full Bone Project 2.0 deck, dry run (232 slides) | no errors; 449 photos, 1,005 labels, 612 pointer lines, 536 highlights and outlines; 75 of 2,833 objects flagged |
+| Full Bone Project 2.0 deck imported twice into a scratch store | 232 scenes created, then 232 unchanged; 34 legacy images reused and 146 copied once; legacy images unchanged |
 
 Reference renders should be exported from PowerPoint or Google Slides. LibreOffice re-routes connectors that are glued to shapes, so its renders are not a valid reference for pointer lines.
 

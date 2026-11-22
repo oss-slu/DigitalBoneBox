@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""
+r"""
 Extract a faithful intermediate representation (IR) of a PowerPoint deck.
 
 The IR is the traceable record of what PowerPoint itself stores. It makes no
@@ -10,13 +10,18 @@ turns this record into Scene Editor scenes, so conversion rules can change
 without reopening the PPTX.
 
 Usage:
-    python3 data_extraction/pptx_ir.py DECK.pptx OUT_DIR [--deck-key KEY] [--slides 2-7,9]
+    python3 data_extraction/pptx_ir.py DECK.pptx [OUT_DIR] [--deck-key KEY] [--slides 2-7,9]
 
 Writes OUT_DIR/<deck-key>.ir.json and OUT_DIR/media/<sha256[:16]><ext>.
+Without OUT_DIR the local import folder is used: DBB_PPTX_IMPORT_DIR when set,
+otherwise %LOCALAPPDATA%\DigitalBoneBox\imports\pptx on Windows,
+~/Library/Application Support/DigitalBoneBox/imports/pptx on macOS and
+$XDG_DATA_HOME (or ~/.local/share)/DigitalBoneBox/imports/pptx elsewhere.
 OUT_DIR may be relative or absolute, but it must not contain '..' and must
-resolve inside the current directory, the user's home directory or the system
-temporary directory. The deck key may only use letters, digits, '.', '_' and
-'-'. Every file is checked to land inside OUT_DIR before it is written.
+resolve inside the current directory, the user's home directory, the system
+temporary directory or the import folder. The deck key may only use letters,
+digits, '.', '_' and '-'. Every file is checked to land inside OUT_DIR before
+it is written.
 Only the Python standard library is required. Pillow is used, when installed,
 to measure text with Calibri (or the metric-compatible Carlito), found in the
 usual Windows, macOS and Linux font folders; without it, line breaks fall
@@ -27,6 +32,7 @@ import argparse
 import hashlib
 import json
 import math
+import ntpath
 import os
 import posixpath
 import re
@@ -338,6 +344,7 @@ def wrap_paragraph(words_text, max_width, measure):
 # file is resolved again and confirmed to be inside OUT_DIR just before it is
 # written, so a symlink inside OUT_DIR cannot redirect a write either.
 # --------------------------------------------------------------------------
+IMPORT_DIR_ENV = "DBB_PPTX_IMPORT_DIR"
 DECK_KEY_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}")
 MEDIA_EXT_PATTERN = re.compile(r"\.[a-z0-9]{1,10}")
 
@@ -354,10 +361,32 @@ def is_within(path, root):
     return path == root or path.startswith(prefix)
 
 
+def default_import_dir(environ=None, platform=None):
+    """The local import folder for the IR, extracted media and import reports.
+
+    DBB_PPTX_IMPORT_DIR overrides the platform default, for tests and for a
+    deployment that keeps imports elsewhere. The default is per user and outside
+    the repository, so generated files are never committed by accident.
+    """
+    environ = os.environ if environ is None else environ
+    platform = sys.platform if platform is None else platform
+    configured = environ.get(IMPORT_DIR_ENV, "").strip()
+    if configured:
+        return configured
+    if platform.startswith("win"):
+        base = environ.get("LOCALAPPDATA") or ntpath.join(os.path.expanduser("~"), "AppData", "Local")
+        return ntpath.join(base, "DigitalBoneBox", "imports", "pptx")
+    home = environ.get("HOME") or os.path.expanduser("~")
+    if platform == "darwin":
+        return posixpath.join(home, "Library", "Application Support", "DigitalBoneBox", "imports", "pptx")
+    base = environ.get("XDG_DATA_HOME") or posixpath.join(home, ".local", "share")
+    return posixpath.join(base, "DigitalBoneBox", "imports", "pptx")
+
+
 def allowed_output_roots():
     """Real paths of the folders an output directory may be in."""
     roots = []
-    for root in (os.getcwd(), os.path.expanduser("~"), tempfile.gettempdir()):
+    for root in (os.getcwd(), os.path.expanduser("~"), tempfile.gettempdir(), default_import_dir()):
         real = os.path.realpath(root)
         if real not in roots:
             roots.append(real)
@@ -376,8 +405,8 @@ def resolve_out_dir(out_dir):
         if is_within(resolved, root):
             return Path(resolved)
     raise OutputPathError(
-        f"the output directory {resolved!r} is not inside the current directory, "
-        f"the home directory or the temporary directory ({', '.join(allowed_output_roots())})")
+        f"the output directory {resolved!r} is not inside the current directory, the home directory, "
+        f"the temporary directory or the import folder ({', '.join(allowed_output_roots())})")
 
 
 def validate_deck_key(key):
@@ -978,7 +1007,9 @@ def parse_slide_filter(spec):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("deck")
-    parser.add_argument("out_dir")
+    parser.add_argument("out_dir", nargs="?", default=None,
+                        help=f"where the IR and media go (default: {IMPORT_DIR_ENV} or the local import folder, "
+                             f"currently {default_import_dir()})")
     parser.add_argument("--deck-key", default=None,
                         help="stable name for this deck, used for scene ids and the IR file name "
                              "(letters, digits, '.', '_', '-')")
@@ -991,7 +1022,7 @@ def main(argv=None):
         hint = "" if args.deck_key else " (derived from the deck's file name; pass --deck-key)"
         parser.error(f"{err}{hint}")
     try:
-        out_dir = resolve_out_dir(args.out_dir)
+        out_dir = resolve_out_dir(args.out_dir if args.out_dir is not None else default_import_dir())
         out_path = output_path(out_dir, key + ".ir.json")
         extractor = DeckExtractor(args.deck, key, out_dir, parse_slide_filter(args.slides))
         ir = extractor.run()

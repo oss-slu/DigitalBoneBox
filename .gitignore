@@ -25,3 +25,6 @@ boneset-api/data/scenes/
 # Cache files
 __pycache__/
 *.pyc
+
+# Images copied in by the PowerPoint scene importer (local, transitional)
+boneset-api/data/images/pptx/

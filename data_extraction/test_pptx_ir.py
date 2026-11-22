@@ -2,7 +2,8 @@
 
     python3 -m unittest data_extraction/test_pptx_ir.py
 
-The math tests need nothing else. Set PPTX_IR_TEST_DECK to the path of
+The math, wrapping and output-path tests need nothing else (the output-path
+tests build a one-slide deck in a temporary folder). Set PPTX_IR_TEST_DECK to the path of
 "Bone Box (Boney Pelvis).pptx" to also run the integration checks against the
 real deck (they are skipped otherwise, because the deck is not in the repo).
 """
@@ -18,6 +19,7 @@ import sys
 import tempfile
 import unittest
 import zipfile
+from unittest import mock
 import zlib
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -239,11 +241,46 @@ class OutputPaths(unittest.TestCase):
         self.assertNotEqual(code, 0)
         self.assertEqual(os.listdir(outside), [])
 
+    def test_without_out_dir_the_configured_import_folder_is_used(self):
+        folder = os.path.join(self.work, "imports", "pptx")
+        with mock.patch.dict(os.environ, {pptx_ir.IMPORT_DIR_ENV: folder}):
+            self.assertIn(os.path.realpath(folder), pptx_ir.allowed_output_roots())
+            code, _ = self.run_main("--deck-key", "mini")
+        self.assertEqual(code, 0)
+        written = files_under(folder)
+        self.assertIn(os.path.join(folder, "mini.ir.json"), written)
+        self.assertTrue(any(p.startswith(os.path.join(folder, "media") + os.sep) for p in written))
+        for path in written:
+            self.assertTrue(pptx_ir.is_within(os.path.realpath(path), os.path.realpath(folder)), path)
+
     def test_media_extensions_from_the_deck_are_plain(self):
         self.assertEqual(pptx_ir.media_extension("ppt/media/image1.PNG"), ".png")
         self.assertEqual(pptx_ir.media_extension("ppt/media/image2.jpeg"), ".jpeg")
         for odd in ("ppt/media/noext", "ppt/media/a.b\\..\\..\\c", "ppt/media/x.p ng", "ppt/media/x." + "a" * 11):
             self.assertEqual(pptx_ir.media_extension(odd), ".bin")
+
+
+class DefaultImportFolder(unittest.TestCase):
+    """One documented per-user import folder, configurable with DBB_PPTX_IMPORT_DIR."""
+
+    def test_windows_default_is_under_localappdata(self):
+        env = {"LOCALAPPDATA": r"C:\Users\someone\AppData\Local"}
+        self.assertEqual(pptx_ir.default_import_dir(env, "win32"),
+                         r"C:\Users\someone\AppData\Local\DigitalBoneBox\imports\pptx")
+
+    def test_macos_and_linux_defaults(self):
+        self.assertEqual(pptx_ir.default_import_dir({"HOME": "/Users/someone"}, "darwin"),
+                         "/Users/someone/Library/Application Support/DigitalBoneBox/imports/pptx")
+        self.assertEqual(pptx_ir.default_import_dir({"HOME": "/home/someone"}, "linux"),
+                         "/home/someone/.local/share/DigitalBoneBox/imports/pptx")
+        self.assertEqual(pptx_ir.default_import_dir({"HOME": "/home/someone", "XDG_DATA_HOME": "/data/xdg"}, "linux"),
+                         "/data/xdg/DigitalBoneBox/imports/pptx")
+
+    def test_the_environment_variable_overrides_the_default(self):
+        env = {pptx_ir.IMPORT_DIR_ENV: "/srv/dbb/imports", "LOCALAPPDATA": r"C:\Users\someone\AppData\Local"}
+        self.assertEqual(pptx_ir.default_import_dir(env, "win32"), "/srv/dbb/imports")
+        self.assertEqual(pptx_ir.default_import_dir({pptx_ir.IMPORT_DIR_ENV: "  ", "HOME": "/home/someone"}, "linux"),
+                         "/home/someone/.local/share/DigitalBoneBox/imports/pptx")
 
 
 @unittest.skipUnless(os.environ.get("PPTX_IR_TEST_DECK"), "set PPTX_IR_TEST_DECK to the pelvis deck to run")
