@@ -2729,6 +2729,18 @@ describe("Responsive resizing (#450)", () => {
             expect(hint().hidden).toBe(false);
         });
 
+        it("hides the hint when the canvas has nothing to show", async () => {
+            backend.seed({ id: "scene-2", name: "Blank", images: [], annotations: [] });
+            await openSmallLabels();
+            resizeTo(PHONE_PORTRAIT);
+            expect(hint().hidden).toBe(false);
+
+            [...document.querySelectorAll(".scene-list-item")].find((b) => b.textContent.includes("Blank")).click();
+            await waitFor(() => expect($("scene-title").textContent).toBe("Blank"));
+
+            expect(hint().hidden).toBe(true);
+        });
+
         it("doesn't show the hint for a scene without labels", async () => {
             await openSmallLabels({ ...SMALL_LABELS, annotations: [SMALL_LABELS.annotations[2]] });
             resizeTo(PHONE_PORTRAIT);

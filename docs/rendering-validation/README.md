@@ -227,9 +227,7 @@ Possible fix: when drawing an imported label on a rotated image, move the label 
 
 ### R5. Labels are too small to read on a phone until you zoom in
 
-**Addressed in #539.** When the smallest label is drawn under 6 screen px, a hint above the canvas offers "Zoom to read labels", which zooms in around the middle of the canvas until that label is 10 px tall. Labels keep their size and position in the scene, so nothing overlaps or moves, and desktop and tablet layouts (where labels are drawn larger) don't show the hint. With the reviewed scenes it shows on phones in portrait and, for Atlas, on a 1024×768 laptop.
+**Addressed in #539.** When the smallest label is drawn under 6 screen px, a hint above the canvas offers "Zoom to read labels", which zooms in around the middle of the canvas until that label is 10 px tall. Labels keep their size and position in the scene, so nothing overlaps or moves, and desktop and tablet layouts (where labels are drawn larger) don't show the hint at the default zoom. With the reviewed scenes it shows on phones in portrait and, for Atlas, on a 1024×768 laptop.
 
-The default view fits the whole scene to the canvas width, and the scene is at least 960 scene px wide. On a 375 px phone the canvas is 303 px, so everything is drawn at about a third of its size or less. Labels end up 2.5 to 6 px tall in the reviewed scenes (Atlas is the worst, because its hidden labels make the scene wider, see #468 D2). They line up correctly, and zooming in to about 300% makes them readable (8.5 px), but nothing tells a phone user to do that. It is also a little tight on a small laptop (5 px at 1024×768).
-
-Possible fixes: start phones at a higher zoom centered on the images, or keep labels at a minimum on-screen size.
+The default view fits the whole scene to the canvas width, and the scene is at least 960 scene px wide. On a 375 px phone the canvas is 303 px, so everything is drawn at about a third of its size or less. Labels end up 2.5 to 6 px tall in the reviewed scenes (Atlas is the worst, because its hidden labels make the scene wider, see #468 D2). They line up correctly, and zooming in to about 300% makes them readable (8.5 px); before #539, nothing told a phone user to do that. It is also a little tight on a small laptop (5 px at 1024×768).
 

@@ -858,8 +858,10 @@ function smallestLabelPx(svg) {
     const sizes = [...svg.querySelectorAll(".scene-layer-annotations text")]
         .map((node) => Number(node.getAttribute("font-size")))
         .filter((size) => size > 0);
-    if (sizes.length === 0 || !svg.getBoundingClientRect().width) return null;
-    return Math.min(...sizes) / getSceneScale(svg).x;
+    const { width } = svg.getBoundingClientRect();
+    if (sizes.length === 0 || !width) return null;
+    const viewWidth = Number((svg.getAttribute("viewBox") || "").split(" ")[2]);
+    return viewWidth > 0 ? (Math.min(...sizes) * width) / viewWidth : null;
 }
 
 function updateLabelHint() {
@@ -938,6 +940,9 @@ function renderCanvas() {
     dom.canvas.hidden = isEmpty;
     dom.fitToggle.hidden = isEmpty;
     dom.viewControls.hidden = isEmpty;
+    // Issue #539: renderCanvas returns early for an empty canvas, before
+    // updateViewControls runs, so the label hint is hidden here.
+    if (isEmpty && dom.labelHint) dom.labelHint.hidden = true;
     dom.canvasNote.hidden = true;
     const showOverlapHint = Boolean(state.selection) && state.overlapCount > 1;
     dom.selectionHint.hidden = !showOverlapHint;
