@@ -2,7 +2,7 @@
 // Checks that scenes are drawn the way they are saved: image order, image
 // orientation, and image rotation, scaling and cropping. The visual review
 // and the defects found are in docs/rendering-validation/README.md.
-import { objectsAt, renderScene } from "../js/sceneCanvas.js";
+import { displayedAnnotation, objectsAt, renderScene, storeAnnotationGeometry } from "../js/sceneCanvas.js";
 
 function image(id, overrides = {}) {
     return { id, src: `/api/images/${id}.jpg`, x: 0, y: 0, width: 200, height: 100, ...overrides };
@@ -421,23 +421,92 @@ describe("Issue 475: line and label alignment", () => {
         expect(Number(line.getAttribute("stroke-width"))).toBeCloseTo(3);
     });
 
-    // Known limitation, recorded as R4 in docs/rendering-validation/README.md:
-    // labels stay upright when their image is rotated, but pointer lines turn
-    // with it, so a line that touches the end of a long label comes away from it.
-    it("documents that a pointer line comes away from an upright label when the image is rotated", () => {
-        const box = { x: label.x, y: label.y, width: label.text.length * 6, height: 10 };
-        const touching = linked({ type: "line", x1: box.x + box.width, y1: box.y + 5, x2: 250, y2: 160 });
-        const gap = (change) => {
-            const { svg } = renderScene({ images: [sourceImage(change)], annotations: [label, touching] });
-            const node = drawnLabel(svg);
-            const fontSize = Number(node.getAttribute("font-size"));
-            const width = label.text.length * fontSize * 0.6;
-            const [left, top] = [Number(node.getAttribute("x")) - width / 2, Number(node.getAttribute("y"))];
-            const [[x, y]] = parsePoints(svg.querySelector(".scene-layer-annotations polyline"));
-            return Math.hypot(Math.max(left - x, 0, x - left - width), Math.max(top - y, 0, y - top - fontSize));
-        };
+    // Issue #538 (R4 in docs/rendering-validation/README.md): labels stay
+    // upright when their image is rotated, but pointer lines turn with it, so
+    // the label is moved just enough to stay on the end of its line.
+    const pairedLabel = { ...label, id: "label-1", source: { type: "legacy-label", boneId: "b", annotationId: "L1" } };
+    const labelBox = { x: pairedLabel.x, y: pairedLabel.y, width: pairedLabel.text.length * 6, height: 10 };
+    const touching = linked({
+        type: "line", x1: labelBox.x + labelBox.width, y1: labelBox.y + 5, x2: 250, y2: 160,
+        source: { type: "legacy-pointer-line", boneId: "b", annotationId: "L1" },
+    });
+    const drawnBox = (svg) => {
+        const node = drawnLabel(svg);
+        const fontSize = Number(node.getAttribute("font-size"));
+        const width = pairedLabel.text.length * fontSize * 0.6;
+        return { x: Number(node.getAttribute("x")) - width / 2, y: Number(node.getAttribute("y")), width, height: fontSize };
+    };
+    const gapTo = (box, [x, y]) => Math.hypot(Math.max(box.x - x, 0, x - box.x - box.width), Math.max(box.y - y, 0, y - box.y - box.height));
+    const lineGap = (change, line = touching) => {
+        const { svg } = renderScene({ images: [sourceImage(change)], annotations: [pairedLabel, line] });
+        const [start] = parsePoints(svg.querySelector(".scene-layer-annotations polyline"));
+        return gapTo(drawnBox(svg), start);
+    };
 
-        expect(gap({})).toBeCloseTo(0);
-        expect(gap({ rotation: 90 })).toBeGreaterThan(20);
+    it.each([0, 45, 90, 180, 270, -30].map((rotation) => [rotation]))(
+        "keeps a pointer line touching its upright label at %i degrees",
+        (rotation) => {
+            const { svg } = renderScene({ images: [sourceImage({ rotation })], annotations: [pairedLabel, touching] });
+
+            expect(lineGap({ rotation })).toBeLessThan(0.01);
+            expect(drawnLabel(svg).getAttribute("transform")).toBeNull();
+        },
+    );
+
+    it.each(TRANSFORMS.map((change) => [describeTransform(change), change]))(
+        "keeps a pointer line touching its label after flips, resizes, crops and combinations: %s",
+        (_, change) => {
+            expect(lineGap(change)).toBeLessThan(0.01);
+        },
+    );
+
+    it("doesn't move a label on an untransformed, moved, resized or flipped image", () => {
+        for (const change of [{}, { x: 160, y: 40 }, { width: 300, height: 150 }, { flipX: true }, { flipY: true }]) {
+            const alone = drawnBox(renderScene({ images: [sourceImage(change)], annotations: [pairedLabel] }).svg);
+            const withLine = drawnBox(renderScene({ images: [sourceImage(change)], annotations: [pairedLabel, touching] }).svg);
+
+            expectNear([[withLine.x, withLine.y]], [[alone.x, alone.y]]);
+        }
+    });
+
+    it("leaves a label alone for a line that never touched it, or isn't its pointer line", () => {
+        const apart = { ...touching, x1: labelBox.x + labelBox.width + 30 };
+        const unrelated = { ...touching, source: { type: "legacy-pointer-line", boneId: "b", annotationId: "other" } };
+        const alone = drawnBox(renderScene({ images: [sourceImage({ rotation: 90 })], annotations: [pairedLabel] }).svg);
+
+        for (const line of [apart, unrelated]) {
+            const box = drawnBox(renderScene({ images: [sourceImage({ rotation: 90 })], annotations: [pairedLabel, line] }).svg);
+            expectNear([[box.x, box.y]], [[alone.x, alone.y]]);
+        }
+    });
+
+    it("keeps a line created for a label (labelId) touching it on a rotated image", () => {
+        const created = { ...touching, labelId: "label-1", source: undefined };
+
+        expect(lineGap({ rotation: 90 }, created)).toBeLessThan(0.01);
+    });
+
+    it("selects the label where it is drawn on a rotated image", () => {
+        const scene = { images: [sourceImage({ rotation: 90 })], annotations: [pairedLabel, touching] };
+        const { svg } = renderScene(scene);
+        const box = drawnBox(svg);
+        // Click the corner of the label farthest from where its line meets it,
+        // so the label, not the line drawn over its edge, is on top there.
+        const [[endX, endY]] = parsePoints(svg.querySelector(".scene-layer-annotations polyline"));
+        const x = endX < box.x + box.width / 2 ? box.x + box.width - 1 : box.x + 1;
+        const y = endY < box.y + box.height / 2 ? box.y + box.height - 1 : box.y + 1;
+
+        expect(objectsAt(scene, [x, y])[0]).toEqual({ kind: "annotation", index: 0 });
+    });
+
+    it("doesn't store the move, so saving and reopening draws the label in the same place", () => {
+        const scene = { images: [sourceImage({ rotation: 90 })], annotations: [{ ...pairedLabel }, touching] };
+        const stored = { ...scene.annotations[0] };
+        storeAnnotationGeometry(scene.annotations[0], displayedAnnotation(scene.annotations[0], scene), scene);
+
+        expect(scene.annotations[0].x).toBeCloseTo(stored.x);
+        expect(scene.annotations[0].y).toBeCloseTo(stored.y);
+        const reopened = JSON.parse(JSON.stringify(scene));
+        expect(lineGap({ rotation: 90 }, reopened.annotations[1])).toBeLessThan(0.01);
     });
 });

@@ -160,7 +160,7 @@ This only checks that a region stays where it was imported. Whether it was impor
 | After resizing the window | OK. Lines 0 px off; labels under 1 px | 768×1024 and 375×812, see #476 |
 | Saved scenes reopen with the same alignment | OK | `scenes.test.js` "rotates a linked label with its image and keeps it there after saving and reopening the scene"; `boneset-api/saveReload.test.js` (#482) |
 | Dense placement | Reviewed | Atlas: 41 annotations (17 labels, 20 pointer lines) on 2 images |
-| Pointer lines touch their label when the image is rotated | **No (R4)** | `sceneRendering.test.js` "documents that a pointer line comes away from an upright label when the image is rotated" |
+| Pointer lines touch their label when the image is rotated | **Fixed in #538 (was R4)** | `sceneRendering.test.js` "keeps a pointer line touching its upright label at %i degrees" and "...after flips, resizes, crops and combinations" |
 
 **Pointer lines vs. labels in imported scenes.** Even with upright images, most imported pointer lines don't quite reach their label's text. In each scene I measured, the typical (median) gap was between 12 and 41 scene px. This is the known label layout difference from #468 (D1): labels and lines were drawn for the viewer's panel layout, and the import maps them over the images instead. F4 didn't change these numbers, so it isn't caused by the renderer.
 
@@ -221,9 +221,11 @@ The second hand image (used by Hand, metacarpals and the other hand items that l
 
 ### R4. Pointer lines come away from labels when an image is rotated
 
-Labels are kept upright so they stay readable, while their pointer lines turn with the image. A line that touches the end of a long label lands beside the label once the image is turned. Across every imported item, 292 pointer lines touch their label when the image is upright. Rotated 45°, 193 of them come loose; rotated 90°, 241 do (half of those by 17 scene px or more, at most 86).
+**Fixed in #538.** Labels are kept upright so they stay readable, while their pointer lines turn with the image, so a line that touched the end of a long label used to land beside it once the image was turned. Across every imported item, 292 pointer lines touch their label when the image is upright; before the fix, 193 of them came loose at 45° and 241 at 90° (half of those by 17 scene px or more, at most 86).
 
-Possible fix: when drawing an imported label on a rotated image, move the label so the point where its line meets it stays on the line, instead of keeping the label's center in place. That changes how imported labels move, so it should be decided as its own issue.
+Now, when a label is drawn on its image, it is moved the smallest distance that puts the label end of each pointer line that touched it back on its box (`pointerLineShift` in `sceneCanvas.js`). A label whose lines already reach it (no rotation, or only a move, resize, crop or flip) doesn't move, and a line that never touched its label (see #468 D1) doesn't move it. The move is worked out every time the label is drawn and is never saved, so the stored scene doesn't change.
+
+Known limitation: resizing a label with its size handle on a rotated image can make it hop back toward its unshifted position (up to about 28 px at 90°) before its pointer line reattaches to it. This is tracked as a follow-up issue.
 
 ### R5. Labels are too small to read on a phone until you zoom in
 
