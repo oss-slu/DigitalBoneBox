@@ -28,8 +28,8 @@ These rules were in the code but not written down anywhere:
 | What | Order | Where it comes from |
 |---|---|---|
 | Images | Drawn in the order of the scene's `images` list. The first image is at the back, the last is at the front. | `renderScene` in `sceneCanvas.js` |
-| Annotations | All annotations are drawn above all images, in the order of the `annotations` list. | `renderScene`: the annotation layer comes after the image layer |
-| Clicking | Picks the topmost object first: annotations, then images from front to back. | `objectsAt` in `sceneCanvas.js` |
+| Annotations | Since #535, an annotation linked to an image in the scene is drawn just above that image, in the order of the `annotations` list. Every other annotation is drawn above all images. | `stackAnnotations` and `renderScene` in `sceneCanvas.js` |
+| Clicking | Picks the topmost object first, in the order things are drawn: annotations above all images, then each image from front to back with its own annotations just before it. | `objectsAt` in `sceneCanvas.js` |
 | Bring forward / Send backward | Swaps the image with its neighbor in the `images` list. | `moveSelectedImage` in `scenes.js` (#419) |
 | Importing bone images | The viewer's order (the bone's description file), placed left to right. A later import is added after, so it's in front. | `buildLegacyImages` in `legacyImport.js` (#466) |
 | Saving and reopening | The `images` list is saved as it is, so the order doesn't change. | `scenes.js` API (#451) |
@@ -46,7 +46,7 @@ So the position in the list does have a meaning: it is the stacking order, from 
 | Order stays the same after saving and reopening | OK | `boneset-api/saveReload.test.js` "keeps every image's position, size, orientation, crop, and order" and "keeps a new layer order and edits after a second save and reload" (#482) |
 | Imported images keep the viewer's order | OK, all 179 importable items | `boneset-api/migrationValidation.test.js` "keeps the viewer's image order" (#468) |
 | Multi-image scenes reviewed by hand | OK | Imported Ilium (2), Sternum (2), Atlas (2), Hand metacarpals (2) and Femur head (3). In every one the images were drawn left to right in the viewer's order. In Femur head I dragged the middle image over the third one, used Bring forward, saved, and reloaded the page; it reopened in the new order with the same image in front. |
-| A colored region stays with its image when images overlap | **No (R1)** | `sceneRendering.test.js` "documents that a back image's colored region is drawn over a front image" |
+| A colored region stays with its image when images overlap | **Fixed in #535 (was R1)** | `sceneRendering.test.js` "Issue 535: annotations stack with their source image" |
 
 ## #471 Image orientation
 
@@ -202,6 +202,8 @@ At 1024×768 the canvas is narrower (554 px) than on the 768 px tablet (686 px),
 ## Defects found
 
 ### R1. Annotations aren't stacked with their image
+
+**Fixed in #535.** Each image's linked annotations are drawn right after it, so they go up and down with it, and clicking follows the same order. Annotations drawn by hand, and ones whose image was removed, stay above all images.
 
 All annotations are drawn above all images. When two images overlap, a colored region, label or line that belongs to the back image is drawn on top of the front image, so it looks like it's on the wrong bone. Clicking there also selects the back image's annotation instead of the front image. This only happens when images overlap. Imported bones are placed side by side, so it doesn't come up unless someone moves images on top of each other.
 

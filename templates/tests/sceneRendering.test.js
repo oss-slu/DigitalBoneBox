@@ -45,11 +45,14 @@ describe("Issue 472: image ordering", () => {
         expect(drawnImageIds(renderScene(scene).svg)).toEqual(["c", "b", "a"]);
     });
 
-    it("draws every annotation above every image", () => {
-        const { svg } = renderScene(overlappingScene());
-        const layers = [...svg.children].map((node) => node.getAttribute("class")).filter(Boolean);
+    it("draws a linked annotation just above its own image, and a hand-drawn one above every image", () => {
+        const scene = overlappingScene();
+        scene.annotations.push({ type: "polygon", points: [[10, 10], [20, 10], [20, 20]] });
+        const { svg } = renderScene(scene);
+        const drawn = [...svg.querySelectorAll(".scene-image-object, [data-scene-annotation-index]:not(.scene-annotation-hit)")]
+            .map((node) => (node.classList.contains("scene-image-object") ? `image ${node.getAttribute("data-scene-image-index")}` : `annotation ${node.getAttribute("data-scene-annotation-index")}`));
 
-        expect(layers.indexOf("scene-layer-images")).toBeLessThan(layers.indexOf("scene-layer-annotations"));
+        expect(drawn).toEqual(["image 0", "annotation 0", "image 1", "annotation 1"]);
     });
 
     it("picks overlapping images in the same order they are drawn (topmost first)", () => {
@@ -67,14 +70,77 @@ describe("Issue 472: image ordering", () => {
         ]);
         expect(drawnImageIds(renderScene(scene).svg)).toEqual(["front", "back"]);
     });
+});
 
-    // Known limitation, recorded as R1 in docs/rendering-validation/README.md:
-    // annotations are not stacked with their own image, so a region on the
-    // back image is drawn over the front image where the two overlap.
-    it("documents that a back image's colored region is drawn over a front image", () => {
-        const scene = overlappingScene();
+describe("Issue 535: annotations stack with their source image", () => {
+    const FRAME_200 = { x: 0, y: 0, width: 200, height: 200 };
+    const onBack = (annotation) => ({ ...annotation, sourceImageId: "back", sourceImageFrame: FRAME_200 });
+    const region = onBack({ type: "polygon", points: [[120, 120], [180, 120], [180, 180], [120, 180]], source: { type: "legacy-colored-region" } });
+    const label = onBack({ type: "text", text: "Pubis", x: 130, y: 140, fontSize: 10, source: { type: "legacy-label" } });
+    const pointer = onBack({ type: "line", x1: 120, y1: 150, x2: 190, y2: 150, source: { type: "legacy-pointer-line" } });
+    const scene = (annotations, images = [image("back", { width: 200, height: 200 }), image("front", { x: 100, y: 100, width: 200, height: 200 })]) =>
+        ({ images, annotations });
+    /** The ids of the images and the indexes of the annotations, in the order they are drawn (back to front). */
+    const drawOrder = (svg) => [...svg.querySelectorAll(".scene-image-object, [data-scene-annotation-index]:not(.scene-annotation-hit)")]
+        .map((node) => (node.classList.contains("scene-image-object")
+            ? node.getAttribute("href").replace(/^\/api\/images\/|\.jpg$/g, "")
+            : Number(node.getAttribute("data-scene-annotation-index"))));
 
-        expect(objectsAt(scene, [150, 150])[0]).toEqual({ kind: "annotation", index: 0 });
+    it.each([["highlight", region], ["label", label], ["pointer line", pointer]])(
+        "draws a back image's %s under the front image",
+        (_, annotation) => {
+            const { svg } = renderScene(scene([annotation]));
+
+            expect(drawOrder(svg)).toEqual(["back", 0, "front"]);
+        },
+    );
+
+    it.each([["highlight", region], ["label", label], ["pointer line", pointer]])(
+        "picks the front image, not the back image's %s, where the front image covers it",
+        (_, annotation) => {
+            const hits = objectsAt(scene([annotation]), [145, 145]);
+
+            expect(hits[0]).toEqual({ kind: "image", index: 1 });
+            expect(hits).toContainEqual({ kind: "annotation", index: 0 });
+        },
+    );
+
+    it("still picks a back image's annotation where no image covers it", () => {
+        const visible = onBack({ type: "polygon", points: [[20, 20], [80, 20], [80, 80], [20, 80]] });
+
+        expect(objectsAt(scene([visible]), [50, 50])[0]).toEqual({ kind: "annotation", index: 0 });
+    });
+
+    it("moves an image's annotations with it when the images are reordered", () => {
+        const before = scene([region, label, pointer]);
+        const after = { ...before, images: [...before.images].reverse() };
+
+        expect(drawOrder(renderScene(after).svg)).toEqual(["front", "back", 0, 1, 2]);
+        expect(objectsAt(after, [145, 145]).slice(0, 2)).toEqual([{ kind: "annotation", index: 2 }, { kind: "annotation", index: 1 }]);
+    });
+
+    it("keeps each image's annotations in their own list order", () => {
+        const { svg } = renderScene(scene([pointer, region, label]));
+
+        expect(drawOrder(svg)).toEqual(["back", 0, 1, 2, "front"]);
+    });
+
+    it("keeps hand-drawn annotations, and ones whose image was removed, above every image", () => {
+        const handDrawn = { type: "polygon", points: [[120, 120], [180, 120], [180, 180]] };
+        const orphan = { ...region, sourceImageId: "gone" };
+        const drawn = renderScene(scene([handDrawn, region, orphan]));
+
+        expect(drawOrder(drawn.svg)).toEqual(["back", 1, "front", 0, 2]);
+        expect(drawn.unlinked).toBe(1);
+    });
+
+    it("draws a scene without overlapping images the same way as before", () => {
+        const single = scene([region, label, pointer], [image("back", { width: 200, height: 200 })]);
+        const { svg } = renderScene(single);
+
+        expect(drawOrder(svg)).toEqual(["back", 0, 1, 2]);
+        expect(objectsAt(single, [145, 145])[0]).toEqual({ kind: "annotation", index: 2 });
+        expect(svg.querySelectorAll(".scene-layer-annotations polygon, .scene-layer-annotations text, .scene-layer-annotations polyline")).toHaveLength(3);
     });
 });
 

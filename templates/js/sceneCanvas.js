@@ -669,23 +669,60 @@ export function objectsAt(scene, point) {
     const hits = [];
     const images = scene.images || [];
     const annotations = scene.annotations || [];
-    for (let index = annotations.length - 1; index >= 0; index -= 1) {
+    const annotationHitAt = (index) => {
         const annotation = annotations[index];
-        if (!annotation) continue;
+        if (!annotation) return false;
         const transform = linkedTransform(annotation, scene);
-        if (!annotationHit(transform ? mapLinkedAnnotation(annotation, transform) : annotation, point)) continue;
+        if (!annotationHit(transform ? mapLinkedAnnotation(annotation, transform) : annotation, point)) return false;
         if (transform && clipsToCrop(annotation)) {
             const image = images.find((candidate) => candidate && candidate.id === annotation.sourceImageId);
             const visible = visibleCropPolygon(image, transform);
-            if (visible && !pointInPolygon(point, visible)) continue;
+            if (visible && !pointInPolygon(point, visible)) return false;
         }
-        hits.push({ kind: "annotation", index });
+        return true;
+    };
+    // Issue #535: the same order renderScene draws in, topmost first:
+    // annotations on the top layer, then each image from front to back, with
+    // the annotations stacked on it just above it.
+    const { onImage, onTop } = stackAnnotations(scene);
+    for (let i = onTop.length - 1; i >= 0; i -= 1) {
+        if (annotationHitAt(onTop[i])) hits.push({ kind: "annotation", index: onTop[i] });
     }
     for (let index = images.length - 1; index >= 0; index -= 1) {
+        const stacked = onImage[index];
+        for (let i = stacked.length - 1; i >= 0; i -= 1) {
+            if (annotationHitAt(stacked[i])) hits.push({ kind: "annotation", index: stacked[i] });
+        }
         const area = imageHitArea(images[index]);
         if (area && pointInPolygon(point, area)) hits.push({ kind: "image", index });
     }
     return hits;
+}
+
+/**
+ * Issue #535 (R1 in docs/rendering-validation): which annotations are drawn
+ * with which image. An annotation linked to an image in the scene is stacked
+ * just above that image, so an image in front of it covers it the way it
+ * covers the image. Every other annotation (drawn by hand, or whose image was
+ * removed) is drawn on the top layer, above all images, as before.
+ * @returns {{ onImage: number[][], onTop: number[] }} Annotation indexes, in list order.
+ */
+function stackAnnotations(scene) {
+    const images = scene.images || [];
+    const imageIndexById = new Map();
+    images.forEach((image, index) => {
+        if (image && typeof image.id === "string" && isValidBox(image)) imageIndexById.set(image.id, index);
+    });
+    const onImage = images.map(() => []);
+    const onTop = [];
+    (scene.annotations || []).forEach((annotation, index) => {
+        const imageIndex = annotation && isValidBox(annotation.sourceImageFrame)
+            ? imageIndexById.get(annotation.sourceImageId)
+            : undefined;
+        if (imageIndex === undefined) onTop.push(index);
+        else onImage[imageIndex].push(index);
+    });
+    return { onImage, onTop };
 }
 
 /**
@@ -749,6 +786,57 @@ export function renderScene(scene, { selectedIndex, cropMode = false, selectedAn
         return result;
     };
 
+    const imagesById = new Map();
+    (scene.images || []).forEach((image, index) => {
+        if (image && typeof image.id === "string") imagesById.set(image.id, { image, index });
+    });
+
+    const stacks = stackAnnotations(scene);
+
+    /** Draws one annotation into `layer`, with its hit area and selection. */
+    function drawAnnotation(annotation, index, layer) {
+        let toRender = annotation;
+        let clipPoints = null;
+        if (annotation && annotation.sourceImageId !== undefined) {
+            const entry = imagesById.get(annotation.sourceImageId);
+            if (entry && isValidBox(entry.image) && isValidBox(annotation.sourceImageFrame)) {
+                const transform = imageTransform(entry.image, annotation.sourceImageFrame);
+                toRender = mapLinkedAnnotation(annotation, transform);
+                const isEditingCrop = cropMode && entry.index === selectedIndex;
+                if (clipsToCrop(annotation) && !isEditingCrop) clipPoints = visibleCropPolygon(entry.image, transform);
+            } else {
+                unlinked += 1;
+            }
+        }
+        const result = annotation ? renderAnnotation(toRender, defs) : null;
+        if (result && clipPoints) {
+            markerCount += 1;
+            const clipId = `scene-annotation-clip-${markerCount}`;
+            const clipPath = el("clipPath", { id: clipId });
+            clipPath.appendChild(el("polygon", { points: clipPoints.map((p) => p.join(",")).join(" ") }));
+            defs.appendChild(clipPath);
+            const group = el("g", { "clip-path": `url(#${clipId})` });
+            group.appendChild(result.node);
+            result.node = group;
+        }
+        if (!place(result, layer)) return;
+        result.node.setAttribute("data-scene-annotation-index", index);
+        const hitArea = renderHitArea(toRender);
+        if (hitArea) {
+            hitArea.setAttribute("data-scene-annotation-index", index);
+            layer.appendChild(hitArea);
+        }
+        if (result.bounds.length > 0) {
+            touchTargets.push({ nodes: hitArea ? [result.node, hitArea] : [result.node], box: boundsBox(result.bounds) });
+        }
+        if (index === selectedAnnotationIndex) {
+            result.node.classList.add("is-selected");
+            if (hitArea) hitArea.classList.add("is-selected");
+            if (result.bounds.length > 0) selectedBounds = boundsBox(result.bounds);
+            renderAnnotationSelection(toRender, selectionLayer);
+        }
+    }
+
     (scene.images || []).forEach((image, index) => {
         const isEditingCrop = cropMode && index === selectedIndex;
         const result = place(renderImage(image, index, defs, { skipClip: isEditingCrop }), imageLayer);
@@ -783,54 +871,19 @@ export function renderScene(scene, { selectedIndex, cropMode = false, selectedAn
                 }));
             });
         }
-    });
-    const imagesById = new Map();
-    (scene.images || []).forEach((image, index) => {
-        if (image && typeof image.id === "string") imagesById.set(image.id, { image, index });
-    });
-
-    (scene.annotations || []).forEach((annotation, index) => {
-        let toRender = annotation;
-        let clipPoints = null;
-        if (annotation && annotation.sourceImageId !== undefined) {
-            const entry = imagesById.get(annotation.sourceImageId);
-            if (entry && isValidBox(entry.image) && isValidBox(annotation.sourceImageFrame)) {
-                const transform = imageTransform(entry.image, annotation.sourceImageFrame);
-                toRender = mapLinkedAnnotation(annotation, transform);
-                const isEditingCrop = cropMode && entry.index === selectedIndex;
-                if (clipsToCrop(annotation) && !isEditingCrop) clipPoints = visibleCropPolygon(entry.image, transform);
-            } else {
-                unlinked += 1;
+        // Issue #535: this image's own annotations, just above it and below
+        // any image in front of it. The group has the annotation layer's class
+        // so styles and lookups treat it the same way.
+        if (stacks.onImage[index].length > 0) {
+            const stack = el("g", { class: "scene-layer-annotations scene-image-annotations", "data-scene-image-stack": index });
+            imageLayer.appendChild(stack);
+            for (const annotationIndex of stacks.onImage[index]) {
+                drawAnnotation(scene.annotations[annotationIndex], annotationIndex, stack);
             }
         }
-        const result = annotation ? renderAnnotation(toRender, defs) : null;
-        if (result && clipPoints) {
-            markerCount += 1;
-            const clipId = `scene-annotation-clip-${markerCount}`;
-            const clipPath = el("clipPath", { id: clipId });
-            clipPath.appendChild(el("polygon", { points: clipPoints.map((p) => p.join(",")).join(" ") }));
-            defs.appendChild(clipPath);
-            const group = el("g", { "clip-path": `url(#${clipId})` });
-            group.appendChild(result.node);
-            result.node = group;
-        }
-        if (!place(result, annotationLayer)) return;
-        result.node.setAttribute("data-scene-annotation-index", index);
-        const hitArea = renderHitArea(toRender);
-        if (hitArea) {
-            hitArea.setAttribute("data-scene-annotation-index", index);
-            annotationLayer.appendChild(hitArea);
-        }
-        if (result.bounds.length > 0) {
-            touchTargets.push({ nodes: hitArea ? [result.node, hitArea] : [result.node], box: boundsBox(result.bounds) });
-        }
-        if (index === selectedAnnotationIndex) {
-            result.node.classList.add("is-selected");
-            if (hitArea) hitArea.classList.add("is-selected");
-            if (result.bounds.length > 0) selectedBounds = boundsBox(result.bounds);
-            renderAnnotationSelection(toRender, selectionLayer);
-        }
     });
+    // Issue #535: annotations that aren't stacked on an image, on top of everything.
+    for (const index of stacks.onTop) drawAnnotation(scene.annotations[index], index, annotationLayer);
     // Issue #447: a press on the selected object drags it even through another
     // object drawn over it, so those objects need touch-action: none too, or
     // the browser may take the gesture for a scroll. Only objects whose bounds
