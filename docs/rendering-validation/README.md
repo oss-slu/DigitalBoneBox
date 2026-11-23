@@ -211,9 +211,9 @@ Possible fix: draw each image's linked annotations right after that image, so th
 
 ### R2. The intended view of an image isn't recorded for most bonesets
 
-Only the 18 Bony Pelvis items say which view each image shows (`imageCaptions.js`). For Skull, Thorax, Vertebrae, Upper Limb and Lower Limb, the view is only in some file names, and "Left"/"Right" in a file name usually means the slide position. Imported scene images don't keep the caption either, so someone editing a scene can't see which view an image is meant to be.
+**Addressed in #536.** An image imported from a bone now records its view in `source.view`: `{ caption, basis: "slide-caption" }` when `imageCaptions.js` has a caption for it, otherwise `{ caption: null, basis: "not-recorded" }`. The view is never guessed from the file name. Selecting an image in the Scene Editor shows its view, or says that it isn't recorded. Captions for the other bonesets still need to be added from the PowerPoint; once they are in `imageCaptions.js`, new imports pick them up.
 
-Possible fix: add captions (side and aspect) for the other bonesets from the PowerPoint, and copy the caption into `source` when an image is imported so the Scene Editor can show it.
+Only the 18 Bony Pelvis items say which view each image shows (`imageCaptions.js`). For Skull, Thorax, Vertebrae, Upper Limb and Lower Limb, the view is only in some file names, and "Left"/"Right" in a file name usually means the slide position. Before #536, imported scene images didn't keep the caption either, so someone editing a scene couldn't see which view an image was meant to be.
 
 ### R3. `hand_right_image.jpg` is turned on its side
 

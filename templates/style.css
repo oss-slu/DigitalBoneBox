@@ -3079,6 +3079,14 @@ button:disabled {
     border-top: 1px solid var(--border);
 }
 
+/* Issue #536: the selected image's intended view, on its own line. */
+.scene-image-view {
+    flex-basis: 100%;
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
 .scene-image-toolbar-label {
     font-weight: 600;
     color: var(--text-muted);
