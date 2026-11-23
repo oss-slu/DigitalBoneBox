@@ -96,7 +96,8 @@ function createFakeBackend(initialScenes) {
                     width: image.width,
                     height: image.height,
                     rotation: 0,
-                    source: { type: "legacy-image", boneId: body.boneId, filename: image.filename },
+                    // Like the real server: `index` is the image's place in the bone's image list.
+                    source: { type: "legacy-image", boneId: body.boneId, filename: image.filename, index: ILIUM_IMAGES.indexOf(image) },
                 }));
             const include = body.annotations || {};
             const importedAnnotations = {
@@ -675,5 +676,56 @@ describe("Scene editor: bone import alongside direct image import", () => {
         $("scene-save").click();
         await waitFor(() => expect($("scene-save-status").textContent).toBe("Saved"));
         expect(backend.scene().images.map((image) => image.src)).toEqual(sources);
+    });
+});
+
+describe("Scene editor: the intended view of imported images - Issue 536", () => {
+    const UPLOADED = { id: "uploaded", src: "/api/images/pelvis.jpg", x: 0, y: 400, width: 100, height: 200 };
+    const LATERAL = { caption: "Right Pelvis (lateral aspect)", basis: "slide-caption" };
+    const MEDIAL = { caption: "Right Pelvis(medial aspect)", basis: "slide-caption" };
+
+    beforeEach(() => setup([{ id: "scene-1", name: "Pelvis Study", images: [{ ...UPLOADED }] }]));
+
+    // Each click is at a different spot, so it selects the clicked image
+    // instead of stepping down a stack of objects (#441).
+    async function selectImage(index) {
+        const node = document.querySelector(`[data-scene-image-index="${index}"]`);
+        node.dispatchEvent(new MouseEvent("click", { bubbles: true, clientX: 100 * (index + 1), clientY: 100 * (index + 1) }));
+        await waitFor(() => expect($("scene-image-toolbar").hidden).toBe(false));
+        expect(scenesModule.getActiveScene().images[index]).toBeDefined();
+        return $("scene-image-view").textContent;
+    }
+
+    it("records each imported image's view from its slide caption", async () => {
+        await importIlium();
+
+        const images = scenesModule.getActiveScene().images;
+        expect(images.map((image) => image.source && image.source.view)).toEqual([undefined, LATERAL, MEDIAL]);
+    });
+
+    it("shows the selected image's view, and says clearly when it isn't recorded", async () => {
+        await importIlium();
+
+        expect(await selectImage(1)).toBe("View: Right Pelvis (lateral aspect) (from the slide caption)");
+        expect(await selectImage(2)).toBe("View: Right Pelvis(medial aspect) (from the slide caption)");
+        expect(await selectImage(0)).toBe("View: not recorded.");
+    });
+
+    it("keeps the views through save and reload", async () => {
+        await importIlium();
+        $("scene-save").click();
+        await waitFor(() => expect($("scene-save-status").textContent).toBe("Saved"));
+        expect(backend.scene().images.map((image) => image.source && image.source.view)).toEqual([undefined, LATERAL, MEDIAL]);
+
+        jest.resetModules();
+        document.body.innerHTML = bodyHtml;
+        scenesModule = require("../js/scenes.js");
+        scenesModule.initializeSceneEditor();
+        $("text-button-SceneEditor").click();
+        await waitFor(() => expect(sceneButton("scene-1")).not.toBeNull());
+        await openScene("scene-1", "Pelvis Study");
+
+        expect(scenesModule.getActiveScene().images.map((image) => image.source && image.source.view)).toEqual([undefined, LATERAL, MEDIAL]);
+        expect(await selectImage(2)).toBe("View: Right Pelvis(medial aspect) (from the slide caption)");
     });
 });

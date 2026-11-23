@@ -1,5 +1,6 @@
 import { OPEN_SCENE_EVENT, SCENES_CHANGED_EVENT, SHOW_IN_VIEWER_EVENT, sceneSources, readableName } from "./sceneLinks.js";
 import { renderScene, displayedAnnotation, objectsAt, storeAnnotationGeometry, textBox } from "./sceneCanvas.js";
+import { describeImageView, withIntendedViews } from "./sceneImageViews.js";
 import {
     DEFAULT_HIGHLIGHT_COLOR,
     DEFAULT_HIGHLIGHT_OPACITY,
@@ -733,6 +734,7 @@ function updateImageToolbar() {
     const hasSelection = Boolean(scene) && index !== null && index >= 0 && index < scene.images.length;
     dom.imageToolbar.hidden = !hasSelection;
     if (!hasSelection) return;
+    if (dom.imageView) dom.imageView.textContent = describeImageView(scene.images[index]);
     dom.imageBackward.disabled = index === 0;
     dom.imageForward.disabled = index === scene.images.length - 1;
     dom.imageCropStart.hidden = state.cropMode;
@@ -2865,7 +2867,8 @@ async function handleImport(event) {
         // The import only changes the working copy; it's stored with the
         // user's other edits on the next Save (Issue #452).
         const scene = state.active;
-        scene.images.push(...(result.images || []));
+        // Issue #536: record the view each imported image is meant to show.
+        scene.images.push(...withIntendedViews(result.images || []));
         scene.annotations = [...(scene.annotations || []), ...(result.annotations || [])];
         if (result.importLogEntry) {
             scene.importLog = [...(scene.importLog || []), result.importLogEntry].slice(-MAX_IMPORT_LOG_ENTRIES);
@@ -3007,6 +3010,7 @@ export function initializeSceneEditor(root = document) {
         imageForward: $("scene-image-forward"),
         imageBackward: $("scene-image-backward"),
         imageRemove: $("scene-image-remove"),
+        imageView: $("scene-image-view"),
         imageRotateLeft90: $("scene-image-rotate-left-90"),
         imageRotateLeft15: $("scene-image-rotate-left-15"),
         imageRotateRight15: $("scene-image-rotate-right-15"),
