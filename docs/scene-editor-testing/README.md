@@ -7,7 +7,7 @@ Each issue has an automated test file, and each was also checked by hand in a re
 | Issue | Automated tests | Result |
 |---|---|---|
 | #478 Test image importing | `templates/tests/sceneImageImporting.test.js` (20 tests) | Passes. Found and fixed B1. |
-| #479 Test image manipulation | `templates/tests/sceneImageManipulation.test.js` (21 tests) | Passes. Found B2. |
+| #479 Test image manipulation | `templates/tests/sceneImageManipulation.test.js` (21 tests) | Passes. Found B2 (#547). |
 | #481 Test overlapping objects | `templates/tests/sceneOverlappingObjects.test.js` (24 tests) | Passes. Noted O1. |
 | #483 Test touch and responsive editing | `templates/tests/sceneTouchResponsive.test.js` (16 tests) | Passes. Noted O2; stylus limits below. |
 
@@ -49,7 +49,7 @@ Mouse input was real clicks and drags. Touch and pen input was sent as `PointerE
 | Crop stops at 10 units, stays inside the image, and can be reset to the whole image | OK | By hand on a rotated, flipped image. "stops a crop at 10…", "keeps the whole image for later…" |
 | Rotation wraps (four 90° turns back to 0, −15° from 0 is 345°) | OK | "turns a full circle back to 0…" |
 | Bring forward / Send backward are disabled at the ends of the stack | OK | By hand. "can't move the back image further back…" |
-| The current flip state is visible | **No (B2)** | By hand: see B2. |
+| The current flip state is visible | **No (B2, #547)** | By hand: see B2. |
 
 ## #481 Overlapping objects
 
@@ -77,9 +77,9 @@ Mouse input was real clicks and drags. Touch and pen input was sent as `PointerE
 
 **Fixed in #478.** Choosing several files in Import image… added only the first file, with no message about the rest. The change handler resets the file input so the same file can be chosen again, and in Chromium that empties the same `FileList` the import was still reading. The import now copies the list before reading it (`handleImportFiles` in `scenes.js`). The tests' file picker empties its list the same way, so the test fails without the fix.
 
-### B2. The flip state isn't shown
+### B2. The flip state isn't shown (#547)
 
-#416 asks that the current flip state be apparent. The Flip horizontal and Flip vertical buttons look the same whether the image is flipped or not, they have no `aria-pressed`, and flipping isn't announced. For a nearly symmetric bone, the picture alone doesn't show it. Possible fix: set `aria-pressed` and a pressed style on each flip button from the selected image's `flipX` and `flipY`, and announce the change. The rotation angle isn't shown either.
+**Open: #547.** #416 asks that the current flip state be apparent. The Flip horizontal and Flip vertical buttons look the same whether the image is flipped or not, they have no `aria-pressed`, and flipping isn't announced. For a nearly symmetric bone, the picture alone doesn't show it. Possible fix: set `aria-pressed` and a pressed style on each flip button from the selected image's `flipX` and `flipY`, and announce the change. The rotation angle isn't shown either.
 
 ### Notes
 
