@@ -2622,7 +2622,10 @@ function handleAnnotationKey(event) {
  * @returns {Promise<void>}
  */
 async function handleImportFiles(fileList) {
-    if (!state.active || !fileList || fileList.length === 0) return;
+    // Copied before the first await: the change handler resets the input,
+    // which empties this same FileList in Chromium (Issue #478).
+    const files = Array.from(fileList || []);
+    if (!state.active || files.length === 0) return;
     // The user can open a different scene while a file is still being read;
     // images read for the scene they left are dropped with it.
     const token = state.activeToken;
@@ -2635,7 +2638,7 @@ async function handleImportFiles(fileList) {
     const skipped = [];
     const added = [];
 
-    for (const file of fileList) {
+    for (const file of files) {
         if (!SUPPORTED_IMAGE_TYPES.includes(file.type)) {
             skipped.push(`${file.name} (unsupported type)`);
             continue;
