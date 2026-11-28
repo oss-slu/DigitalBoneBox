@@ -162,12 +162,72 @@ function dragWith(pointerType, target, from, to, steps = 4) {
 }
 
 /**
- * Gives the canvas SVG an on-screen size, as a browser would lay it out, so
- * one screen pixel is `viewBoxWidth / width` scene units.
+ * Lays the canvas out as a browser would at a given width (the same model as
+ * the #450 tests): the canvas box is `width` pixels wide, the SVG is drawn at
+ * its zoomed size inside it, and the canvas scrolls. Call before opening a
+ * scene; `resizeCanvas` then changes the width and tells the editor through
+ * its ResizeObserver, as rotating a tablet or resizing a window does.
  */
-function setSvgScreenSize(width, height) {
-    const svg = canvasSvg();
-    svg.getBoundingClientRect = () => ({ x: 0, y: 0, left: 0, top: 0, width, height, right: width, bottom: height });
+function installLayout(width, height = 600) {
+    const box = { width, height };
+    const scroll = { left: 0, top: 0 };
+    const observers = [];
+    global.ResizeObserver = class {
+        constructor(callback) {
+            observers.push(callback);
+        }
+        observe() {}
+        disconnect() {}
+    };
+    const drawn = () => {
+        const svg = canvasSvg();
+        if (!svg) return { width: 0, height: 0 };
+        const [, , viewWidth, viewHeight] = svg.getAttribute("viewBox").split(" ").map(Number);
+        const drawnWidth = (box.width * (parseFloat(svg.style.width) || 100)) / 100;
+        return { width: drawnWidth, height: (drawnWidth * viewHeight) / viewWidth };
+    };
+    jest.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(function () {
+        if (this.tagName.toLowerCase() === "svg") {
+            // A browser reports an SVG that is no longer on the page as 0 x 0.
+            if (!this.isConnected) return { left: 0, top: 0, x: 0, y: 0, width: 0, height: 0 };
+            return { left: -scroll.left, top: -scroll.top, x: -scroll.left, y: -scroll.top, ...drawn() };
+        }
+        return { left: 0, top: 0, x: 0, y: 0, ...box };
+    });
+    const layout = {
+        box,
+        scroll,
+        /** Applies the layout to the canvas; call once the editor is on the page. */
+        attach() {
+            const canvas = $("scene-canvas");
+            const define = (name, get, set) => Object.defineProperty(canvas, name, { configurable: true, get, set });
+            define("scrollLeft", () => scroll.left, (value) => { scroll.left = Math.max(0, value); });
+            define("scrollTop", () => scroll.top, (value) => { scroll.top = Math.max(0, value); });
+            define("offsetWidth", () => box.width);
+            define("clientWidth", () => box.width);
+            define("clientHeight", () => box.height);
+            define("scrollWidth", () => Math.max(box.width, drawn().width));
+            define("scrollHeight", () => Math.max(box.height, drawn().height));
+        },
+        resizeCanvas(newWidth, newHeight = box.height) {
+            box.width = newWidth;
+            box.height = newHeight;
+            observers.forEach((callback) => callback([]));
+        },
+        /** Scene units per screen pixel at the current size and zoom. */
+        unitsPerPixel() {
+            const svg = canvasSvg();
+            return Number(svg.getAttribute("viewBox").split(" ")[2]) / drawn().width;
+        },
+        /** Where a scene point is on screen. */
+        toClient([x, y]) {
+            const svg = canvasSvg();
+            const [viewX, viewY] = svg.getAttribute("viewBox").split(" ").map(Number);
+            const perPixel = layout.unitsPerPixel();
+            return [(x - viewX) / perPixel - scroll.left, (y - viewY) / perPixel - scroll.top];
+        },
+    };
+    return layout;
 }
 
 let scenesModule = null;
@@ -232,6 +292,7 @@ module.exports = {
     dragWith,
     enterEditor,
     imageNode,
+    installLayout,
     key,
     mouse,
     openByName,
@@ -239,7 +300,6 @@ module.exports = {
     pointer,
     saveAndReopen,
     saveAndWait,
-    setSvgScreenSize,
     startEditor,
     tapWith,
     useCountingUuids,
