@@ -117,10 +117,16 @@ function clickAt(target, point, options = {}) {
     document.dispatchEvent(new MouseEvent("mouseup", { clientX: point[0], clientY: point[1], ...options }));
     mouse("click", target, point, options);
 }
+/**
+ * A mouse drag. Like Chromium, it ends with a click on the canvas (the
+ * pressed node is redrawn during the drag, so the click goes to the canvas
+ * that holds both ends), which the editor ignores after a real drag.
+ */
 function drag(target, from, to) {
     mouse("mousedown", target, from);
     document.dispatchEvent(new MouseEvent("mousemove", { clientX: to[0], clientY: to[1] }));
     document.dispatchEvent(new MouseEvent("mouseup", { clientX: to[0], clientY: to[1] }));
+    mouse("click", canvasSvg(), to);
 }
 function key(name, options = {}) {
     $("scene-canvas").dispatchEvent(new KeyboardEvent("keydown", { key: name, bubbles: true, ...options }));
